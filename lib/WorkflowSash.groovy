@@ -40,7 +40,7 @@ class WorkflowSash {
                 def values_map = data[1]
 
                 def values_list = values_map
-                    .sort { it.position }
+                    .sort(false) { it.position }
                     .collect { it.values }
                 return [meta, *values_list]
             }
