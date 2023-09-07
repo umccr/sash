@@ -2,7 +2,7 @@ process BOLT_OTHER_CANCER_REPORT {
     tag "${meta.key}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt_gpgr:0.1.0'
+    container 'docker.io/scwatts/bolt:0.1.0-gpgr'
 
     input:
     tuple val(meta), path(smlv_somatic_vcf), path(sv_somatic_tsv), path(sv_somatic_vcf), path(cnv_somatic_tsv), path(af_global), path(af_keygenes), path(purple_baf_plot), path(purple_dir), path(virusbreakend_dir)
