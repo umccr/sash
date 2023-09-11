@@ -193,6 +193,7 @@ workflow SASH {
 
     // channel: [meta, smlv_somatic_vcf]
     ch_smlv_somatic_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf, ch_inputs)
+    ch_smlv_somatic_unfiltered_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf_unfiltered, ch_inputs)
 
 
 
@@ -208,10 +209,10 @@ workflow SASH {
             return [meta, vcf]
         }
 
-    // channel: [meta_bolt, dragen_vcf, smlv_somatic_vcf]
-    ch_smlv_germline_perpare_inputs = WorkflowSash.groupByMeta(
+    // channel: [meta_bolt, dragen_vcf, smlv_somatic_unfiltered_vcf]
+    ch_smlv_germline_prepare_inputs = WorkflowSash.groupByMeta(
         ch_input_vcf_germline,
-        ch_smlv_somatic_out,
+        ch_smlv_somatic_unfiltered_out,
     )
         .map {
             def meta = it[0]
@@ -224,7 +225,7 @@ workflow SASH {
         }
 
     BOLT_SMLV_GERMLINE_PREPARE(
-        ch_smlv_germline_perpare_inputs,
+        ch_smlv_germline_prepare_inputs,
         umccr_data.germline_predisposition_panel_regions_transcript,
     )
 
