@@ -2,7 +2,7 @@ process BOLT_SMLV_GERMLINE_REPORT {
     tag "${meta.key}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.1.0-pcgr'
+    container 'docker.io/scwatts/bolt:0.1.1-pcgr'
 
     input:
     tuple val(meta), path(smlv_vcf), path(smlv_unfiltered_vcf)
@@ -13,6 +13,7 @@ process BOLT_SMLV_GERMLINE_REPORT {
     tuple val(meta), path('cpsr_output/')         , emit: cpsr_dir
     tuple val(meta), path("*.variant_counts.yaml"), emit: variant_counts
     tuple val(meta), path("*.bcftools_stats.txt") , emit: bcftools_stats
+    path "*.annotations.vcf.gz"                   , emit: vcf
     path 'versions.yml'                           , emit: versions
 
     when:

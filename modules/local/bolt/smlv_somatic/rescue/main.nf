@@ -2,7 +2,7 @@ process BOLT_SMLV_SOMATIC_RESCUE {
     tag "${meta.key}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.1.0'
+    container 'docker.io/scwatts/bolt:0.1.1'
 
     input:
     tuple val(meta), path(smlv_vcf), path(smlv_tbi), path(sage_smlv_vcf), path(sage_smlv_tbi)
