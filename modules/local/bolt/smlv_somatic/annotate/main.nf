@@ -2,7 +2,7 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
     tag "${meta.key}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.1.2-pcgr'
+    container 'docker.io/scwatts/bolt:0.1.3-pcgr'
 
     input:
     tuple val(meta), path(smlv_vcf)
