@@ -2,7 +2,7 @@ process LINX_VISUALISER {
     tag "${meta.id}"
     label 'process_medium'
 
-    container 'docker.io/scwatts/linx:1.24.1--0'
+    container 'docker.io/scwatts/linx:1.24.1--0-aws'
 
     input:
     tuple val(meta), path(linx_annotation_dir)
