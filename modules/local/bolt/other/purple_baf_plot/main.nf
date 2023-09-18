@@ -2,7 +2,7 @@ process BOLT_OTHER_PURPLE_BAF_PLOT {
     tag "${meta.key}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.1.6-circos-aws'
+    container 'docker.io/scwatts/bolt:0.1.7-circos-aws'
 
     input:
     tuple val(meta), path(purple_dir)
