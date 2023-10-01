@@ -2,7 +2,7 @@ process BOLT_SV_SOMATIC_ANNOTATE {
     tag "${meta.key}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.1.7-snpeff'
+    container 'docker.io/scwatts/bolt:0.1.8-snpeff'
 
     input:
     tuple val(meta), path(sv_vcf), path(cnv_tsv)
