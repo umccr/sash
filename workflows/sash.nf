@@ -209,19 +209,16 @@ workflow SASH {
             return [meta, vcf]
         }
 
-    // channel: [meta_bolt, dragen_vcf, smlv_somatic_unfiltered_vcf]
-    ch_smlv_germline_prepare_inputs = WorkflowSash.groupByMeta(
-        ch_input_vcf_germline,
-        ch_smlv_somatic_unfiltered_out,
-    )
-        .map {
-            def meta = it[0]
+    // channel: [meta_bolt, dragen_vcf]
+    ch_smlv_germline_prepare_inputs = ch_input_vcf_germline
+        .map { meta, dragen_vcf ->
+
             def meta_bolt = [
                 key: meta.id,
-                tumor_id: meta.tumor_id,
                 normal_id: meta.normal_id,
             ]
-            return [meta_bolt, *it[1..-1]]
+
+            return [meta_bolt, dragen_vcf]
         }
 
     BOLT_SMLV_GERMLINE_PREPARE(

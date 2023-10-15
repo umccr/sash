@@ -5,7 +5,7 @@ process BOLT_SMLV_GERMLINE_PREPARE {
     container 'docker.io/scwatts/bolt:0.1.8'
 
     input:
-    tuple val(meta), path(smlv_vcf), path(somatic_smlv_unfiltered_vcf)
+    tuple val(meta), path(smlv_vcf)
     path germline_predisposition_panel_regions_transcript
 
     output:
@@ -20,10 +20,7 @@ process BOLT_SMLV_GERMLINE_PREPARE {
 
     """
     bolt smlv_germline prepare \\
-        --tumor_name ${meta.tumor_id} \\
-        --normal_name ${meta.normal_id} \\
         --vcf_fp ${smlv_vcf} \\
-        --somatic_vcf_fp ${somatic_smlv_unfiltered_vcf} \\
         --gene_panel_fp ${germline_predisposition_panel_regions_transcript} \\
         --output_fp ${meta.normal_id}.prepared.vcf.gz
 
