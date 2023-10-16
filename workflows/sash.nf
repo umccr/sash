@@ -229,9 +229,7 @@ workflow SASH {
     )
 
     // Set outputs, restoring original meta
-    ch_versions = ch_versions.mix(
-        BOLT_SMLV_GERMLINE_PREPARE.out.versions,
-    )
+    ch_versions = ch_versions.mix(BOLT_SMLV_GERMLINE_PREPARE.out.versions)
 
     // channel: [meta, smlv_germline_vcf]
     ch_smlv_germline_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_PREPARE.out.vcf, ch_inputs)
@@ -473,6 +471,8 @@ workflow SASH {
         umccr_data.somatic_driver_panel,
     )
 
+    ch_versions = ch_versions.mix(BOLT_OTHER_CANCER_REPORT.out.versions)
+
 
 
 
@@ -514,6 +514,7 @@ workflow SASH {
         ch_multiqc_report_inputs,
     )
 
+    ch_versions = ch_versions.mix(BOLT_OTHER_MULTIQC_REPORT.out.versions)
 
 
 
