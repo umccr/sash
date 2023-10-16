@@ -41,7 +41,8 @@ workflow LINX_ANNOTATION {
 
                 def meta_linx = [
                     key: meta.id,
-                    id: meta.tumor_id,
+                    id: meta.id,
+                    tumor_id: meta.tumor_id,
                 ]
 
                 return [meta_linx, sv_vcf]
@@ -53,7 +54,8 @@ workflow LINX_ANNOTATION {
             .map { meta, purple_dir ->
                 def meta_linx = [
                     key: meta.id,
-                    id: meta.tumor_id,
+                    id: meta.id,
+                    tumor_id: meta.tumor_id,
                 ]
                 return [meta_linx, purple_dir]
             }

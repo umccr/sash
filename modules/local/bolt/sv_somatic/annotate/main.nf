@@ -1,5 +1,5 @@
 process BOLT_SV_SOMATIC_ANNOTATE {
-    tag "${meta.key}"
+    tag "${meta.id}"
     label 'process_low'
 
     container 'docker.io/scwatts/bolt:0.2.0-snpeff'
@@ -11,8 +11,8 @@ process BOLT_SV_SOMATIC_ANNOTATE {
     path snpeff_database
 
     output:
-    tuple val(meta), path("output/${meta.id}*annotated.vcf.gz"), emit: vcf
-    path 'versions.yml'                                        , emit: versions
+    tuple val(meta), path("output/${meta.tumor_id}*annotated.vcf.gz"), emit: vcf
+    path 'versions.yml'                                              , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -22,7 +22,7 @@ process BOLT_SV_SOMATIC_ANNOTATE {
 
     """
     bolt sv_somatic annotate \\
-        --tumor_name ${meta.id} \\
+        --tumor_name ${meta.tumor_id} \\
         --sv_fp ${sv_vcf} \\
         --cnv_fp ${cnv_tsv} \\
         --reference_fasta_fp ${genome_fasta} \\
@@ -37,7 +37,7 @@ process BOLT_SV_SOMATIC_ANNOTATE {
 
     stub:
     """
-    touch ${meta.id}.annotated.vcf.gz
+    touch ${meta.tumor_id}.annotated.vcf.gz
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

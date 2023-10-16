@@ -1,5 +1,5 @@
 process BOLT_SMLV_GERMLINE_REPORT {
-    tag "${meta.key}"
+    tag "${meta.id}"
     label 'process_low'
 
     container 'docker.io/scwatts/bolt:0.2.0-pcgr'
@@ -24,7 +24,7 @@ process BOLT_SMLV_GERMLINE_REPORT {
 
     """
     bolt smlv_germline report \\
-        --normal_name ${meta.id} \\
+        --normal_name ${meta.normal_id} \\
         --vcf_fp ${smlv_vcf} \\
         --vcf_unfiltered_fp ${smlv_unfiltered_vcf} \\
         --pcgr_conda pcgr \\
@@ -43,8 +43,8 @@ process BOLT_SMLV_GERMLINE_REPORT {
     stub:
     """
     mkdir -p cpsr_output/
-    touch ${meta.id}.germline.bcftools_stats.txt
-    touch ${meta.id}.germline.variant_counts.yaml
+    touch ${meta.normal_id}.germline.bcftools_stats.txt
+    touch ${meta.normal_id}.germline.variant_counts.yaml
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

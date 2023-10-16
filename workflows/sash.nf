@@ -161,6 +161,7 @@ workflow SASH {
             def meta = it[0]
             def meta_bolt = [
                 key: meta.id,
+                id: meta.id,
                 tumor_id: meta.tumor_id,
                 normal_id: meta.normal_id,
             ]
@@ -215,6 +216,7 @@ workflow SASH {
 
             def meta_bolt = [
                 key: meta.id,
+                id: meta.id,
                 normal_id: meta.normal_id,
             ]
 
@@ -299,6 +301,7 @@ workflow SASH {
 
             def meta_bolt = [
                 key: meta.id,
+                id: meta.id,
                 tumor_id: meta.tumor_id,
                 normal_id: meta.normal_id,
             ]
@@ -321,7 +324,8 @@ workflow SASH {
         .map { meta, vcf, vcf_unfiltered ->
             def meta_bolt = [
                 key: meta.id,
-                id: meta.normal_id,
+                id: meta.id,
+                normal_id: meta.normal_id,
             ]
             return [meta_bolt, vcf, vcf_unfiltered]
         }
@@ -372,7 +376,8 @@ workflow SASH {
 
             def meta_bolt = [
                 key: meta.id,
-                id: meta.tumor_id,
+                id: meta.id,
+                tumor_id: meta.tumor_id,
             ]
             return [meta_bolt, sv_vcf, cnv_tsv]
         }
@@ -417,6 +422,7 @@ workflow SASH {
         .map { meta, purple_dir ->
             def meta_bolt = [
                 key: meta.id,
+                id: meta.id,
                 tumor_id: meta.tumor_id,
             ]
             return [meta_bolt, purple_dir]
@@ -455,6 +461,7 @@ workflow SASH {
             def meta = it[0]
             def meta_bolt = [
                 key: meta.id,
+                id: meta.id,
                 subject_id: meta.subject_id,
                 tumor_id: meta.tumor_id,
             ]
@@ -495,6 +502,7 @@ workflow SASH {
 
             def meta_multiqc = [
                 key: meta.id,
+                id: meta.id,
                 tumor_id: meta.tumor_id,
                 normal_id: meta.normal_id,
             ]

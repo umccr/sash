@@ -1,5 +1,5 @@
 process BOLT_SMLV_SOMATIC_ANNOTATE {
-    tag "${meta.key}"
+    tag "${meta.id}"
     label 'process_low'
 
     container 'docker.io/scwatts/bolt:0.2.0-pcgr'

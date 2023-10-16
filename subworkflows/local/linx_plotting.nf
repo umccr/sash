@@ -26,7 +26,8 @@ workflow LINX_PLOTTING {
             .map { meta, anno_dir ->
                 def meta_linx = [
                     key: meta.id,
-                    id: meta.tumor_id,
+                    id: meta.id,
+                    tumor_id: meta.tumor_id,
                 ]
                 return [meta_linx, anno_dir]
             }
@@ -51,7 +52,8 @@ workflow LINX_PLOTTING {
             .map { meta, anno_dir, vis_dir ->
                 def meta_gpgr_linx = [
                     key: meta.id,
-                    id: meta.tumor_id,
+                    id: meta.id,
+                    tumor_id: meta.tumor_id,
                 ]
                 return [meta_gpgr_linx, anno_dir, vis_dir]
             }

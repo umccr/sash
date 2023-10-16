@@ -1,5 +1,5 @@
 process BOLT_SV_SOMATIC_PRIORITISE {
-    tag "${meta.key}"
+    tag "${meta.id}"
     label 'process_low'
 
     container 'docker.io/scwatts/bolt:0.2.0'
@@ -28,7 +28,7 @@ process BOLT_SV_SOMATIC_PRIORITISE {
 
     """
     bolt sv_somatic prioritise \\
-        --tumor_name ${meta.id} \\
+        --tumor_name ${meta.tumor_id} \\
         --sv_vcf ${sv_vcf} \\
         --refdata_known_fusion_pairs ${known_fusion_pairs} \\
         --refdata_known_fusion_heads ${known_fusion_heads} \\
@@ -48,9 +48,9 @@ process BOLT_SV_SOMATIC_PRIORITISE {
     stub:
     """
     mkdir -p sv_prioritise/
-    touch sv_prioritise/${meta.id}.prioritised.sv.placeholder.tsv
-    touch sv_prioritise/${meta.id}.prioritised.sv.placeholder.vcf.gz
-    touch sv_prioritise/${meta.id}.prioritised.cnv.placeholder.tsv
+    touch sv_prioritise/${meta.tumor_id}.prioritised.sv.placeholder.tsv
+    touch sv_prioritise/${meta.tumor_id}.prioritised.sv.placeholder.vcf.gz
+    touch sv_prioritise/${meta.tumor_id}.prioritised.cnv.placeholder.tsv
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
