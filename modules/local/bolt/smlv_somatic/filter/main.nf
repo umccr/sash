@@ -8,9 +8,9 @@ process BOLT_SMLV_SOMATIC_FILTER {
     tuple val(meta), path(smlv_vcf)
 
     output:
-    tuple val(meta), path("${meta.tumor_id}*pass.vcf.gz")       , emit: vcf
-    tuple val(meta), path("${meta.tumor_id}*filters_set.vcf.gz"), emit: vcf_unfiltered
-    path 'versions.yml'                                         , emit: versions
+    tuple val(meta), path("output/${meta.tumor_id}*pass.vcf.gz")       , emit: vcf
+    tuple val(meta), path("output/${meta.tumor_id}*filters_set.vcf.gz"), emit: vcf_unfiltered
+    path 'versions.yml'                                                , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -21,7 +21,8 @@ process BOLT_SMLV_SOMATIC_FILTER {
     """
     bolt smlv_somatic filter \\
         --tumor_name ${meta.tumor_id} \\
-        --vcf_fp ${smlv_vcf}
+        --vcf_fp ${smlv_vcf} \\
+        --output_dir output/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

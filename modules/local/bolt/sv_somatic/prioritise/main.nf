@@ -15,10 +15,10 @@ process BOLT_SV_SOMATIC_PRIORITISE {
     path appris
 
     output:
-    tuple val(meta), path("sv_prioritise/*.sv.*.tsv")   , emit: sv_tsv
-    tuple val(meta), path("sv_prioritise/*.sv.*.vcf.gz"), emit: sv_vcf
-    tuple val(meta), path("sv_prioritise/*.cnv.*.tsv")  , emit: cnv_tsv
-    path 'versions.yml'                                 , emit: versions
+    tuple val(meta), path("output/*.sv.*.tsv")   , emit: sv_tsv
+    tuple val(meta), path("output/*.sv.*.vcf.gz"), emit: sv_vcf
+    tuple val(meta), path("output/*.cnv.*.tsv")  , emit: cnv_tsv
+    path 'versions.yml'                          , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -37,7 +37,7 @@ process BOLT_SV_SOMATIC_PRIORITISE {
         --refdata_key_genes ${somatic_driver_panel_genes} \\
         --refdata_key_tsgenes ${somatic_driver_panel_genes_ts} \\
         --appris_fp ${appris} \\
-        --output_dir sv_prioritise/
+        --output_dir output/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

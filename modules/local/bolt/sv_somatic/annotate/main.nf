@@ -11,8 +11,8 @@ process BOLT_SV_SOMATIC_ANNOTATE {
     path snpeff_database
 
     output:
-    tuple val(meta), path("${meta.id}*annotated.vcf.gz"), emit: vcf
-    path 'versions.yml'                                 , emit: versions
+    tuple val(meta), path("output/${meta.id}*annotated.vcf.gz"), emit: vcf
+    path 'versions.yml'                                        , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -26,7 +26,8 @@ process BOLT_SV_SOMATIC_ANNOTATE {
         --sv_fp ${sv_vcf} \\
         --cnv_fp ${cnv_tsv} \\
         --reference_fasta_fp ${genome_fasta} \\
-        --snpeff_database_dir ${snpeff_database}
+        --snpeff_database_dir ${snpeff_database} \\
+        --output_dir output/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

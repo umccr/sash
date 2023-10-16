@@ -9,8 +9,8 @@ process BOLT_SMLV_SOMATIC_RESCUE {
     path umccr_hotspots
 
     output:
-    tuple val(meta), path("${meta.tumor_id}.rescued.vcf.gz"), emit: vcf
-    path 'versions.yml'                                     , emit: versions
+    tuple val(meta), path("output/${meta.tumor_id}.rescued.vcf.gz"), emit: vcf
+    path 'versions.yml'                                            , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -26,10 +26,11 @@ process BOLT_SMLV_SOMATIC_RESCUE {
     bcftools index -t ${meta.tumor_id}.main.sage.vcf.gz
 
     bolt smlv_somatic rescue \\
+        --tumor_name ${meta.tumor_id} \\
         --vcf_fp ${meta.tumor_id}.main.dragen.vcf.gz \\
         --sage_vcf_fp ${meta.tumor_id}.main.sage.vcf.gz \\
         --hotspots_fp ${umccr_hotspots} \\
-        --output_fp ${meta.tumor_id}.rescued.vcf.gz
+        --output_dir output/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

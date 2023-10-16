@@ -10,11 +10,11 @@ process BOLT_SMLV_GERMLINE_REPORT {
     path pcgr_data_dir
 
     output:
-    tuple val(meta), path('cpsr_output/')         , emit: cpsr_dir
-    tuple val(meta), path("*.variant_counts.yaml"), emit: variant_counts
-    tuple val(meta), path("*.bcftools_stats.txt") , emit: bcftools_stats
-    path "*.annotations.vcf.gz"                   , emit: vcf
-    path 'versions.yml'                           , emit: versions
+    tuple val(meta), path('output/cpsr/')                , emit: cpsr_dir
+    tuple val(meta), path("output/*.variant_counts.yaml"), emit: variant_counts
+    tuple val(meta), path("output/*.bcftools_stats.txt") , emit: bcftools_stats
+    path "output/*.annotations.vcf.gz"                   , emit: vcf
+    path 'versions.yml'                                  , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -31,7 +31,8 @@ process BOLT_SMLV_GERMLINE_REPORT {
         --pcgrr_conda pcgrr \\
         --germline_panel_list_fp ${germline_predisposition_panel_genes} \\
         --pcgr_data_dir ${pcgr_data_dir} \\
-        --threads ${task.cpus}
+        --threads ${task.cpus} \\
+        --output_dir output/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

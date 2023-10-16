@@ -12,8 +12,8 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
     path pcgr_data_dir
 
     output:
-    tuple val(meta), path("${meta.tumor_id}.annotations.vcf.gz"), emit: vcf
-    path 'versions.yml'                                         , emit: versions
+    tuple val(meta), path("output/${meta.tumor_id}.annotations.vcf.gz"), emit: vcf
+    path 'versions.yml'                                                , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -32,7 +32,8 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
         --pcgr_data_dir ${pcgr_data_dir} \\
         --pcgr_conda pcgr \\
         --pcgrr_conda pcgrr \\
-        --threads ${task.cpus}
+        --threads ${task.cpus} \\
+        --output_dir output/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
