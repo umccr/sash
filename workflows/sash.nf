@@ -69,7 +69,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 
 workflow SASH {
     // Create channel for versions
-    // channel: [versions.yml]
+    // channel: [ versions.yml ]
     ch_versions = Channel.empty()
 
 
@@ -79,16 +79,21 @@ workflow SASH {
     // SUBWORKFLOW: Prepare inputs from samplesheet
     //
 
-    // channel: [val(meta)]
+    // channel: [ meta ]
     PREPARE_INPUT(
         file(params.input),
     )
     ch_inputs = PREPARE_INPUT.out.metas
 
     // TODO(SW): place into subworkflow; simplify with map of variable name -> subpath
+
+    // channel: [ meta, amber_dir ]
     ch_amber = ch_inputs.map { meta -> [meta, file(meta.oncoanalyser_dir).toUriString() + '/amber/'] }
+
+    // channel: [ meta, cobalt_dir ]
     ch_cobalt = ch_inputs.map { meta -> [meta, file(meta.oncoanalyser_dir).toUriString() + '/cobalt/'] }
 
+    // channel: [ meta, gripss_somatic_vcf, gripss_somatic_tbi ]
     ch_gripss_somatic = ch_inputs
         .map { meta ->
             def subpath = "/gripss/somatic/${meta.tumor_id}.gripss.filtered.somatic.vcf.gz"
@@ -96,6 +101,7 @@ workflow SASH {
             return [meta, vcf, "${vcf}.tbi"]
         }
 
+    // channel: [ meta, gripss_unfiltered_somatic_vcf, gripss_unfiltered_somatic_tbi ]
     ch_gripss_somatic_unfiltered = ch_inputs
         .map { meta ->
             def subpath = "/gripss/somatic/${meta.tumor_id}.gripss.somatic.vcf.gz"
@@ -103,6 +109,7 @@ workflow SASH {
             return [meta, vcf, "${vcf}.tbi"]
         }
 
+    // channel: [ meta, gripss_germline_vcf, gripss_germline_tbi ]
     ch_gripss_germline = ch_inputs
         .map { meta ->
             def subpath = "/gripss/germline/${meta.tumor_id}.gripss.filtered.germline.vcf.gz"
@@ -110,6 +117,7 @@ workflow SASH {
             return [meta, vcf, "${vcf}.tbi"]
         }
 
+    // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
     ch_sage_somatic = ch_inputs
         .map { meta ->
             def subpath = "/sage/somatic/${meta.tumor_id}.sage.somatic.filtered.vcf.gz"
@@ -117,6 +125,7 @@ workflow SASH {
             return [meta, vcf, "${vcf}.tbi"]
         }
 
+    // channel: [ meta, virusbreakend_dir ]
     ch_virusbreakend = ch_inputs
         .map { meta ->
             def subpath = '/virusbreakend/'
@@ -131,7 +140,7 @@ workflow SASH {
     // SUBWORKFLOW: Prepare reference data
     //
 
-    // channel: [val(meta)]
+    // channel: [ meta ]
     PREPARE_REFERENCE()
     genome = PREPARE_REFERENCE.out.genome
     umccr_data = PREPARE_REFERENCE.out.umccr_data
@@ -144,7 +153,7 @@ workflow SASH {
     // MODULE: Somatic small variants
     //
 
-    // channel: [meta_bolt, dragen_vcf, dragen_tbi]
+    // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
     ch_input_vcf_somatic = ch_inputs
         .map { meta ->
             def vcf = file(meta.dragen_somatic_dir).toUriString() + "/${meta.tumor_id}.hard-filtered.vcf.gz"
@@ -152,7 +161,7 @@ workflow SASH {
         }
 
 
-    // channel: [meta_bolt, dragen_vcf, dragen_tbi, sage_vcf, sage_tbi]
+    // channel: [ meta_bolt, dragen_somatic_vcf, dragen_somatic_tbi, sage_somatic_vcf, sage_somatic_tbi ]
     ch_smlv_somatic_rescue_inputs = WorkflowSash.groupByMeta(
         ch_input_vcf_somatic,
         ch_sage_somatic,
@@ -192,8 +201,9 @@ workflow SASH {
         BOLT_SMLV_SOMATIC_FILTER.out.versions,
     )
 
-    // channel: [meta, smlv_somatic_vcf]
+    // channel: [ meta, smlv_somatic_vcf ]
     ch_smlv_somatic_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf, ch_inputs)
+    // channel: [ meta, smlv_somatic_unfiltered_vcf ]
     ch_smlv_somatic_unfiltered_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf_unfiltered, ch_inputs)
 
 
@@ -203,14 +213,14 @@ workflow SASH {
     // Germline small variants
     //
 
-    // channel: [meta_bolt, dragen_vcf]
+    // channel: [ meta, dragen_germline_vcf ]
     ch_input_vcf_germline = ch_inputs
         .map { meta ->
             def vcf = file(meta.dragen_germline_dir).toUriString() + "/${meta.normal_id}.hard-filtered.vcf.gz"
             return [meta, vcf]
         }
 
-    // channel: [meta_bolt, dragen_vcf]
+    // channel: [ meta_bolt, dragen_germline_vcf ]
     ch_smlv_germline_prepare_inputs = ch_input_vcf_germline
         .map { meta, dragen_vcf ->
 
@@ -231,7 +241,7 @@ workflow SASH {
     // Set outputs, restoring original meta
     ch_versions = ch_versions.mix(BOLT_SMLV_GERMLINE_PREPARE.out.versions)
 
-    // channel: [meta, smlv_germline_vcf]
+    // channel: [ meta, smlv_germline_vcf ]
     ch_smlv_germline_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_PREPARE.out.vcf, ch_inputs)
 
 
@@ -278,6 +288,7 @@ workflow SASH {
     // Small variant reporting (PCGR, CPSR, stats)
     //
 
+    // channel: [ meta_bolt, smlv_somatic_vcf, dragen_somatic_vcf, dragen_somatic_tbi, purple_dir ]
     ch_smlv_somatic_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_input_vcf_somatic,
@@ -315,6 +326,7 @@ workflow SASH {
         genome.fasta,
     )
 
+    // channel: [ meta_bolt, smlv_germline_vcf, dragen_germline_vcf ]
     ch_smlv_germline_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_germline_out,
         ch_input_vcf_germline,
@@ -339,12 +351,18 @@ workflow SASH {
         BOLT_SMLV_GERMLINE_REPORT.out.versions,
     )
 
+    // channel: [ meta, af_global ]
     ch_smlv_somatic_report_af_global_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.af_global, ch_inputs)
+    // channel: [ meta, af_keygenes ]
     ch_smlv_somatic_report_af_keygenes_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.af_keygenes, ch_inputs)
+    // channel: [ meta, bcftools_stats_somatic ]
     ch_smlv_somatic_report_stats_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.bcftools_stats, ch_inputs)
+    // channel: [ meta, variant_counts_somatic ]
     ch_smlv_somatic_report_counts_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.variant_counts, ch_inputs)
 
+    // channel: [ meta, bcftools_stats_germline ]
     ch_smlv_germline_report_stats_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_REPORT.out.bcftools_stats, ch_inputs)
+    // channel: [ meta, variant_counts_germline ]
     ch_smlv_germline_report_counts_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_REPORT.out.variant_counts, ch_inputs)
 
 
@@ -354,7 +372,7 @@ workflow SASH {
     // Somatic structural variants
     //
 
-    // channel: [meta_bolt, sv_vcf, cnv_tsv]
+    // channel: [ meta_bolt, sv_vcf, cnv_tsv ]
     ch_sv_somatic_inputs = PURPLE_CALLING.out.purple_dir
         .map { meta, purple_dir ->
 
@@ -404,8 +422,11 @@ workflow SASH {
         BOLT_SV_SOMATIC_PRIORITISE.out.versions,
     )
 
+    // channel: [ meta, sv_tsv ]
     ch_sv_somatic_sv_tsv_out = WorkflowSash.restoreMeta(BOLT_SV_SOMATIC_PRIORITISE.out.sv_tsv, ch_inputs)
+    // channel: [ meta, sv_vcf ]
     ch_sv_somatic_sv_vcf_out = WorkflowSash.restoreMeta(BOLT_SV_SOMATIC_PRIORITISE.out.sv_vcf, ch_inputs)
+    // channel: [ meta, cnv_tsv ]
     ch_sv_somatic_cnv_tsv_out = WorkflowSash.restoreMeta(BOLT_SV_SOMATIC_PRIORITISE.out.cnv_tsv, ch_inputs)
 
 
@@ -415,7 +436,7 @@ workflow SASH {
     // Generate custom PURPLE β-allele frequency circos plot
     //
 
-    // channel: [meta_bolt, purple_dir]
+    // channel: [ meta_bolt, purple_dir ]
     ch_other_purple_baf_plot_inputs = PURPLE_CALLING.out.purple_dir
         .map { meta, purple_dir ->
             def meta_bolt = [
@@ -434,6 +455,7 @@ workflow SASH {
 
     ch_versions = ch_versions.mix(BOLT_OTHER_PURPLE_BAF_PLOT.out.versions)
 
+    // channel: [ meta, purple_baf_circos_plot ]
     ch_purple_baf_plot_out = WorkflowSash.restoreMeta(BOLT_OTHER_PURPLE_BAF_PLOT.out.plot, ch_inputs)
 
 
@@ -443,7 +465,7 @@ workflow SASH {
     // Generate the cancer report
     //
 
-    // channel: [ meta, smlv_somatic_vcf, sv_somatic_tsv, sv_somatic_vcf, cnv_somatic_tsv, af_global, af_keygenes, purple_baf_plot, purple_dir, virusbreakend_dir ]
+    // channel: [ meta_bolt, smlv_somatic_vcf, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir ]
     ch_cancer_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_sv_somatic_sv_tsv_out,
@@ -480,13 +502,15 @@ workflow SASH {
     // Generate MultiQC report
     //
 
+    // channel: [ meta, somatic_dragen_dir ]
     ch_input_dragen_somatic_dir = ch_inputs
         .map { meta -> [meta, meta.dragen_somatic_dir] }
 
+    // channel: [ meta, germline_dragen_dir ]
     ch_input_dragen_germline_dir = ch_inputs
         .map { meta -> [meta, meta.dragen_germline_dir] }
 
-    // channel: [ meta, [somatic_dragen_dir, germline_dragen_dir, somatic_bcftools_stats, germline_bcftools_stats, somatic_variant_counts, germline_variant_counts, purple_dir] ]
+    // channel: [ meta_multiqc, [somatic_dragen_dir, germline_dragen_dir, somatic_bcftools_stats, germline_bcftools_stats, somatic_variant_counts, germline_variant_counts, purple_dir] ]
     ch_multiqc_report_inputs = WorkflowSash.groupByMeta(
         ch_input_dragen_somatic_dir,
         ch_input_dragen_germline_dir,
