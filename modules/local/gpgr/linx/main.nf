@@ -8,7 +8,7 @@ process GPGR_LINX {
     tuple val(meta), path(linx_annotation_dir), path(linx_visualiser_dir)
 
     output:
-    tuple val(meta), path('*_linx.html'), emit: html
+    tuple val(meta), path('*.linx.html'), emit: html
     path 'versions.yml'                 , emit: versions
 
     when:
@@ -23,7 +23,7 @@ process GPGR_LINX {
         --sample ${meta.tumor_id} \\
         --plot ${linx_visualiser_dir}/ \\
         --table ${linx_annotation_dir}/ \\
-        --out ${meta.tumor_id}_linx.html
+        --out ${meta.tumor_id}.linx.html
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -34,7 +34,7 @@ process GPGR_LINX {
 
     stub:
     """
-    touch ${meta.tumor_id}_linx.html
+    touch ${meta.tumor_id}.linx.html
     echo -e '${task.process}:\n  stub: noversions\n' > versions.yml
     """
 }

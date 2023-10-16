@@ -12,11 +12,12 @@ process BOLT_SMLV_SOMATIC_REPORT {
     path genome_fasta
 
     output:
-    tuple val(meta), path('output/pcgr/')                , emit: pcgr_dir
     tuple val(meta), path('output/af_tumor.txt')         , emit: af_global
     tuple val(meta), path('output/af_tumor_keygenes.txt'), emit: af_keygenes
     tuple val(meta), path("output/*.bcftools_stats.txt") , emit: bcftools_stats
     tuple val(meta), path("output/*.variant_counts.yaml"), emit: variant_counts
+    path 'output/pcgr/'                                  , emit: pcgr_dir
+    path "output/*.pcgr_acmg.grch38.html"                , emit: pcgr_report
     path 'versions.yml'                                  , emit: versions
 
     when:
@@ -44,6 +45,8 @@ process BOLT_SMLV_SOMATIC_REPORT {
         \\
         --threads ${task.cpus} \\
         --output_dir output/
+
+    mv output/pcgr/${meta.tumor_id}.pcgr_acmg.grch38.html output/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

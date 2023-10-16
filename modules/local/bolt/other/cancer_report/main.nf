@@ -9,8 +9,9 @@ process BOLT_OTHER_CANCER_REPORT {
     path somatic_driver_panel
 
     output:
-    tuple val(meta), path('cancer_report/'), emit: cancer_report_dir
-    path 'versions.yml'                    , emit: versions
+    path 'output/'             , emit: cancer_report_dir
+    path '*.cancer_report.html', emit: cancer_report
+    path 'versions.yml'        , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -40,7 +41,9 @@ process BOLT_OTHER_CANCER_REPORT {
         \\
         --cancer_genes_fp \$(pwd)/${somatic_driver_panel} \\
         \\
-        --output_dir \$(pwd)/cancer_report/
+        --output_dir \$(pwd)/output/
+
+    mv output/${meta.tumor_id}.cancer_report.html ./
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -50,7 +53,8 @@ process BOLT_OTHER_CANCER_REPORT {
 
     stub:
     """
-    mkdir -p cancer_report/
+    mkdir -p output/
+    touch output/${meta.tumor_id}.cancer_report.html
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

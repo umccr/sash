@@ -10,8 +10,8 @@ process BOLT_OTHER_PURPLE_BAF_PLOT {
     path circos_gaps
 
     output:
-    tuple val(meta), path("purple_baf/*.png"), emit: plot
-    path 'versions.yml'                      , emit: versions
+    tuple val(meta), path("output/*.png"), emit: plot
+    path 'versions.yml'                  , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -24,7 +24,7 @@ process BOLT_OTHER_PURPLE_BAF_PLOT {
         --purple_dir ${purple_dir} \
         --circos_conf_fp ${circos_config} \
         --circos_gaps_fp ${circos_gaps} \
-        --output_dir purple_baf/
+        --output_dir output/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

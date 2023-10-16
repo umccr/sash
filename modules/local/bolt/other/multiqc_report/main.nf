@@ -8,8 +8,9 @@ process BOLT_OTHER_MULTIQC_REPORT {
     tuple val(meta), path(input_files)
 
     output:
-    tuple val(meta), path('multiqc_report/'), emit: multiqc_report_dir
-    path 'versions.yml'                     , emit: versions
+    path 'multiqc_report/multiqc_data/', emit: multiqc_report_data
+    path '*.multiqc.html'              , emit: multiqc_report
+    path 'versions.yml'                , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -22,6 +23,8 @@ process BOLT_OTHER_MULTIQC_REPORT {
         --normal_name ${meta.normal_id} \\
         --input_dir ./ \\
         --output_dir multiqc_report/
+
+    mv multiqc_report/multiqc_report.html ${meta.tumor_id}.multiqc.html
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
