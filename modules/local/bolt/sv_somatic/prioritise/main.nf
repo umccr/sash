@@ -2,7 +2,7 @@ process BOLT_SV_SOMATIC_PRIORITISE {
     tag "${meta.key}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.1.8'
+    container 'docker.io/scwatts/bolt:0.2.0'
 
     input:
     tuple val(meta), path(sv_vcf)
