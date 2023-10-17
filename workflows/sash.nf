@@ -194,9 +194,9 @@ workflow SASH {
     // NOTE(SW): PAVE is run so that we obtain a complete PURPLE driver catalogue
     PAVE_SOMATIC(
         BOLT_SMLV_SOMATIC_FILTER.out.vcf,
-        ref_data.genome_fasta,
-        ref_data.genome_version,
-        ref_data.genome_fai,
+        genome.fasta,
+        genome.version,
+        genome.fai,
         [],
         [],
         [],
@@ -252,9 +252,9 @@ workflow SASH {
     GRIPSS_FILTERING(
         ch_inputs,
         ch_gridss,
-        ref_data.genome_fasta,
-        ref_data.genome_version,
-        ref_data.genome_fai,
+        genome.fasta,
+        genome.version,
+        genome.fai,
         hmf_data.gridss_pon_breakends,
         hmf_data.gridss_pon_breakpoints,
         hmf_data.known_fusions,
