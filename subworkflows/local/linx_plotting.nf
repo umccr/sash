@@ -38,10 +38,9 @@ workflow LINX_PLOTTING {
             ensembl_data_resources,
         )
 
-        // Set outputs, restoring original meta
-        ch_visualiser_out = WorkflowSash.restoreMeta(VISUALISER.out.visualiser_dir, ch_inputs)
         ch_versions = ch_versions.mix(VISUALISER.out.versions)
 
+        ch_visualiser_out = WorkflowSash.restoreMeta(VISUALISER.out.visualiser_dir, ch_inputs)
 
         // Create inputs and create process-specific meta
         // channel: [ meta_gpgr_linx, linx_annotation_dir, visualiser_dir ]

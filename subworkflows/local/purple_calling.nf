@@ -79,8 +79,9 @@ workflow PURPLE_CALLING {
             [],
         )
 
-        ch_outputs = WorkflowSash.restoreMeta(PURPLE.out.purple_dir, ch_inputs)
         ch_versions = ch_versions.mix(PURPLE.out.versions)
+
+        ch_outputs = WorkflowSash.restoreMeta(PURPLE.out.purple_dir, ch_inputs)
 
     emit:
         purple_dir = ch_outputs  // channel: [ meta, purple_dir ]

@@ -56,6 +56,8 @@ workflow LINX_ANNOTATION {
             driver_gene_panel,
         )
 
+        ch_versions = ch_versions.mix(GERMLINE.out.versions)
+
         SOMATIC(
             ch_linx_inputs_somatic,
             genome_version,
@@ -65,11 +67,7 @@ workflow LINX_ANNOTATION {
             [],
         )
 
-        // Set outputs, restoring original meta
-        ch_versions = ch_versions.mix(
-            SOMATIC.out.versions,
-            GERMLINE.out.versions,
-        )
+        ch_versions = ch_versions.mix(SOMATIC.out.versions)
 
         ch_linx_somatic_out = WorkflowSash.restoreMeta(SOMATIC.out.annotation_dir, ch_inputs)
         ch_linx_germline_out = WorkflowSash.restoreMeta(GERMLINE.out.annotation_dir, ch_inputs)
