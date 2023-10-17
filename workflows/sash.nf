@@ -205,6 +205,9 @@ workflow SASH {
         [],
     )
 
+    // channel: [ meta, pave_somatic_vcf ]
+    ch_pave_somatic_out = WorkflowSash.restoreMeta(PAVE_SOMATIC.out.vcf, ch_inputs)
+
 
 
 
@@ -272,7 +275,7 @@ workflow SASH {
         ch_inputs,
         ch_amber,
         ch_cobalt,
-        PAVE_SOMATIC.out.vcf,
+        ch_pave_somatic_out,
 
 
         // NOTE(SW): PURPLE germline enrichment requires tumor AD and GT information in the germline calls but DRAGEN does not generate such a file, see:
