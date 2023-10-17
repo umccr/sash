@@ -200,8 +200,8 @@ workflow SASH {
         [],
         [],
         [],
-        hmf_data.driver_gene_panel,
-        hmf_data.ensembl_data_resources,
+        umccr_data.driver_gene_panel,
+        umccr_data.ensembl_data_resources,
         [],
     )
 
@@ -260,7 +260,7 @@ workflow SASH {
         genome.fai,
         hmf_data.gridss_pon_breakends,
         hmf_data.gridss_pon_breakpoints,
-        hmf_data.known_fusions,
+        umccr_data.known_fusions,
         hmf_data.repeatmasker_annotations,
     )
 
@@ -295,9 +295,9 @@ workflow SASH {
         genome.dict,
         hmf_data.gc_profile,
         hmf_data.sage_known_hotspots_somatic,
-        hmf_data.sage_known_hotspots_germline,
-        hmf_data.driver_gene_panel,
-        hmf_data.ensembl_data_resources,
+        umccr_data.sage_known_hotspots_germline,
+        umccr_data.driver_gene_panel,
+        umccr_data.ensembl_data_resources,
         hmf_data.purple_germline_del,
     )
 
@@ -545,9 +545,9 @@ workflow SASH {
         ch_inputs,
         PURPLE_CALLING.out.purple_dir,
         genome.version,
-        hmf_data.ensembl_data_resources,
-        hmf_data.known_fusion_data,
-        hmf_data.driver_gene_panel,
+        umccr_data.ensembl_data_resources,
+        umccr_data.known_fusion_data,
+        umccr_data.driver_gene_panel,
     )
     ch_versions = ch_versions.mix(LINX_ANNOTATION.out.versions)
 
@@ -555,7 +555,7 @@ workflow SASH {
         ch_inputs,
         LINX_ANNOTATION.out.somatic,
         genome.version,
-        hmf_data.ensembl_data_resources,
+        umccr_data.ensembl_data_resources,
     )
 
     ch_versions = ch_versions.mix(LINX_PLOTTING.out.versions)
