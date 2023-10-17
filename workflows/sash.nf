@@ -47,6 +47,7 @@ include { BOLT_SMLV_SOMATIC_RESCUE   } from '../modules/local/bolt/smlv_somatic/
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
 
+include { GRIPSS_FILTERING           } from '../subworkflows/local/gripss_filtering'
 include { LINX_ANNOTATION            } from '../subworkflows/local/linx_annotation'
 include { LINX_PLOTTING              } from '../subworkflows/local/linx_plotting'
 include { PREPARE_INPUT              } from '../subworkflows/local/prepare_input'
@@ -94,27 +95,11 @@ workflow SASH {
     ch_cobalt = ch_inputs.map { meta -> [meta, file(meta.oncoanalyser_dir).toUriString() + '/cobalt/'] }
 
     // channel: [ meta, gripss_somatic_vcf, gripss_somatic_tbi ]
-    ch_gripss_somatic = ch_inputs
+    ch_gridss = ch_inputs
         .map { meta ->
-            def subpath = "/gripss/somatic/${meta.tumor_id}.gripss.filtered.somatic.vcf.gz"
+            def subpath = "/gridss/${meta.tumor_id}.gridss.vcf.gz"
             def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
-            return [meta, vcf, "${vcf}.tbi"]
-        }
-
-    // channel: [ meta, gripss_unfiltered_somatic_vcf, gripss_unfiltered_somatic_tbi ]
-    ch_gripss_somatic_unfiltered = ch_inputs
-        .map { meta ->
-            def subpath = "/gripss/somatic/${meta.tumor_id}.gripss.somatic.vcf.gz"
-            def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
-            return [meta, vcf, "${vcf}.tbi"]
-        }
-
-    // channel: [ meta, gripss_germline_vcf, gripss_germline_tbi ]
-    ch_gripss_germline = ch_inputs
-        .map { meta ->
-            def subpath = "/gripss/germline/${meta.tumor_id}.gripss.filtered.germline.vcf.gz"
-            def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
-            return [meta, vcf, "${vcf}.tbi"]
+            return [meta, vcf]
         }
 
     // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
@@ -245,6 +230,25 @@ workflow SASH {
 
 
 
+
+    //
+    // Somatic structural variants
+    //
+    GRIPSS_FILTERING(
+        ch_inputs,
+        ch_gridss,
+        ref_data.genome_fasta,
+        ref_data.genome_version,
+        ref_data.genome_fai,
+        hmf_data.gridss_pon_breakends,
+        hmf_data.gridss_pon_breakpoints,
+        hmf_data.known_fusions,
+        hmf_data.repeatmasker_annotations,
+    )
+
+
+
+
     //
     // CNV calling using UMCCR postprocessed variants
     //
@@ -264,9 +268,9 @@ workflow SASH {
         ch_smlv_germline_out.map { meta, vcf -> return [meta, []] },
 
 
-        ch_gripss_somatic,
-        ch_gripss_germline,
-        ch_gripss_somatic_unfiltered,
+        GRIPSS_FILTERING.out.somatic,
+        GRIPSS_FILTERING.out.germline,
+        GRIPSS_FILTERING.out.somatic_unfiltered,
         genome.fasta,
         genome.version,
         genome.fai,
