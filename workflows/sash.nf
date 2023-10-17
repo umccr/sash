@@ -76,7 +76,7 @@ workflow SASH {
 
 
     //
-    // SUBWORKFLOW: Prepare inputs from samplesheet
+    // Prepare inputs from samplesheet
     //
 
     // channel: [ meta ]
@@ -137,7 +137,7 @@ workflow SASH {
 
 
     //
-    // SUBWORKFLOW: Prepare reference data
+    // Prepare reference data
     //
 
     // channel: [ meta ]
@@ -150,7 +150,7 @@ workflow SASH {
 
 
     //
-    // MODULE: Somatic small variants
+    // Somatic small variants
     //
 
     // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
@@ -182,6 +182,8 @@ workflow SASH {
         umccr_data.hotspots,
     )
 
+    ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_RESCUE.out.versions)
+
     BOLT_SMLV_SOMATIC_ANNOTATE(
         BOLT_SMLV_SOMATIC_RESCUE.out.vcf,
         umccr_data.somatic_driver_panel_regions_gene,
@@ -190,16 +192,13 @@ workflow SASH {
         umccr_data.pcgr_dir,
     )
 
+    ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_ANNOTATE.out.versions)
+
     BOLT_SMLV_SOMATIC_FILTER(
         BOLT_SMLV_SOMATIC_ANNOTATE.out.vcf,
     )
 
-    // Set outputs, restoring original meta
-    ch_versions = ch_versions.mix(
-        BOLT_SMLV_SOMATIC_RESCUE.out.versions,
-        BOLT_SMLV_SOMATIC_ANNOTATE.out.versions,
-        BOLT_SMLV_SOMATIC_FILTER.out.versions,
-    )
+    ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_FILTER.out.versions)
 
     // channel: [ meta, smlv_somatic_vcf ]
     ch_smlv_somatic_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf, ch_inputs)
@@ -238,7 +237,6 @@ workflow SASH {
         umccr_data.germline_predisposition_panel_regions_transcript,
     )
 
-    // Set outputs, restoring original meta
     ch_versions = ch_versions.mix(BOLT_SMLV_GERMLINE_PREPARE.out.versions)
 
     // channel: [ meta, smlv_germline_vcf ]
@@ -326,6 +324,8 @@ workflow SASH {
         genome.fasta,
     )
 
+    ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_REPORT.out.versions)
+
     // channel: [ meta_bolt, smlv_germline_vcf, dragen_germline_vcf ]
     ch_smlv_germline_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_germline_out,
@@ -346,10 +346,7 @@ workflow SASH {
         umccr_data.pcgr_dir,
     )
 
-    ch_versions = ch_versions.mix(
-        BOLT_SMLV_SOMATIC_REPORT.out.versions,
-        BOLT_SMLV_GERMLINE_REPORT.out.versions,
-    )
+    ch_versions = ch_versions.mix(BOLT_SMLV_GERMLINE_REPORT.out.versions)
 
     // channel: [ meta, af_global ]
     ch_smlv_somatic_report_af_global_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.af_global, ch_inputs)
@@ -405,6 +402,8 @@ workflow SASH {
         umccr_data.snpeff_dir,
     )
 
+    ch_versions = ch_versions.mix(BOLT_SV_SOMATIC_ANNOTATE.out.versions)
+
     BOLT_SV_SOMATIC_PRIORITISE(
         BOLT_SV_SOMATIC_ANNOTATE.out.vcf,
         umccr_data.known_fusion_pairs,
@@ -416,11 +415,7 @@ workflow SASH {
         umccr_data.appris,
     )
 
-    // Set outputs, restoring original meta
-    ch_versions = ch_versions.mix(
-        BOLT_SV_SOMATIC_ANNOTATE.out.versions,
-        BOLT_SV_SOMATIC_PRIORITISE.out.versions,
-    )
+    ch_versions = ch_versions.mix(BOLT_SV_SOMATIC_PRIORITISE.out.versions)
 
     // channel: [ meta, sv_tsv ]
     ch_sv_somatic_sv_tsv_out = WorkflowSash.restoreMeta(BOLT_SV_SOMATIC_PRIORITISE.out.sv_tsv, ch_inputs)
@@ -542,6 +537,7 @@ workflow SASH {
 
 
 
+
     //
     // Annotate post processed strucutral variant events
     //
@@ -564,13 +560,12 @@ workflow SASH {
     )
 
     ch_versions = ch_versions.mix(LINX_PLOTTING.out.versions)
-    ch_linx_somatic_plots_out = WorkflowSash.restoreMeta(LINX_PLOTTING.out.visualiser_dir, ch_inputs)
 
 
 
 
     //
-    // MODULE: Collect software versions
+    // Collect software versions
     //
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
