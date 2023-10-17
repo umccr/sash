@@ -9,7 +9,7 @@ workflow LINX_ANNOTATION {
     take:
         // Sample data
         ch_inputs              // channel: [mandatory] [ meta ]
-        ch_purple              // channel: [optional]  [ meta, purple_dir ]
+        ch_purple              // channel: [mandatory] [ meta, purple_dir ]
 
         // Reference data
         genome_version         // channel: [mandatory] genome version
