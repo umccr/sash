@@ -46,6 +46,7 @@ include { BOLT_SMLV_SOMATIC_REPORT   } from '../modules/local/bolt/smlv_somatic/
 include { BOLT_SMLV_SOMATIC_RESCUE   } from '../modules/local/bolt/smlv_somatic/rescue/main'
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
+include { PAVE_SOMATIC               } from '../modules/local/pave/somatic/main'
 
 include { GRIPSS_FILTERING           } from '../subworkflows/local/gripss_filtering'
 include { LINX_ANNOTATION            } from '../subworkflows/local/linx_annotation'
@@ -190,6 +191,20 @@ workflow SASH {
     // channel: [ meta, smlv_somatic_unfiltered_vcf ]
     ch_smlv_somatic_unfiltered_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf_unfiltered, ch_inputs)
 
+    // NOTE(SW): PAVE is run so that we obtain a complete PURPLE driver catalogue
+    PAVE_SOMATIC(
+        BOLT_SMLV_SOMATIC_FILTER.out.vcf,
+        ref_data.genome_fasta,
+        ref_data.genome_version,
+        ref_data.genome_fai,
+        [],
+        [],
+        [],
+        hmf_data.driver_gene_panel,
+        hmf_data.ensembl_data_resources,
+        [],
+    )
+
 
 
 
@@ -257,7 +272,7 @@ workflow SASH {
         ch_inputs,
         ch_amber,
         ch_cobalt,
-        ch_smlv_somatic_out,
+        PAVE_SOMATIC.out.vcf,
 
 
         // NOTE(SW): PURPLE germline enrichment requires tumor AD and GT information in the germline calls but DRAGEN does not generate such a file, see:
