@@ -29,16 +29,6 @@ workflow LINX_ANNOTATION {
 
                 def sv_vcf = file(purple_dir).resolve("${meta.tumor_id}.purple.sv.germline.vcf.gz")
 
-                if (!sv_vcf.exists()) {
-
-
-                    // TODO(SW): consider how to replace this, not actually handled in groupByMeta right now
-
-
-                    //return Constants.META_PLACEHOLDER
-                    return 'Constants.META_PLACEHOLDER'
-                }
-
                 def meta_linx = [
                     key: meta.id,
                     id: meta.id,
@@ -47,7 +37,6 @@ workflow LINX_ANNOTATION {
 
                 return [meta_linx, sv_vcf]
             }
-            .filter { it != 'Constants.META_PLACEHOLDER' }
 
         // channel: [ meta_linx, purple_dir ]
         ch_linx_inputs_somatic = ch_purple

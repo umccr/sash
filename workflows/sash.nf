@@ -314,17 +314,6 @@ workflow SASH {
         .map { meta, vcf, vcf_unfiltered, tbi_unfiltered, purple_dir ->
             def purity_tsv = file(purple_dir).resolve("${meta.tumor_id}.purple.purity.tsv")
 
-            // Require small variant VCF files and purity file from the PURPLE directory
-            if (!purity_tsv.exists()) {
-
-
-                // TODO(SW): consider how to replace this, not actually handled in groupByMeta right now
-
-
-                //return Constants.META_PLACEHOLDER
-                return 'Constants.META_PLACEHOLDER'
-            }
-
             def meta_bolt = [
                 key: meta.id,
                 id: meta.id,
@@ -391,20 +380,8 @@ workflow SASH {
     // channel: [ meta_bolt, sv_vcf, cnv_tsv ]
     ch_sv_somatic_inputs = PURPLE_CALLING.out.purple_dir
         .map { meta, purple_dir ->
-
             def sv_vcf = file(purple_dir).resolve("${meta.tumor_id}.purple.sv.vcf.gz")
             def cnv_tsv = file(purple_dir).resolve("${meta.tumor_id}.purple.cnv.somatic.tsv")
-
-            // Require SV VCF and CNV TSV from the PURPLE directory
-            if (!sv_vcf.exists() || !cnv_tsv.exists()) {
-
-
-                // TODO(SW): consider how to replace this, not actually handled in groupByMeta right now
-
-
-                //return Constants.META_PLACEHOLDER
-                return 'Constants.META_PLACEHOLDER'
-            }
 
             def meta_bolt = [
                 key: meta.id,
