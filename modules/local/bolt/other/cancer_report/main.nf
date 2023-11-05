@@ -2,10 +2,10 @@ process BOLT_OTHER_CANCER_REPORT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.2.0-gpgr'
+    container 'docker.io/scwatts/bolt:0.2.3-gpgr'
 
     input:
-    tuple val(meta), path(smlv_somatic_vcf), path(sv_somatic_tsv), path(sv_somatic_vcf), path(cnv_somatic_tsv), path(af_global), path(af_keygenes), path(purple_baf_plot), path(purple_dir), path(virusbreakend_dir)
+    tuple val(meta), path(smlv_somatic_vcf), path(smlv_somatic_counts_process), path(sv_somatic_tsv), path(sv_somatic_vcf), path(cnv_somatic_tsv), path(af_global), path(af_keygenes), path(purple_baf_plot), path(purple_dir), path(virusbreakend_dir)
     path somatic_driver_panel
 
     output:
@@ -29,6 +29,7 @@ process BOLT_OTHER_CANCER_REPORT {
         --af_keygenes_fp \$(pwd)/${af_keygenes} \\
         \\
         --smlv_somatic_vcf_fp \$(pwd)/${smlv_somatic_vcf} \\
+        --smlv_somatic_counts_process_fp \$(pwd)/${smlv_somatic_counts_process} \\
         \\
         --sv_somatic_tsv_fp \$(pwd)/${sv_somatic_tsv} \\
         --sv_somatic_vcf_fp \$(pwd)/${sv_somatic_vcf} \\

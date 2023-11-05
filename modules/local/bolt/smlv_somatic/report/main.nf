@@ -2,23 +2,25 @@ process BOLT_SMLV_SOMATIC_REPORT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.2.0-pcgr'
+    container 'docker.io/scwatts/bolt:0.2.3-pcgr'
 
     input:
-    tuple val(meta), path(smlv_vcf), path(smlv_unfiltered_vcf), path(purple_purity)
+    tuple val(meta), path(smlv_vcf), path(smlv_filters_vcf), path(smlv_dragen_vcf), path(purple_purity)
     path pcgr_data_dir
     path somatic_driver_panel_regions_coding
     path giab_regions
     path genome_fasta
+    path genome_fai
 
     output:
-    tuple val(meta), path('output/af_tumor.txt')         , emit: af_global
-    tuple val(meta), path('output/af_tumor_keygenes.txt'), emit: af_keygenes
-    tuple val(meta), path("output/*.bcftools_stats.txt") , emit: bcftools_stats
-    tuple val(meta), path("output/*.variant_counts.yaml"), emit: variant_counts
-    path 'output/pcgr/'                                  , emit: pcgr_dir
-    path "output/*.pcgr_acmg.grch38.html"                , emit: pcgr_report
-    path 'versions.yml'                                  , emit: versions
+    tuple val(meta), path('output/af_tumor.txt')                 , emit: af_global
+    tuple val(meta), path('output/af_tumor_keygenes.txt')        , emit: af_keygenes
+    tuple val(meta), path("output/*.bcftools_stats.txt")         , emit: bcftools_stats
+    tuple val(meta), path("output/*.variant_counts_type.yaml")   , emit: counts_type
+    tuple val(meta), path("output/*.variant_counts_process.json"), emit: counts_process
+    path 'output/pcgr/'                                          , emit: pcgr_dir
+    path "output/*.pcgr_acmg.grch38.html"                        , emit: pcgr_report
+    path 'versions.yml'                                          , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -32,7 +34,8 @@ process BOLT_SMLV_SOMATIC_REPORT {
         --normal_name ${meta.normal_id} \\
         \\
         --vcf_fp ${smlv_vcf} \\
-        --vcf_unfiltered_fp ${smlv_unfiltered_vcf} \\
+        --vcf_filters_fp ${smlv_filters_vcf} \\
+        --vcf_dragen_fp ${smlv_dragen_vcf} \\
         \\
         --pcgr_conda pcgr \\
         --pcgrr_conda pcgrr \\

@@ -188,8 +188,8 @@ workflow SASH {
 
     // channel: [ meta, smlv_somatic_vcf ]
     ch_smlv_somatic_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf, ch_inputs)
-    // channel: [ meta, smlv_somatic_unfiltered_vcf ]
-    ch_smlv_somatic_unfiltered_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf_unfiltered, ch_inputs)
+    // channel: [ meta, smlv_somatic_filters_vcf ]
+    ch_smlv_somatic_filters_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf_filters, ch_inputs)
 
     // NOTE(SW): PAVE is run so that we obtain a complete PURPLE driver catalogue
     PAVE_SOMATIC(
@@ -308,9 +308,10 @@ workflow SASH {
     // Small variant reporting (PCGR, CPSR, stats)
     //
 
-    // channel: [ meta_bolt, smlv_somatic_vcf, dragen_somatic_vcf, dragen_somatic_tbi, purple_dir ]
+    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_filters_vcf, dragen_somatic_vcf, dragen_somatic_tbi, purple_dir ]
     ch_smlv_somatic_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
+        ch_smlv_somatic_filters_out,
         ch_input_vcf_somatic,
         PURPLE_CALLING.out.purple_dir,
     )
@@ -366,13 +367,15 @@ workflow SASH {
     ch_smlv_somatic_report_af_keygenes_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.af_keygenes, ch_inputs)
     // channel: [ meta, bcftools_stats_somatic ]
     ch_smlv_somatic_report_stats_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.bcftools_stats, ch_inputs)
-    // channel: [ meta, variant_counts_somatic ]
-    ch_smlv_somatic_report_counts_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.variant_counts, ch_inputs)
+    // channel: [ meta, variant_counts_type_somatic ]
+    ch_smlv_somatic_report_counts_type_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.counts_type, ch_inputs)
+    // channel: [ meta, variant_counts_process_somatic ]
+    ch_smlv_somatic_report_counts_process_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.counts_process, ch_inputs)
 
     // channel: [ meta, bcftools_stats_germline ]
     ch_smlv_germline_report_stats_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_REPORT.out.bcftools_stats, ch_inputs)
-    // channel: [ meta, variant_counts_germline ]
-    ch_smlv_germline_report_counts_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_REPORT.out.variant_counts, ch_inputs)
+    // channel: [ meta, variant_counts_type_germline ]
+    ch_smlv_germline_report_counts_type_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_REPORT.out.counts_type, ch_inputs)
 
 
 
@@ -460,9 +463,10 @@ workflow SASH {
     // Generate the cancer report
     //
 
-    // channel: [ meta_bolt, smlv_somatic_vcf, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir ]
+    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir ]
     ch_cancer_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
+        ch_smlv_somatic_report_counts_process_out,
         ch_sv_somatic_sv_tsv_out,
         ch_sv_somatic_sv_vcf_out,
         ch_sv_somatic_cnv_tsv_out,
@@ -505,14 +509,14 @@ workflow SASH {
     ch_input_dragen_germline_dir = ch_inputs
         .map { meta -> [meta, meta.dragen_germline_dir] }
 
-    // channel: [ meta_multiqc, [somatic_dragen_dir, germline_dragen_dir, somatic_bcftools_stats, germline_bcftools_stats, somatic_variant_counts, germline_variant_counts, purple_dir] ]
+    // channel: [ meta_multiqc, [somatic_dragen_dir, germline_dragen_dir, somatic_bcftools_stats, germline_bcftools_stats, somatic_counts_type, germline_counts_type, purple_dir] ]
     ch_multiqc_report_inputs = WorkflowSash.groupByMeta(
         ch_input_dragen_somatic_dir,
         ch_input_dragen_germline_dir,
         ch_smlv_somatic_report_stats_out,
         ch_smlv_germline_report_stats_out,
-        ch_smlv_somatic_report_counts_out,
-        ch_smlv_germline_report_counts_out,
+        ch_smlv_somatic_report_counts_type_out,
+        ch_smlv_germline_report_counts_type_out,
         PURPLE_CALLING.out.purple_dir,
     )
         .map {

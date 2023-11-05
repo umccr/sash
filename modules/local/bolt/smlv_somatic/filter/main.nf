@@ -2,14 +2,14 @@ process BOLT_SMLV_SOMATIC_FILTER {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.2.0'
+    container 'docker.io/scwatts/bolt:0.2.3'
 
     input:
     tuple val(meta), path(smlv_vcf)
 
     output:
     tuple val(meta), path("output/${meta.tumor_id}*pass.vcf.gz")       , emit: vcf
-    tuple val(meta), path("output/${meta.tumor_id}*filters_set.vcf.gz"), emit: vcf_unfiltered
+    tuple val(meta), path("output/${meta.tumor_id}*filters_set.vcf.gz"), emit: vcf_filters
     path 'versions.yml'                                                , emit: versions
 
     when:
