@@ -333,6 +333,7 @@ workflow SASH {
         umccr_data.somatic_driver_panel_regions_coding,
         hmf_data.sage_highconf_regions,
         genome.fasta,
+        genome.fai,
     )
 
     ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_REPORT.out.versions)
