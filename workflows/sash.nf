@@ -315,7 +315,7 @@ workflow SASH {
         ch_input_vcf_somatic,
         PURPLE_CALLING.out.purple_dir,
     )
-        .map { meta, vcf, vcf_unfiltered, tbi_unfiltered, purple_dir ->
+        .map { meta, vcf, vcf_filters, vcf_dragen, tbi_dragen, purple_dir ->
             def purity_tsv = file(purple_dir).resolve("${meta.tumor_id}.purple.purity.tsv")
 
             def meta_bolt = [
@@ -325,7 +325,7 @@ workflow SASH {
                 normal_id: meta.normal_id,
             ]
 
-            return [meta_bolt, vcf, vcf_unfiltered, purity_tsv]
+            return [meta_bolt, vcf, vcf_filters, vcf_dragen, purity_tsv]
         }
 
     BOLT_SMLV_SOMATIC_REPORT(
@@ -344,13 +344,13 @@ workflow SASH {
         ch_smlv_germline_out,
         ch_input_vcf_germline,
     )
-        .map { meta, vcf, vcf_unfiltered ->
+        .map { meta, vcf, vcf_dragen ->
             def meta_bolt = [
                 key: meta.id,
                 id: meta.id,
                 normal_id: meta.normal_id,
             ]
-            return [meta_bolt, vcf, vcf_unfiltered]
+            return [meta_bolt, vcf, vcf_dragen]
         }
 
     BOLT_SMLV_GERMLINE_REPORT(
