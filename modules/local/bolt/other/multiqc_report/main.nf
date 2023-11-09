@@ -2,7 +2,7 @@ process BOLT_OTHER_MULTIQC_REPORT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.2.4-multiqc'
+    container 'docker.io/scwatts/bolt:0.2.5-multiqc'
 
     input:
     tuple val(meta), path(input_files)
