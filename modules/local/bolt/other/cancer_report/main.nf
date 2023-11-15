@@ -7,6 +7,7 @@ process BOLT_OTHER_CANCER_REPORT {
     input:
     tuple val(meta), path(smlv_somatic_vcf), path(smlv_somatic_counts_process), path(sv_somatic_tsv), path(sv_somatic_vcf), path(cnv_somatic_tsv), path(af_global), path(af_keygenes), path(purple_baf_plot), path(purple_dir), path(virusbreakend_dir)
     path somatic_driver_panel
+    path oncokb_genes
 
     output:
     path 'output/'             , emit: cancer_report_dir
@@ -41,6 +42,7 @@ process BOLT_OTHER_CANCER_REPORT {
         --virusbreakend_dir \$(pwd)/${virusbreakend_dir} \\
         \\
         --cancer_genes_fp \$(pwd)/${somatic_driver_panel} \\
+        --oncokb_genes_fp \$(pwd)/${oncokb_genes} \\
         \\
         --output_dir \$(pwd)/output/
 

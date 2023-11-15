@@ -490,6 +490,7 @@ workflow SASH {
     BOLT_OTHER_CANCER_REPORT(
         ch_cancer_report_inputs,
         umccr_data.somatic_driver_panel,
+        umccr_data.oncokb_genes,
     )
 
     ch_versions = ch_versions.mix(BOLT_OTHER_CANCER_REPORT.out.versions)
