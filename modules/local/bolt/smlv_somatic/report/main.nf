@@ -2,7 +2,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.2.5-pcgr'
+    container 'docker.io/scwatts/bolt:0.2.6-pcgr'
 
     input:
     tuple val(meta), path(smlv_vcf), path(smlv_filters_vcf), path(smlv_dragen_vcf), path(purple_purity)
