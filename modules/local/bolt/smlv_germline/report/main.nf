@@ -2,7 +2,7 @@ process BOLT_SMLV_GERMLINE_REPORT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/scwatts/bolt:0.2.6-pcgr'
+    container 'ghcr.io/scwatts/bolt:0.2.8-pcgr'
 
     input:
     tuple val(meta), path(smlv_vcf), path(smlv_unfiltered_vcf)
