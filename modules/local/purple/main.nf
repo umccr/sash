@@ -100,7 +100,7 @@ process PURPLE {
     # NOTE(SW): hard coded since there is no reliable way to obtain version information.
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        purple: 3.9
+        purple: 3.9.2
     END_VERSIONS
     """
 
