@@ -36,14 +36,26 @@ input:
       pattern: "*.{fai}"
   - sage_pon:
       type: file
-      description: SAGE PON file (optional)
+      description: SAGE PON file
       pattern: "*.{tsv.gz}"
   - pon_artefacts:
       type: file
       description: Taregeted sequencing PON artefacts file (optional)
+  - sage_blocklist_regions:
+      type: file
+      description: SAGE regions blocklist file
+      pattern: "*.{bed}"
+  - sage_blocklist_sites:
+      type: file
+      description: SAGE sites blocklist file
+      pattern: "*.{vcf.gz}"
+  - clinvar_annotations:
+      type: file
+      description: ClinVar annotations VCF file
+      pattern: "*.{vcf.gz}"
   - segment_mappability:
       type: file
-      description: Segment mappability file (optional)
+      description: Segment mappability file
       pattern: "*.{bed.gz}"
   - driver_gene_panel:
       type: file
@@ -53,7 +65,7 @@ input:
       type: directory
       description: HMF ensembl data resources directory
   - gnomad_resource:
-      description: gnomAD resource (optional)
+      description: gnomAD resource
 output:
   - meta:
       type: map
