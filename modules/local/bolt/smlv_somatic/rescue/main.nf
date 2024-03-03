@@ -20,7 +20,7 @@ process BOLT_SMLV_SOMATIC_RESCUE {
 
     """
     bcftools view -o ${meta.tumor_id}.main.dragen.vcf.gz ${smlv_vcf} chr{1..22} chr{X,Y,M}
-    bcftools view -o ${meta.tumor_id}.main.sage.vcf.gz ${sage_smlv_vcf} chr{1..22} chr{X,Y,M}
+    bcftools view -f PASS,. -o ${meta.tumor_id}.main.sage.filtered.vcf.gz ${sage_smlv_vcf} chr{1..22} chr{X,Y,M}
 
     bcftools index -t ${meta.tumor_id}.main.dragen.vcf.gz
     bcftools index -t ${meta.tumor_id}.main.sage.vcf.gz

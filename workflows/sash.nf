@@ -106,7 +106,7 @@ workflow SASH {
     // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
     ch_sage_somatic = ch_inputs
         .map { meta ->
-            def subpath = "/sage/somatic/${meta.tumor_id}.sage.somatic.filtered.vcf.gz"
+            def subpath = "/sage/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
             def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
             return [meta, vcf, "${vcf}.tbi"]
         }
