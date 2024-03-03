@@ -40,7 +40,8 @@ process BOLT_SMLV_SOMATIC_RESCUE {
 
     stub:
     """
-    touch ${meta.tumor_id}.rescued.vcf.gz
+    mkdir -p output/
+    touch output/${meta.tumor_id}.rescued.vcf.gz
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

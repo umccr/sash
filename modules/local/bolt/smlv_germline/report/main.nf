@@ -45,9 +45,11 @@ process BOLT_SMLV_GERMLINE_REPORT {
 
     stub:
     """
-    mkdir -p cpsr_output/
-    touch ${meta.normal_id}.germline.bcftools_stats.txt
-    touch ${meta.normal_id}.germline.variant_counts.yaml
+    mkdir -p output/cpsr/
+    touch output/${meta.normal_id}.germline.variant_counts_type.yaml
+    touch output/${meta.normal_id}.germline.bcftools_stats.txt
+    touch output/${meta.normal_id}.cpsr.grch38.html
+    touch output/${meta.normal_id}.annotations.vcf.gz
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

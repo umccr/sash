@@ -34,8 +34,8 @@ process BOLT_OTHER_PURPLE_BAF_PLOT {
 
     stub:
     """
-    mkdir -p purple_baf/
-    touch purple_baf/${meta.tumor_id}.circos_baf.png
+    mkdir -p output/
+    touch output/${meta.tumor_id}.circos_baf.png
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

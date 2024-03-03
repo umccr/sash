@@ -47,10 +47,10 @@ process BOLT_SV_SOMATIC_PRIORITISE {
 
     stub:
     """
-    mkdir -p sv_prioritise/
-    touch sv_prioritise/${meta.tumor_id}.prioritised.sv.placeholder.tsv
-    touch sv_prioritise/${meta.tumor_id}.prioritised.sv.placeholder.vcf.gz
-    touch sv_prioritise/${meta.tumor_id}.prioritised.cnv.placeholder.tsv
+    mkdir -p output/
+    touch output/${meta.tumor_id}.prioritised.sv.placeholder.tsv
+    touch output/${meta.tumor_id}.prioritised.sv.placeholder.vcf.gz
+    touch output/${meta.tumor_id}.prioritised.cnv.placeholder.tsv
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

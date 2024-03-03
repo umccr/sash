@@ -37,7 +37,8 @@ process BOLT_SV_SOMATIC_ANNOTATE {
 
     stub:
     """
-    touch ${meta.tumor_id}.annotated.vcf.gz
+    mkdir -p output/
+    touch output/${meta.tumor_id}.annotated.vcf.gz
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

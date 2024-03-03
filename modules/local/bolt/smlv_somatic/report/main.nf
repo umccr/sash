@@ -59,11 +59,13 @@ process BOLT_SMLV_SOMATIC_REPORT {
 
     stub:
     """
-    mkdir -p pcgr_output/
-    touch af_tumor.txt
-    touch af_tumor_keygenes.txt
-    touch ${meta.tumor_id}.somatic.variant_counts.yaml
-    touch ${meta.tumor_id}.somatic.bcftools_stats.txt
+    mkdir -p output/pcgr/
+    touch output/af_tumor.txt
+    touch output/af_tumor_keygenes.txt
+    touch output/${meta.tumor_id}.somatic.variant_counts_type.yaml
+    touch output/${meta.tumor_id}.somatic.variant_counts_process.json
+    touch output/${meta.tumor_id}.somatic.bcftools_stats.txt
+    touch output/${meta.tumor_id}.pcgr_acmg.grch38.html
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

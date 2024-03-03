@@ -32,8 +32,9 @@ process BOLT_SMLV_SOMATIC_FILTER {
 
     stub:
     """
-    touch ${meta.tumor_id}.filters_set.vcf.gz
-    touch ${meta.tumor_id}.filters_set.pass.vcf.gz
+    mkdir -p output/
+    touch output/${meta.tumor_id}.filters_set.vcf.gz
+    touch output/${meta.tumor_id}.filters_set.pass.vcf.gz
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

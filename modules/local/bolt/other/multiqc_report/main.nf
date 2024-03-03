@@ -34,7 +34,8 @@ process BOLT_OTHER_MULTIQC_REPORT {
 
     stub:
     """
-    mkdir -p multiqc_report/
+    mkdir -p multiqc_report/multiqc_data/
+    touch ${meta.tumor_id}.multiqc.html
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
