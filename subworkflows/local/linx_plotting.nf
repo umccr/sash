@@ -2,7 +2,7 @@
 // LINX plotting visualises clusters structural variants
 //
 
-include { GPGR_LINX as GPGR             } from '../../modules/local/gpgr/linx/main'
+include { LINXREPORT as REPORT          } from '../../modules/local/linxreport/main'
 include { LINX_VISUALISER as VISUALISER } from '../../modules/local/linx/visualiser/main'
 
 workflow LINX_PLOTTING {
@@ -43,25 +43,25 @@ workflow LINX_PLOTTING {
         ch_visualiser_out = WorkflowSash.restoreMeta(VISUALISER.out.visualiser_dir, ch_inputs)
 
         // Create inputs and create process-specific meta
-        // channel: [ meta_gpgr_linx, linx_annotation_dir, visualiser_dir ]
-        ch_gpgr_linx_inputs = WorkflowSash.groupByMeta(
+        // channel: [ meta_linxreport, linx_annotation_dir, visualiser_dir ]
+        ch_linxreport_inputs = WorkflowSash.groupByMeta(
             ch_annotations,
             ch_visualiser_out,
         )
             .map { meta, anno_dir, vis_dir ->
-                def meta_gpgr_linx = [
+                def meta_linxreport = [
                     key: meta.id,
                     id: meta.id,
                     tumor_id: meta.tumor_id,
                 ]
-                return [meta_gpgr_linx, anno_dir, vis_dir]
+                return [meta_linxreport, anno_dir, vis_dir]
             }
 
-        GPGR(
-            ch_gpgr_linx_inputs,
+        LINXREPORT(
+            ch_linxreport_inputs,
         )
 
-        ch_versions = ch_versions.mix(GPGR.out.versions)
+        ch_versions = ch_versions.mix(LINXREPORT.out.versions)
 
     emit:
         visualiser_dir = ch_visualiser_out // channel: [ meta, visualiser_dir ]
