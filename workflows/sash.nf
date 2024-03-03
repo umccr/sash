@@ -471,9 +471,10 @@ workflow SASH {
             return [meta, hrd]
         }
 
-    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, dragen_hrd ]
+    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_bcftools_stats, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, dragen_hrd ]
     ch_cancer_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
+        ch_smlv_somatic_report_stats_out,
         ch_smlv_somatic_report_counts_process_out,
         ch_sv_somatic_sv_tsv_out,
         ch_sv_somatic_sv_vcf_out,
