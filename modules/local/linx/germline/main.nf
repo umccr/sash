@@ -2,7 +2,7 @@ process LINX_GERMLINE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/scwatts/linx:1.24.1--0'
+    container 'quay.io/biocontainers/hmftools-linx:1.25--hdfd78af_0'
 
     input:
     tuple val(meta), path(sv_vcf)
@@ -21,27 +21,27 @@ process LINX_GERMLINE {
     def args = task.ext.args ?: ''
 
     """
-    java \\
+    linx \\
         -Xmx${Math.round(task.memory.bytes * 0.95)} \\
-        -jar ${task.ext.jarPath} \\
-            ${args} \\
-            -sample ${meta.tumor_id} \\
-            -sv_vcf ${sv_vcf} \\
-            -germline \\
-            -ref_genome_version ${genome_ver} \\
-            -ensembl_data_dir ${ensembl_data_resources} \\
-            -driver_gene_panel ${driver_gene_panel} \\
-            -output_dir linx_germline/
+        ${args} \\
+        -sample ${meta.sample_id} \\
+        -sv_vcf ${sv_vcf} \\
+        -germline \\
+        -ref_genome_version ${genome_ver} \\
+        -ensembl_data_dir ${ensembl_data_resources} \\
+        -driver_gene_panel ${driver_gene_panel} \\
+        -output_dir linx_germline/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        linx: \$(java -jar ${task.ext.jarPath} | sed 's/^.*Linx version: //')
+        linx: \$(linx -version | sed 's/^.* //')
     END_VERSIONS
     """
 
     stub:
     """
     mkdir linx_germline/
+    touch linx_germline/placeholder
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
