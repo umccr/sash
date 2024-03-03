@@ -464,7 +464,14 @@ workflow SASH {
     // Generate the cancer report
     //
 
-    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir ]
+    // channel: [ meta, dragen_hrd ]
+    ch_input_hrd = ch_inputs
+        .map { meta ->
+            def hrd = file(meta.dragen_somatic_dir).toUriString() + "/${meta.tumor_id}.hrdscore.csv"
+            return [meta, hrd]
+        }
+
+    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, dragen_hrd ]
     ch_cancer_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_smlv_somatic_report_counts_process_out,
@@ -476,6 +483,7 @@ workflow SASH {
         ch_purple_baf_plot_out,
         PURPLE_CALLING.out.purple_dir,
         ch_virusbreakend,
+        ch_input_hrd,
     )
         .map {
             def meta = it[0]
