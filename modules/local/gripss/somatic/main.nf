@@ -2,7 +2,7 @@ process GRIPSS_SOMATIC {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/scwatts/gripss:2.3.5--0'
+    container 'quay.io/biocontainers/hmftools-gripss:2.4--hdfd78af_0'
 
     input:
     tuple val(meta), path(gridss_vcf)
@@ -13,7 +13,7 @@ process GRIPSS_SOMATIC {
     path pon_breakpoints
     path known_fusions
     path repeatmasker_annotations
-    path target_regions_bed
+    path target_region_bed
 
     output:
     tuple val(meta), path('*.gripss.filtered{,.somatic}.vcf.gz'), path('*.gripss.filtered{,.somatic}.vcf.gz.tbi'), emit: vcf
@@ -27,30 +27,29 @@ process GRIPSS_SOMATIC {
     def args = task.ext.args ?: ''
 
     def reference_arg = meta.containsKey('normal_id') ? "-reference ${meta.normal_id}" : ''
-    def target_regions_bed_arg = target_regions_bed ? "-target_regions_bed ${target_regions_bed}" : ''
+    def target_regions_bed_arg = target_region_bed ? "-target_regions_bed ${target_region_bed}" : ''
     def output_id_arg = meta.containsKey('normal_id') ? '-output_id somatic' : ''
 
     """
-    java \\
+    gripss \\
         -Xmx${Math.round(task.memory.bytes * 0.95)} \\
-        -jar ${task.ext.jarPath} \\
-            ${args} \\
-            -sample ${meta.tumor_id} \\
-            ${reference_arg} \\
-            -vcf ${gridss_vcf} \\
-            -ref_genome ${genome_fasta} \\
-            -ref_genome_version ${genome_ver} \\
-            -pon_sgl_file ${pon_breakends} \\
-            -pon_sv_file ${pon_breakpoints} \\
-            -known_hotspot_file ${known_fusions} \\
-            -repeat_mask_file ${repeatmasker_annotations} \\
-            ${target_regions_bed_arg} \\
-            ${output_id_arg} \\
-            -output_dir ./
+        ${args} \\
+        -sample ${meta.tumor_id} \\
+        ${reference_arg} \\
+        -vcf ${gridss_vcf} \\
+        -ref_genome ${genome_fasta} \\
+        -ref_genome_version ${genome_ver} \\
+        -pon_sgl_file ${pon_breakends} \\
+        -pon_sv_file ${pon_breakpoints} \\
+        -known_hotspot_file ${known_fusions} \\
+        -repeat_mask_file ${repeatmasker_annotations} \\
+        ${target_regions_bed_arg} \\
+        ${output_id_arg} \\
+        -output_dir ./
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        gripss: \$(java -jar ${task.ext.jarPath} | sed -n '1s/^.*version: //p')
+        gripss: \$(gripss -version | sed 's/^.* //')
     END_VERSIONS
     """
 
