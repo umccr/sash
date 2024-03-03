@@ -8,9 +8,9 @@ process BOLT_SMLV_SOMATIC_FILTER {
     tuple val(meta), path(smlv_vcf)
 
     output:
-    tuple val(meta), path("output/${meta.tumor_id}*pass.vcf.gz")       , emit: vcf
-    tuple val(meta), path("output/${meta.tumor_id}*filters_set.vcf.gz"), emit: vcf_filters
-    path 'versions.yml'                                                , emit: versions
+    tuple val(meta), path("output/${meta.tumor_id}*pass.vcf.gz"), path("output/${meta.tumor_id}*pass.vcf.gz.tbi"), emit: vcf
+    tuple val(meta), path("output/${meta.tumor_id}*filters_set.vcf.gz"),                                           emit: vcf_filters
+    path 'versions.yml',                                                                                           emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -33,8 +33,9 @@ process BOLT_SMLV_SOMATIC_FILTER {
     stub:
     """
     mkdir -p output/
-    touch output/${meta.tumor_id}.filters_set.vcf.gz
     touch output/${meta.tumor_id}.filters_set.pass.vcf.gz
+    touch output/${meta.tumor_id}.filters_set.pass.vcf.gz.tbi
+    touch output/${meta.tumor_id}.filters_set.vcf.gz
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
