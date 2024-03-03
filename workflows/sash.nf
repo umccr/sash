@@ -411,11 +411,10 @@ workflow SASH {
     BOLT_SV_SOMATIC_PRIORITISE(
         BOLT_SV_SOMATIC_ANNOTATE.out.vcf,
         umccr_data.known_fusion_pairs,
-        umccr_data.known_fusion_heads,
-        umccr_data.known_fusion_tails,
-        umccr_data.known_fusioncatcher_pairs,
-        umccr_data.somatic_driver_panel_genes,
-        umccr_data.somatic_driver_panel_genes_ts,
+        umccr_data.known_fusion_five,
+        umccr_data.known_fusion_three,
+        umccr_data.somatic_panel_genes,
+        umccr_data.somatic_panel_genes_ts,
         misc_data.appris,
     )
 

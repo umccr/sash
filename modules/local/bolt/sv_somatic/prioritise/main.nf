@@ -7,9 +7,8 @@ process BOLT_SV_SOMATIC_PRIORITISE {
     input:
     tuple val(meta), path(sv_vcf)
     path known_fusion_pairs
-    path known_fusion_heads
-    path known_fusion_tails
-    path fusioncatcher_pairs
+    path known_fusion_five
+    path known_fusion_three
     path somatic_driver_panel_genes
     path somatic_driver_panel_genes_ts
     path appris
@@ -31,9 +30,8 @@ process BOLT_SV_SOMATIC_PRIORITISE {
         --tumor_name ${meta.tumor_id} \\
         --sv_vcf ${sv_vcf} \\
         --refdata_known_fusion_pairs ${known_fusion_pairs} \\
-        --refdata_known_fusion_heads ${known_fusion_heads} \\
-        --refdata_known_fusion_tails ${known_fusion_tails} \\
-        --refdata_fusioncatcher_pairs ${fusioncatcher_pairs} \\
+        --refdata_known_fusion_five ${known_fusion_five} \\
+        --refdata_known_fusion_three ${known_fusion_three} \\
         --refdata_key_genes ${somatic_driver_panel_genes} \\
         --refdata_key_tsgenes ${somatic_driver_panel_genes_ts} \\
         --appris_fp ${appris} \\
