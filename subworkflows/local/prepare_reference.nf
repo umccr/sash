@@ -12,16 +12,19 @@ workflow PREPARE_REFERENCE {
         //
         // Set UMCCR and HMF reference data paths
         //
+        umccr_reference_data_path = joinPath(params.ref_data_path, "umccr_reference_data/v${params.data_versions.umccr_reference_data}/")
+
         ch_hmf_data = createDataMap(params.hmfdata_paths, params.ref_data_path)
-        ch_umccr_data = createDataMap(params.umccrdata_paths, params.ref_data_path)
+        ch_umccr_data = createDataMap(params.umccrdata_paths, umccr_reference_data_path)
+        ch_misc_data = createDataMap(params.miscdata_paths, params.ref_data_path)
 
         //
         // Prepare genome paths and info
         //
         genome = [
-            fasta: getRefdataFile(params.genome.fasta, params.ref_data_path),
-            fai: getRefdataFile(params.genome.fai, params.ref_data_path),
-            dict: getRefdataFile(params.genome.dict, params.ref_data_path),
+            fasta: joinPath(params.ref_data_path, params.genome.fasta),
+            fai: joinPath(params.ref_data_path, params.genome.fai),
+            dict: joinPath(params.ref_data_path, params.genome.dict),
             version: '38',
         ]
 
@@ -29,19 +32,20 @@ workflow PREPARE_REFERENCE {
         genome                 = genome                         // map: Genome paths and info
         hmf_data               = ch_hmf_data                    // map: HMF data paths
         umccr_data             = ch_umccr_data                  // map: UMCCR data paths
+        misc_data              = ch_misc_data                   // map: Misc data paths
 
         versions               = ch_versions                    // channel: [versions.yml]
 }
 
-def createDataMap(entries, ref_data_path) {
+def createDataMap(entries, ref_data_base_path) {
     return entries
         .collectEntries { name, path ->
-            def ref_data_file = getRefdataFile(path, ref_data_path)
+            def ref_data_file = joinPath(ref_data_base_path, path)
             return [name, ref_data_file]
         }
 }
 
-def getRefdataFile(filepath, ref_data_path) {
-    def data_path_noslash = ref_data_path.toString().replaceAll('/$', '')
-    return file("${data_path_noslash}/${filepath}", checkIfExists: true)
+def joinPath(a, b) {
+    def a_noslash = a.toString().replaceAll('/$', '')
+    return file("${a_noslash}/${b}", checkIfExists: true)
 }

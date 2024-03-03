@@ -131,6 +131,7 @@ workflow SASH {
     genome = PREPARE_REFERENCE.out.genome
     umccr_data = PREPARE_REFERENCE.out.umccr_data
     hmf_data = PREPARE_REFERENCE.out.hmf_data
+    misc_data = PREPARE_REFERENCE.out.misc_data
 
 
 
@@ -172,10 +173,10 @@ workflow SASH {
 
     BOLT_SMLV_SOMATIC_ANNOTATE(
         BOLT_SMLV_SOMATIC_RESCUE.out.vcf,
-        umccr_data.somatic_driver_panel_regions_gene,
+        umccr_data.somatic_panel_regions_gene,
         umccr_data.annotations_dir,
-        umccr_data.pon_dir,
-        umccr_data.pcgr_dir,
+        misc_data.pon_dir,
+        misc_data.pcgr_dir,
     )
 
     ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_ANNOTATE.out.versions)
@@ -237,7 +238,7 @@ workflow SASH {
 
     BOLT_SMLV_GERMLINE_PREPARE(
         ch_smlv_germline_prepare_inputs,
-        umccr_data.germline_predisposition_panel_regions_transcript,
+        umccr_data.germline_panel_regions_transcript,
     )
 
     ch_versions = ch_versions.mix(BOLT_SMLV_GERMLINE_PREPARE.out.versions)
@@ -330,8 +331,8 @@ workflow SASH {
 
     BOLT_SMLV_SOMATIC_REPORT(
         ch_smlv_somatic_report_inputs,
-        umccr_data.pcgr_dir,
-        umccr_data.somatic_driver_panel_regions_coding,
+        misc_data.pcgr_dir,
+        umccr_data.somatic_panel_regions_cds,
         hmf_data.sage_highconf_regions,
         genome.fasta,
         genome.fai,
@@ -355,8 +356,8 @@ workflow SASH {
 
     BOLT_SMLV_GERMLINE_REPORT(
         ch_smlv_germline_report_inputs,
-        umccr_data.germline_predisposition_panel_genes,
-        umccr_data.pcgr_dir,
+        umccr_data.germline_panel_genes,
+        misc_data.pcgr_dir,
     )
 
     ch_versions = ch_versions.mix(BOLT_SMLV_GERMLINE_REPORT.out.versions)
@@ -402,7 +403,7 @@ workflow SASH {
         ch_sv_somatic_inputs,
         genome.fasta,
         genome.fai,
-        umccr_data.snpeff_dir,
+        misc_data.snpeff_dir,
     )
 
     ch_versions = ch_versions.mix(BOLT_SV_SOMATIC_ANNOTATE.out.versions)
@@ -415,7 +416,7 @@ workflow SASH {
         umccr_data.known_fusioncatcher_pairs,
         umccr_data.somatic_driver_panel_genes,
         umccr_data.somatic_driver_panel_genes_ts,
-        umccr_data.appris,
+        misc_data.appris,
     )
 
     ch_versions = ch_versions.mix(BOLT_SV_SOMATIC_PRIORITISE.out.versions)
@@ -489,8 +490,8 @@ workflow SASH {
 
     BOLT_OTHER_CANCER_REPORT(
         ch_cancer_report_inputs,
-        umccr_data.somatic_driver_panel,
-        umccr_data.oncokb_genes,
+        umccr_data.somatic_panel,
+        misc_data.oncokb_genes,
     )
 
     ch_versions = ch_versions.mix(BOLT_OTHER_CANCER_REPORT.out.versions)
