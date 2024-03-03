@@ -2,7 +2,7 @@ process PURPLE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/scwatts/purple:3.9.2--0'
+    container 'quay.io/biocontainers/hmftools-purple:4.0.2--hdfd78af_0'
 
     input:
     tuple val(meta), path(amber), path(cobalt), path(sv_tumor_vcf), path(sv_tumor_tbi), path(sv_tumor_unfiltered_vcf), path(sv_tumor_unfiltered_tbi), path(sv_normal_vcf), path(sv_normal_tbi), path(smlv_tumor_vcf), path(smlv_normal_vcf)
@@ -37,6 +37,7 @@ process PURPLE {
 
     def sv_tumor_recovery_vcf_arg = sv_tumor_unfiltered_vcf ? "-sv_recovery_vcf ${sv_tumor_unfiltered_vcf}" : ''
 
+    // NOTE(SW): use of 'smlv_tumor.vcf.gz' is intended here; see comment below in script block
     def smlv_tumor_vcf_arg = smlv_tumor_vcf ? "-somatic_vcf smlv_tumor.vcf.gz" : ''
     def smlv_normal_vcf_arg = smlv_normal_vcf ? "-germline_vcf ${smlv_normal_vcf}" : ''
 
@@ -63,33 +64,32 @@ process PURPLE {
         } | bcftools view -o smlv_tumor.vcf.gz
     fi;
 
-    java \\
+    purple \\
         -Xmx${Math.round(task.memory.bytes * 0.95)} \\
-        -jar ${task.ext.jarPath} \\
-            ${args} \\
-            -tumor ${meta.tumor_id} \\
-            ${reference_arg} \\
-            -amber ${amber} \\
-            -cobalt ${cobalt} \\
-            ${sv_tumor_vcf_arg} \\
-            ${sv_normal_vcf_arg} \\
-            ${sv_tumor_recovery_vcf_arg} \\
-            ${smlv_tumor_vcf_arg} \\
-            ${smlv_normal_vcf_arg} \\
-            -ref_genome ${genome_fasta} \\
-            -ref_genome_version ${genome_ver} \\
-            -driver_gene_panel ${driver_gene_panel} \\
-            -ensembl_data_dir ${ensembl_data_resources} \\
-            -somatic_hotspots ${sage_known_hotspots_somatic} \\
-            ${sage_known_hotspots_germline_arg} \\
-            ${target_region_bed_arg} \\
-            ${target_region_ratios_arg} \\
-            ${target_region_msi_indels_arg} \\
-            ${germline_del_arg} \\
-            -gc_profile ${gc_profile} \\
-            -circos ${task.ext.circosPath} \\
-            -threads ${task.cpus} \\
-            -output_dir purple/
+        ${args} \\
+        -tumor ${meta.tumor_id} \\
+        ${reference_arg} \\
+        -amber ${amber} \\
+        -cobalt ${cobalt} \\
+        ${sv_tumor_vcf_arg} \\
+        ${sv_normal_vcf_arg} \\
+        ${sv_tumor_recovery_vcf_arg} \\
+        ${smlv_tumor_vcf_arg} \\
+        ${smlv_normal_vcf_arg} \\
+        -ref_genome ${genome_fasta} \\
+        -ref_genome_version ${genome_ver} \\
+        -driver_gene_panel ${driver_gene_panel} \\
+        -ensembl_data_dir ${ensembl_data_resources} \\
+        -somatic_hotspots ${sage_known_hotspots_somatic} \\
+        ${sage_known_hotspots_germline_arg} \\
+        ${target_region_bed_arg} \\
+        ${target_region_ratios_arg} \\
+        ${target_region_msi_indels_arg} \\
+        ${germline_del_arg} \\
+        -gc_profile ${gc_profile} \\
+        -circos \$(which circos) \\
+        -threads ${task.cpus} \\
+        -output_dir purple/
 
     # Remove the artificial `INFO/TIER` field in output PURPLE SNV file
     if [[ -n "${smlv_tumor_vcf}" ]]; then
@@ -97,10 +97,9 @@ process PURPLE {
         mv smlv_tumor.tmp.vcf.gz purple/${meta.tumor_id}.purple.somatic.vcf.gz
     fi
 
-    # NOTE(SW): hard coded since there is no reliable way to obtain version information.
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        purple: 3.9.2
+        purple: \$(purple -version | sed 's/^.* //')
     END_VERSIONS
     """
 

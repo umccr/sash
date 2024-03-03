@@ -74,9 +74,9 @@ workflow PURPLE_CALLING {
             driver_gene_panel,
             ensembl_data_resources,
             purple_germline_del,
-            [],
-            [],
-            [],
+            [],  // target_region_bed
+            [],  // target_region_ratios
+            [],  // target_region_msi_indels
         )
 
         ch_versions = ch_versions.mix(PURPLE.out.versions)
