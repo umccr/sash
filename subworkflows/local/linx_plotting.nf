@@ -40,31 +40,31 @@ workflow LINX_PLOTTING {
 
         ch_versions = ch_versions.mix(VISUALISER.out.versions)
 
-        ch_visualiser_out = WorkflowSash.restoreMeta(VISUALISER.out.visualiser_dir, ch_inputs)
+        ch_visualiser_out = WorkflowSash.restoreMeta(VISUALISER.out.plots, ch_inputs)
 
         // Create inputs and create process-specific meta
-        // channel: [ meta_linxreport, linx_annotation_dir, visualiser_dir ]
+        // channel: [ meta_linxreport, linx_annotation_dir, linx_plot_dir ]
         ch_linxreport_inputs = WorkflowSash.groupByMeta(
             ch_annotations,
             ch_visualiser_out,
         )
-            .map { meta, anno_dir, vis_dir ->
+            .map { meta, anno_dir, plot_dir ->
                 def meta_linxreport = [
                     key: meta.id,
                     id: meta.id,
                     tumor_id: meta.tumor_id,
                 ]
-                return [meta_linxreport, anno_dir, vis_dir]
+                return [meta_linxreport, anno_dir, plot_dir]
             }
 
-        LINXREPORT(
+        REPORT(
             ch_linxreport_inputs,
         )
 
-        ch_versions = ch_versions.mix(LINXREPORT.out.versions)
+        ch_versions = ch_versions.mix(REPORT.out.versions)
 
     emit:
-        visualiser_dir = ch_visualiser_out // channel: [ meta, visualiser_dir ]
+        plot_dir = ch_visualiser_out // channel: [ meta, plot_dir ]
 
-        versions = ch_versions             // channel: [ versions.yml ]
+        versions = ch_versions       // channel: [ versions.yml ]
 }
