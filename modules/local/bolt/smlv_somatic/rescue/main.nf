@@ -23,12 +23,12 @@ process BOLT_SMLV_SOMATIC_RESCUE {
     bcftools view -f PASS,. -o ${meta.tumor_id}.main.sage.filtered.vcf.gz ${sage_smlv_vcf} chr{1..22} chr{X,Y,M}
 
     bcftools index -t ${meta.tumor_id}.main.dragen.vcf.gz
-    bcftools index -t ${meta.tumor_id}.main.sage.vcf.gz
+    bcftools index -t ${meta.tumor_id}.main.sage.filtered.vcf.gz
 
     bolt smlv_somatic rescue \\
         --tumor_name ${meta.tumor_id} \\
         --vcf_fp ${meta.tumor_id}.main.dragen.vcf.gz \\
-        --sage_vcf_fp ${meta.tumor_id}.main.sage.vcf.gz \\
+        --sage_vcf_fp ${meta.tumor_id}.main.sage.filtered.vcf.gz \\
         --hotspots_fp ${umccr_hotspots} \\
         --output_dir output/
 
