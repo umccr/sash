@@ -27,7 +27,7 @@ workflow LINX_PLOTTING {
                 def meta_linx = [
                     key: meta.id,
                     id: meta.id,
-                    tumor_id: meta.tumor_id,
+                    sample_id: meta.tumor_id,
                 ]
                 return [meta_linx, anno_dir]
             }
@@ -52,7 +52,7 @@ workflow LINX_PLOTTING {
                 def meta_linxreport = [
                     key: meta.id,
                     id: meta.id,
-                    tumor_id: meta.tumor_id,
+                    sample_id: meta.tumor_id,
                 ]
                 return [meta_linxreport, anno_dir, plot_dir]
             }
