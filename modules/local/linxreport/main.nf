@@ -19,14 +19,14 @@ process LINXREPORT {
 
     """
     # Create input directory if it doesn't exist for linxreport
-    if [[ ! -e ${linx_annotation_dir} ]]; then
-        mkdir -p ${linx_annotation_dir};
+    if [[ ! -e ${linx_visualiser_dir} ]]; then
+        mkdir -p ${linx_visualiser_dir};
     fi;
 
     linxreport.R \\
         ${args} \\
         --sample ${meta.sample_id} \\
-        --plot ${linx_annotation_dir} \\
+        --plot ${linx_visualiser_dir} \\
         --table ${linx_annotation_dir} \\
         --out ${meta.sample_id}_linx.html
 
