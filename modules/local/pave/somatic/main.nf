@@ -9,11 +9,6 @@ process PAVE_SOMATIC {
     path genome_fasta
     val genome_ver
     path genome_fai
-    path sage_pon
-    path pon_artefacts
-    path sage_blocklist_regions
-    path sage_blocklist_sites
-    path clinvar_annotations
     path segment_mappability
     path driver_gene_panel
     path ensembl_data_resources
@@ -30,26 +25,6 @@ process PAVE_SOMATIC {
     script:
     def args = task.ext.args ?: ''
 
-    def pon_filters
-    def gnomad_args
-    if (genome_ver == '37') {
-        pon_filters = 'HOTSPOT:10:5;PANEL:6:5;UNKNOWN:6:0'
-        gnomad_args = "-gnomad_freq_file ${gnomad_resource}"
-    } else if (genome_ver == '38') {
-        pon_filters = 'HOTSPOT:5:5;PANEL:2:5;UNKNOWN:2:0'
-        gnomad_args = "-gnomad_freq_dir ${gnomad_resource}"
-    } else {
-        log.error "got bad genome version: ${genome_ver}"
-        System.exit(1)
-    }
-
-    // Targeted mode
-    def pon_artefact_arg = pon_artefacts ? "-pon_artefact_file ${pon_artefacts}" : ''
-    def pathogenic_pass_force_arg = pon_artefacts ? '-force_pathogenic_pass': ''
-    def sage_blocklist_regions_arg = sage_blocklist_regions ? "-blacklist_bed ${sage_blocklist_regions}" : ''
-    def sage_blocklist_sites_arg = sage_blocklist_sites ? "-blacklist_vcf ${sage_blocklist_sites}" : ''
-    def clinvar_annotations = clinvar_annotations ? "-clinvar_vcf ${clinvar_annotations}" : ''
-
     """
     pave \\
         -Xmx${Math.round(task.memory.bytes * 0.95)} \\
@@ -57,17 +32,8 @@ process PAVE_SOMATIC {
         -vcf_file ${vcf} \\
         -ref_genome ${genome_fasta} \\
         -ref_genome_version ${genome_ver} \\
-        -pon_file ${sage_pon} \\
-        -pon_filters "${pon_filters}" \\
-        ${pon_artefact_arg} \\
-        ${clinvar_annotations} \\
         -driver_gene_panel ${driver_gene_panel} \\
-        -mappability_bed ${segment_mappability} \\
         -ensembl_data_dir ${ensembl_data_resources} \\
-        ${sage_blocklist_regions_arg} \\
-        ${sage_blocklist_sites_arg} \\
-        ${pathogenic_pass_force_arg} \\
-        ${gnomad_args} \\
         -read_pass_only \\
         -threads ${task.cpus} \\
         -output_dir ./

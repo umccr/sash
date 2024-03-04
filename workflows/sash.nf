@@ -199,11 +199,6 @@ workflow SASH {
         genome.fasta,
         genome.version,
         genome.fai,
-        [],  // sage_pon
-        [],  // pon_artefacts
-        [],  // sage_blocklist_regions
-        [],  // sage_blocklist_sites
-        [],  // clinvar_annotations
         hmf_data.segment_mappability,
         umccr_data.driver_gene_panel,
         umccr_data.ensembl_data_resources,
