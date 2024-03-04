@@ -189,6 +189,7 @@ workflow SASH {
 
     // channel: [ meta, smlv_somatic_vcf ]
     ch_smlv_somatic_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf, ch_inputs)
+        .map { meta, vcf, tbi -> [meta, vcf] }
     // channel: [ meta, smlv_somatic_filters_vcf ]
     ch_smlv_somatic_filters_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf_filters, ch_inputs)
 
