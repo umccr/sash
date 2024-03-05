@@ -46,6 +46,6 @@ def createDataMap(entries, ref_data_base_path) {
 }
 
 def joinPath(a, b) {
-    def a_noslash = a.toString().replaceAll('/$', '')
+    def a_noslash = file(a).toUriString().replaceAll('/$', '')
     return file("${a_noslash}/${b}", checkIfExists: true)
 }
