@@ -2,7 +2,7 @@ process GRIPSS_GERMLINE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'quay.io/biocontainers/hmftools-gripss:2.4--hdfd78af_0'
+    container 'docker.io/scwatts/hmftools-gripss:2.4--0'
 
     input:
     tuple val(meta), path(gridss_vcf)

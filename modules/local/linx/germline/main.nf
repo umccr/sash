@@ -2,7 +2,7 @@ process LINX_GERMLINE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'quay.io/biocontainers/hmftools-linx:1.25--hdfd78af_0'
+    container 'docker.io/scwatts/hmftools-linx:1.25--0'
 
     input:
     tuple val(meta), path(sv_vcf)
