@@ -2,7 +2,7 @@ process LINXREPORT {
     tag "${meta.id}"
     label 'process_single'
 
-    container 'quay.io/biocontainers/r-linxreport:1.0.0--r43hdfd78af_0'
+    container 'docker.io/scwatts/r-linxreport:1.0.0--0'
 
     input:
     tuple val(meta), path(linx_annotation_dir), path(linx_visualiser_dir)
