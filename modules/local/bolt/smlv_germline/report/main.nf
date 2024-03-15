@@ -46,6 +46,8 @@ process BOLT_SMLV_GERMLINE_REPORT {
     stub:
     """
     mkdir -p output/cpsr/
+    touch output/cpsr/${meta.normal_id}.cpsr.grch38.html
+    touch output/cpsr/${meta.normal_id}.annotations.vcf.gz
     touch output/${meta.normal_id}.germline.variant_counts_type.yaml
     touch output/${meta.normal_id}.germline.bcftools_stats.txt
     touch output/${meta.normal_id}.cpsr.grch38.html
