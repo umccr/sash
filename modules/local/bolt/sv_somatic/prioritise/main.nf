@@ -2,7 +2,7 @@ process BOLT_SV_SOMATIC_PRIORITISE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/scwatts/bolt:0.2.10'
+    container 'ghcr.io/scwatts/bolt:0.2.11'
 
     input:
     tuple val(meta), path(sv_vcf)
