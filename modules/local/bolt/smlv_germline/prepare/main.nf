@@ -21,7 +21,7 @@ process BOLT_SMLV_GERMLINE_PREPARE {
     """
     bolt smlv_germline prepare \\
         --vcf_fp ${smlv_vcf} \\
-        --gene_panel_fp ${germline_predisposition_panel_regions_transcript} \\
+        --transcript_regions_fp ${germline_predisposition_panel_regions_transcript} \\
         --output_fp ${meta.normal_id}.prepared.vcf.gz
 
     cat <<-END_VERSIONS > versions.yml
