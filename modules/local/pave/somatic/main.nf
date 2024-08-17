@@ -9,10 +9,10 @@ process PAVE_SOMATIC {
     path genome_fasta
     val genome_ver
     path genome_fai
+    path clinvar_annotations
     path segment_mappability
     path driver_gene_panel
     path ensembl_data_resources
-    path gnomad_resource
 
     output:
     tuple val(meta), path("*.vcf.gz")    , emit: vcf
@@ -32,6 +32,7 @@ process PAVE_SOMATIC {
         -vcf_file ${vcf} \\
         -ref_genome ${genome_fasta} \\
         -ref_genome_version ${genome_ver} \\
+        -clinvar_vcf ${clinvar_annotations} \\
         -driver_gene_panel ${driver_gene_panel} \\
         -ensembl_data_dir ${ensembl_data_resources} \\
         -read_pass_only \\
