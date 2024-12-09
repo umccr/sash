@@ -47,6 +47,10 @@ include { BOLT_SMLV_SOMATIC_RESCUE   } from '../modules/local/bolt/smlv_somatic/
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
 include { PAVE_SOMATIC               } from '../modules/local/pave/somatic/main'
+include { SIGRAP_CHORD               } from '../modules/local/sigvrap/chord/main'
+include { SIGRAP_HRDETECT            } from '../modules/local/sigvrap/hrdetect/main'
+include { SIGRAP_MUTPAT              } from '../modules/local/sigvrap/mutpat/main'
+
 
 include { GRIPSS_FILTERING           } from '../subworkflows/local/gripss_filtering'
 include { LINX_ANNOTATION            } from '../subworkflows/local/linx_annotation'
