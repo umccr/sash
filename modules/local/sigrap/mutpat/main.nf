@@ -2,13 +2,13 @@ process SIGRAP_MUTPAT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/qclayssen/sigrap:0.1.1'
+    container 'ghcr.io/umccr/sigrap:0.2.0'
 
     input:
     tuple val(meta), path(smlv_somatic_vcf), path(smlv_somatic_bcftools_stats), path(smlv_somatic_counts_process), path(sv_somatic_tsv), path(sv_somatic_vcf), path(cnv_somatic_tsv), path(af_global), path(af_keygenes), path(purple_baf_plot), path(purple_dir), path(virusbreakend_dir), path(dragen_hrd)
 
     output:
-    path 'output/'                               , emit: mutpat_output
+    path 'output/'                                            , emit: mutpat_output
     path 'versions.yml'                                       , emit: versions
 
     when:
