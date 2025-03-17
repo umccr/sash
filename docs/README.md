@@ -2,21 +2,23 @@
 
 ![Summary](images/sash_overview_qc.png)
 
-The **sash Workflow** comprises three primary pipelines:
+The **sash Workflow** is a genomic analysis framework comprising three primary pipelines:
 
-* **Somatic Small Variants (SNV somatic)**
-* **Somatic Structural Variants (SV somatic)**
-* **Germline Variants (SNV germline)**
+- **Somatic Small Variants (SNV somatic):** Detects single nucleotide variants (SNVs) and indels in tumor samples, emphasizing clinical relevance.
+- **Somatic Structural Variants (SV somatic):** Identifies large-scale genomic alterations (deletions, duplications, etc.) and integrates copy number data.
+- **Germline Variants (SNV germline):** Focuses on inherited variants linked to cancer predisposition.
 
 These pipelines utilise **Bolt**, a Python package designed for modular processing, and leverage outputs from the [**DRAGEN**](https://sapac.illumina.com/products/by-type/informatics-products/dragen-secondary-analysis.html) **Variant Caller** alongside and the Hartwig Medical Foundation **WiGiTS** toolkit (via [Oncoanalyser](<https://github.com/nf-core/oncoanalyser)>) [HMFtools WiGiTs](https://github.com/hartwigmedical/hmftools/tree/master)  in Oncoanalyser. Each pipeline is tailored to a specific type of genomic variant, incorporating filtering, annotation and HTML reports for research and curation.
 
 #  [**HMFtools WiGiTs**](https://github.com/hartwigmedical/hmftools/tree/master)
 
-**HMFtools WiGiTS** is a comprehensive open-source suite of genome and transcriptome analysis tools for cancer research and diagnostics​. Developed by the Hartwig Medical Foundation (HMF), WiGiTS comprises various components for SNV calling, structural variant analysis, copy number analysis, and clinical reporting. UMCCR’s Sash workflow relies on specific WiGiTS components (run via the HMF **OncoAnalyser** Nextflow pipeline​)t o enhance variant calling and interpretation:
+**HMFtools WiGiTS** is an open-source suite for cancer genomics developed by the Hartwig Medical Foundation. Key components used in Sash include:
 
-- [**SAGE (Somatic Alterations in Genome)**](https://github.com/hartwigmedical/hmftools/blob/master/sage/README.md)**:** SNV/MNV/Indel caller​. SAGE performs tiered variant calling with increased sensitivity in regions of high prior likelihood. Notably, it targets a curated panel of \~10,000 known cancer hotspot mutations (from sources like the Cancer Genome Interpreter, CIViC, OncoKB) at the highest sensitivity tier​. This allows recovery of low-allele-fraction variants in clinically relevant hotspots that the standard caller (like DRAGEN) might miss. SAGE outputs VCF files of additional somatic variants, with filters indicating confidence levels (e.g. hotspot, panel, high/low confidence). The Sash pipeline uses SAGE’s **somatic VCF output** to “rescue” missed tumor variants in important genes.
+- **[SAGE (Somatic Alterations in Genome)](https://github.com/hartwigmedical/hmftools/blob/master/sage/README.md):**  
+  A tiered SNV/indel caller targeting ~10,000 cancer hotspots (e.g., OncoKB, CIViC) to recover low-frequency variants missed by DRAGEN. Outputs a VCF with confidence tiers (hotspot, panel, high/low confidence).
 
-- [**PURPLE**](https://github.com/hartwigmedical/hmftools/tree/master/purple)**:** A tool for copy number analysis, tumor purity and ploidy estimation, and identification of driver events​. PURPLE integrates read depth ratios (from COBALT) and B-allele frequencies (from AMBER) to calculate allele-specific copy number across the genome. It infers tumor **purity** (proportion of tumor cells in sample) and **ploidy** (average chromosome copy number), and uses these to distinguish somatic vs. germline variants and to highlight key genomic events. In Sash, PURPLE’s output (copy number segments, purity/ploidy info, etc.) is parsed to inform filtering (e.g. flagging variants in loss-of-heterozygosity regions) and to provide metrics like tumor mutation burden (TMB) and microsatellite instability (MSI)​ for reporting.
+- **[PURPLE](https://github.com/hartwigmedical/hmftools/tree/master/purple):**  
+  Estimates tumor **purity** (tumor cell fraction) and **ploidy** (average copy number), integrates copy number data, and calculates **TMB** (tumor mutation burden) and **MSI** (microsatellite instability).
 
 # Workflows
 
@@ -24,7 +26,7 @@ These pipelines utilise **Bolt**, a Python package designed for modular processi
 
 #### General
 
-In the **Somatic Small Variants** workflow, variant detection is performed using the **DRAGEN Variant Caller** and **Oncoanalyser** that is relaing on **Somatic Alterations in Genome[(SAGE)](https://github.com/hartwigmedical/hmftools/tree/master/sage),and  [Purple](https://github.com/hartwigmedical/hmftools/tree/master/purple)>)** outputs. It’s structured into four steps: **Rescue**, **Annotation**, **Filter**, and **Report**. The final outputs include an **HTML report** summarising the results.
+In the **Somatic Small Variants** workflow, variant detection is performed using the **DRAGEN Variant Caller** and **Oncoanalyser** that is relaing on **Somatic Alterations in Genome[(SAGE)](https://github.com/hartwigmedical/hmftools/tree/master/sage),and  [Purple](https://github.com/hartwigmedical/hmftools/tree/master/purple)>)** outputs. It’s structured into four steps: **Integrations**, **Annotation**, **Filter**, and **Report**. The final outputs include an **HTML report** summarising the results.
 
 #### Summary
 
@@ -33,13 +35,12 @@ In the **Somatic Small Variants** workflow, variant detection is performed using
 3. **Filter** variants based on quality and frequency criteria (e.g., allele frequency, read depth, population frequency), while retaining those of potential clinical significance (hotspots, high-impact, etc.).Filter variants based on allele frequency (AF), supporting reads (AD), and population frequency (gnomAD AF), removing low-confidence and common variants.
 4. **Report** final annotated variants in a comprehensive HTML report (PCGR, CANCER REPORT, LINX, multiqc)  format.
 
-
 ### Variant Calling integrations
 
 The **variant calling integrations** step use variants fromemploys the **Somatic Alterations in Genome (SAGE)** variant callertool, which is more sensitive than DRAGEN in detecting variants, particularly those with low allele frequency that might have been missed filtered out. [SAGE](https://github.com/hartwigmedical/hmftools/tree/sage-v1.0/sage) focuses on **targets known cancer hotspots (from sources like CGI, CIViC, OncoKB)Targeted Hotspot. Analysis**, prioritising predefined genomic regions of high clinical or biological relevance. This enables the integration callingrecovery of biologically significant variants in a VCF that may have been missed otherwise.
 
-[https://github.com/hartwigmedical/hmftools/tree/master/sage](https://github.com/hartwigmedical/hmftools/tree/master/sage)
-[https://github.com/hartwigmedical/hmftools/tree/master/sage\#6-soft-filters](https://github.com/hartwigmedical/hmftools/tree/master/sage#6-soft-filters)
+[sage](https://github.com/hartwigmedical/hmftools/tree/master/sage)
+[#6-soft-filters](https://github.com/hartwigmedical/hmftools/tree/master/sage#6-soft-filters)
 
 * Employ the **SAGE tool** for targeted hotspot analysis to recover:
   * Low-allele-frequency variants in hotspots genomic regions of clinical significance.
@@ -57,7 +58,6 @@ The **variant calling integrations** step use variants fromemploys the **Somatic
   * ${meta.tumor\_id}.main.sage.filtered.vcf.gz
 
   Filter on chr 1..22 and chr X,Y,M
-
 
 ##### Output:
 
@@ -712,35 +712,35 @@ WiGiTS (hmftools)
 * File: `dragen_somatic_output/{tid}.hrdscore.tsv`
 * Description: Contains homologous recombination deficiency (HRD) score from DRAGEN analysis.
 
-FAQ
+# FAQ
 
-\>Do we use PCGR for the rescue of sage?
+### Q: Do we use PCGR for the rescue of sage?
 
-In Somatic SV, we used sage to make variant calling then we did annotation of the variant using PCGR,  then we filtered the variant. If variants have high-tier ranks, they are not filtered out whatsoever
+**A:** In Somatic SV, we used sage to make variant calling then we did annotation of the variant using PCGR,  then we filtered the variant. If variants have high-tier ranks, they are not filtered out whatsoever
 
-\>how are hypermutated samples handled in the current version, and is there any impact on derived metrics such as TMB or MSI?
+### Q: how are hypermutated samples handled in the current version, and is there any impact on derived metrics such as TMB or MSI?
 
-In the current version of Sash, hypermutated samples are identified based on a threshold 500,000 of total somatic variant counts. For instance, if the variant count exceeds the threshold , the sample is flagged as hypermutated. When this occurs we will filter variant that are not considered that don’t have clinical impact, in hotspot region, until we meet the threshold. We that wil impact the TMB and MSI calculated by purple. For Now we are using the TMB and MSI of purple is this edges case. New reale will be hable to get correct TMB and MSI from purple
+**A:** In the current version of Sash, hypermutated samples are identified based on a threshold 500,000 of total somatic variant counts. For instance, if the variant count exceeds the threshold , the sample is flagged as hypermutated. When this occurs we will filter variant that are not considered that don’t have clinical impact, in hotspot region, until we meet the threshold. We that wil impact the TMB and MSI calculated by purple. For Now we are using the TMB and MSI of purple is this edges case. New reale will be hable to get correct TMB and MSI from purple
 
-\>how are we handling non-standard chromosomes if present in the input VCFs (ALTs, chrM, etc)?
-Filter out as we Filter on chr 1..22 and chr X,Y,M
+### Q: how are we handling non-standard chromosomes if present in the input VCFs (ALTs, chrM, etc)?
+**A:** Filter out as we Filter on chr 1..22 and chr X,Y,M
 
-\> inputs for the cancer reporter \- have they changed (and what can we harmonize); e.g., where is the Circos plot from at this point?
-Circos plots come Purple
+### Q: inputs for the cancer reporter \- have they changed (and what can we harmonize); e.g., where is the Circos plot from at this point?
+**A:** Circos plots come Purple
 
-\>we dropped the CACAO coverage reports; can we discuss how to utilize DRAGEN or WiGITS coverage information instead?
+### Q: we dropped the CACAO coverage reports; can we discuss how to utilize DRAGEN or WiGiTS coverage information instead?
 
-\>what TMB score is displayed in the cancer reporter?
-The TMB display is the on calculated by pcgr
+### Q: what TMB score is displayed in the cancer reporter?
+**A:** The TMB display is the on calculated by pcgr
 
-\>what filtered VCF is the source for the mutational signatures?
-We use the filtred VCF for mutational signatures
+### Q: what filtered VCF is the source for the mutational signatures?
+**A:** We use the filtred VCF for mutational signatures
 
-\>Where is the contamination score coming from currently?
-I don’t think there is contamination at the moment in sash
+### Q: Where is the contamination score coming from currently?
+**A:** I don’t think there is contamination at the moment in sash
 
-\>Do the GRIPSS step do something more than what's happening in oncoanalyser  ?
- no different settings are applied to GRIPSS other than reference files
+### Q: Do the GRIPSS step do something more than what's happening in oncoanalyser  ?
+**A:** no different settings are applied to GRIPSS other than reference files
 
-\>Does the data from Somatic Small Variantsworkflow are use for the SV ?
-iirc data from the somatic small variant workflow is not used in the sv workflow
+### Q: Does the data from Somatic Small Variantsworkflow are use for the SV ?
+**A:** iirc data from the somatic small variant workflow is not used in the sv workflow
