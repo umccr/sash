@@ -4,11 +4,12 @@ sash is the UMCCR post-processing WGS workflow. The workflow takes DRAGEN small 
 
 While the sash workflow utilises a range of tools and software, it is most closely coupled with bolt, a Python package that implements the UMCCR post-processing logic and supporting functionality.
 
-The **Sash** pipeline has three main workflows:
+![Summary](docs/images/sash_overview_qc.png)
+The **Sash** pipeline has three main workflows (details in [Docs](docs/README.md)):
 
 1. **Somatic Small Variants (SNV somatic)**
    - Integrate DRAGEN calls with [**SAGE**](https://github.com/hartwigmedical/hmftools/tree/master/sage) to integrate mutations in hotspot.
-   - Annotates and filters variants using the **PCGR** framework to classify them into tiers (ACMG guidelines).
+   - Annotates and filters variants using the **PCGR** framework to classify them into tiers ([ACMG](https://www.ncbi.nlm.nih.gov/pubmed/27993330) guidelines).
    - Produces a comprehensive HTML report of clinically relevant mutations, mutation burden (TMB), MSI status, and more.
 
 2. **Somatic Structural Variants (SV somatic)**
@@ -77,7 +78,7 @@ Below is a simplified overview of the main pipeline stages (each stage may have 
 1. **Somatic SNV**  
    - Merge DRAGEN VCF & SAGE VCF → Annotate with PCGR → Filter → HTML report  
 2. **Somatic SV**  
-   - Integrate structural calls → PURPLE for CNVs/purity → Annotate (SnpEff) → Filter → Prioritize → Summaries in MultiQC  
+   - Integrate structural calls → PURPLE for CNVs/purity → Annotate (SnpEff) → Filter → Prioritize → Summaries in MultiQC
 3. **Germline**  
    - Filter by known predisposition genes → CPSR classification → Germline report (HTML/TSV)  
 
