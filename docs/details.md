@@ -210,7 +210,7 @@ Steps are:
        - ICGC PCAWG count ≥3.
    - Apply filters to other variants:
      - Remove variants with `AF  10%`.
-     - Remove common variants in gnomAD (<`population AF ≥ 1%`), adding them to the germline set.
+     - Remove common variants in gnomAD (`population AF ≥ 1%`), adding them to the germline set.
      - Remove variants present in ≥5 samples of the Panel of Normals.
      - Remove indels in "bad promoter" regions (as defined by GA4GH).
      - Remove variants overlapping the ENCODE blacklist.
@@ -228,21 +228,21 @@ The Filter step applies a series of stringent filters to somatic variant calls i
 Inputs:
 
 - Annotated VCF
-  - `${meta.tumor_id}.annotations.vcf.gz`
+  - `${tumor_id}.annotations.vcf.gz`
 
 #### Output
 
 - Filter VCF
-  - `${meta.tumor_id}\*filters_set.vcf.gz`
+  - `${tumor_id}\*filters_set.vcf.gz`
 
 Filters:
 
 1\. Technical Quality Filters
 
-#### 1.1 Allele Frequency (<AF) Filter
+#### 1.1 Allele Frequency (AF) Filter
 
 - Removes variants with tumor allele frequency (AF) \10% to exclude low-confidence mutations.
-- Exception: Variants located in known cancer hotspots (<Hartwig, OncoKB) are not filtered, even if their AF is below 10%.
+- Exception: Variants located in known cancer hotspots (Hartwig, OncoKB) are not filtered, even if their AF is below 10%.
 
   #### 1.2 Allele Depth (AD) Filter
 
@@ -307,7 +307,7 @@ These variants are retained even if they fail technical filters.
   - Applies stricter thresholds in regions with low sequence complexity or poor mappability, where errors are more likely.
   - Requires a minimum of 6 supporting reads in low-sequence complexity regions(difficult region) to retain the variant. Tumor_ad \ 6
 - Non-GIAB AD Filter:
-  - Removes variants not confirmed by the Genome in a Bottle (<GIAB) consortium if their allele depth falls below thresholds for challenging regions.
+  - Removes variants not confirmed by the Genome in a Bottle (GIAB) consortium if their allele depth falls below thresholds for challenging regions.
 - Population Frequency Filter (gnomAD):
   - Excludes variants with a population allele frequency greater than 0.01, based on gnomAD data. Gnomad_af \>= 0.01
 - Panel of Normals (PON) Germline Filter:
@@ -349,7 +349,7 @@ Inputs:
 #### Output:
 
 - PCGRCancer repor
-  - ${meta.tumor_id}.pcgr_acmg.grch38.html
+  - ${tumor_id}.pcgr_acmg.grch38.html
 
 1. Generate BCFtools Statistics on the Input VCF:
    The code runs a helper function (`bcftools_stats_prepare`) to create a modified version of the input VCF, adjusting quality scores so that `bcftools stats` can produce more meaningful outputs. It then executes `bcftools stats` to gather statistics on variant quality and distribution, storing the results in a text file.
@@ -380,8 +380,8 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
 4. Prioritisation
    - Prioritise SV annotation based on [AstraZeneca-NGS](https://github.com/AstraZeneca-NGS/simple_sv_annotation) using curated reference data including umccr panel genes, tumor suppressor gene lists, hartwig known fusion pairs, [appris](https://ngdc.cncb.ac.cn/databasecommons/database/id/323)
    - Prioritise variants based on clinical relevance and support metric
-5. Repor
-   - Cancer repor
+5. Report
+   - Cancer report
    - Multiqc
 6. Assign SV Types:
    - Classify SVs as duplications or deletions based on copy number thresholds.
@@ -398,7 +398,7 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
    ### Primary SV VCFs:
 
    - GRIDSS2
-     - ${meta.tumor_id}.gridss.vcf.gz
+     - ${tumor_id}.gridss.vcf.gz
 
 ### Details
 
@@ -448,9 +448,9 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
     - other (4)
 5. Filter Low-Quality Calls:
         Apply Quality Filters:
-        - Keep variants with sufficient read support (e.g., split reads (<SR) ≥ 5 and paired reads (PR) ≥ 5>).
+        - Keep variants with sufficient read support (e.g., split reads (SR) ≥ 5 and paired reads (PR) ≥ 5).
         - Exclude Tier 3 and Tier 4 variants where `SR  5` and `PR < 5`.
-        - Exclude Tier 3 and Tier 4 variants where `SR < 10`, `PR < 10`, and allele frequencies (<`AF0` or `AF1`) are below 0.1.
+        - Exclude Tier 3 and Tier 4 variants where `SR < 10`, `PR < 10`, and allele frequencies (`AF0` or `AF1`) are below 0.1.
      - Structural Variants (SVs): Variants labeled with the source sv_gridss.
      - Copy Number Variants (CNVs): Variants labeled with the source cnv_purple.
 
@@ -523,7 +523,7 @@ Tumor Mutation Burden (TMB):
 
 #### HRD Score:
 
-- Data Source: HRD analysis output file (${meta.tumor_id}.hrdscore.tsv)
+- Data Source: HRD analysis output file (${tumor_id}.hrdscore.tsv)
 - Tool: DRAGEN
 
 #### MSI (Microsatellite Instability):
@@ -634,18 +634,18 @@ Databases/datasets PCGR Reference Data:
 *Version: v20220203*
 
 - [GENCODE](https://www.gencodegenes.org/) \- high quality reference gene annotation and experimental validation (release 39/19)
-- [dbNSFP](https://sites.google.com/site/jpopgen/dbNSFP) \- Database of non-synonymous functional predictions (20210406 (<v4.2)>)
+- [dbNSFP](https://sites.google.com/site/jpopgen/dbNSFP) \- Database of non-synonymous functional predictions (20210406 (v4.2))
 - [dbMTS](http://database.liulab.science/dbMTS) \- Database of alterations in microRNA target sites (v1.0)
 - [ncER](https://github.com/TelentiLab/ncER_datasets) \- Non-coding essential regulation score (genome-wide percentile rank) (v2)
 - [GERP](http://mendel.stanford.edu/SidowLab/downloads/gerp/) \- Genomic Evolutionary Rate Profiling (GERP) \- rejected substitutions (RS) score (v1)
-- [Pfam](http://pfam.xfam.org) \- Collection of protein families/domains (2021_11 (<v35.0)>)
+- [Pfam](http://pfam.xfam.org) \- Collection of protein families/domains (2021_11 (v35.0))
 - [UniProtKB](http://www.uniprot.org) \- Comprehensive resource of protein sequence and functional information (2021_04)
-- [gnomAD](http://gnomad.broadinstitute.org) \- Germline variant frequencies exome-wide (r2.1 (<October 2018)>)
+- [gnomAD](http://gnomad.broadinstitute.org) \- Germline variant frequencies exome-wide (r2.1 (October 2018))
 - [dbSNP](http://www.ncbi.nlm.nih.gov/SNP/) \- Database of short genetic variants (154)
 - [DoCM](http://docm.genome.wustl.edu) \- Database of curated mutations (release 3.2)
 - [CancerHotspots](http://cancerhotspots.org) \- A resource for statistically significant mutations in cancer (2017)
 - [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar) \- Database of genomic variants of clinical significance (20220103)
-- [CancerMine](http://bionlp.bcgsc.ca/cancermine/) \- Literature-mined database of tumor suppressor genes/proto-oncogenes (20211106 (<v42)>)
+- [CancerMine](http://bionlp.bcgsc.ca/cancermine/) \- Literature-mined database of tumor suppressor genes/proto-oncogenes (20211106 (v42))
 - [OncoTree](http://oncotree.mskcc.org/) \- Open-source ontology developed at MSK-CC for standardization of cancer type diagnosis (2021-11-02)
 - [DiseaseOntology](http://disease-ontology.org) \- Standardized ontology for human disease (20220131)
 - [EFO](https://github.com/EBISPOT/efo) \- Experimental Factor Ontology (v3.38.0)
