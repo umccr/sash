@@ -1,8 +1,3 @@
-- [Usage](usage.md)
-  - An overview of how the pipeline works, how to run it and a description of all of the different command-line flags.
-- [Output](output.md)
-  - An overview of the different results produced by the pipeline and how to interpret them.
-
 # Sash Workflow Overview
 
 ![Summary](images/sash_overview_qc.png)
@@ -15,42 +10,59 @@ The sash Workflow is a genomic analysis framework comprising three primary pipel
 
 These pipelines utilise Bolt, a Python package designed for modular processing, and leverage outputs from the [DRAGEN](https://sapac.illumina.com/products/by-type/informatics-products/dragen-secondary-analysis.html) Variant Caller alongside and the Hartwig Medical Foundation WiGiTS toolkit (via [Oncoanalyser](https://github.com/nf-core/oncoanalyser)) [HMFtools WiGiTs](https://github.com/hartwigmedical/hmftools/tree/master)  in Oncoanalyser. Each pipeline is tailored to a specific type of genomic variant, incorporating filtering, annotation and HTML reports for research and curation.
 
-# [HMFtools WiGiTs](https://github.com/hartwigmedical/hmftools/tree/master)
+## [HMFtools WiGiTs](https://github.com/hartwigmedical/hmftools/tree/master)
 
 HMFtools WiGiTS is an open-source suite for cancer genomics developed by the Hartwig Medical Foundation. Key components used in Sash include:
 
-- [SAGE (Somatic Alterations in Genome)](https://github.com/hartwigmedical/hmftools/blob/master/sage/README.md):  
+- [SAGE (Somatic Alterations in Genome)](https://github.com/hartwigmedical/hmftools/blob/master/sage/README.md):
   A tiered SNV/indel caller targeting ~10,000 cancer hotspots (e.g., OncoKB, CIViC) to recover low-frequency variants missed by DRAGEN. Outputs a VCF with confidence tiers (hotspot, panel, high/low confidence).
 
 - [PURPLE](https://github.com/hartwigmedical/hmftools/tree/master/purple):
   Estimates tumor purity (tumor cell fraction) and ploidy (average copy number), integrates copy number data, and calculates TMB (tumor mutation burden) and MSI (microsatellite instability).
 
-# Pipeline Inputs
+- [Cobalt](https://github.com/hartwigmedical/hmftools/blob/master/cobalt/README.md):
+Cobalt calculates read-depth ratios from sequencing data, providing essential input for copy number analysis. Its outputs are used by PURPLE to generate accurate copy number profiles across the genome.
 
-## Dragen
+- [Amber](https://github.com/hartwigmedical/hmftools/blob/master/amber/README.md):
+Amber computes B-allele frequencies, which are critical for estimating tumor purity and ploidy. The Amber directory contains these measurements, supporting PURPLE's integrated analysis.
 
-{tumor_id}.hard-filtered.vcf.gz
+## Pipeline Inputs
 
-## Oncoanalyser
+### Dragen
 
-### Gridss
-{tumor_id}.gridss.vcf.gz"
+`{tumor_id}.hard-filtered.vcf.gz`
 
-### SAGE
-{tumor_id}.sage.somatic.vcf.gz"
-### Virusbraken
-virusbreakend directory 
-### Cobalt
+### Oncoanalyser
 
-Cobalt directory used by purple
-### Amber
-Amber directory used by purple
+#### [GRIDSS/GRIPSS](https://github.com/PapenfussLab/gridss)
 
-# Workflows
+`{tumor_id}.gridss.vcf.gz`
+Description: This VCF contains structural variant calls produced by GRIDSS2.
+
+#### SAGE
+
+`{tumor_id}.sage.somatic.vcf.gz`
+
+#### [Virusbraken](https://github.com/PapenfussLab/gridss/blob/master/VIRUSBreakend_Readme.md)
+
+- Directory: `virusbreakend`
+- Description:Contains outputs from Virusbraken, used for detecting viral integration events.
+
+#### Cobalt
+
+- Directory: `Cobalt`
+- Description: Contains read-depth ratio data required for copy number analysis by PURPLE.
+
+#### Amber
+
+- Directory: `Amber`
+- Description: Contains B-allele frequency measurements used by PURPLE to estimate tumor purity and ploidy.
+
+## Workflows
 
 ## Somatic Small Variants (SNV/Indel, Tumor)Somatic small variants
 
-#### General
+### General
 
 In the Somatic Small Variants workflow, variant detection is performed using the DRAGEN Variant Caller and Oncoanalyser that is relaing on Somatic Alterations in Genome [SAGE)](https://github.com/hartwigmedical/hmftools/tree/master/sage),and  [Purple](https://github.com/hartwigmedical/hmftools/tree/master/purple)) outputs. It’s structured into four steps: Integrations, Annotation, Filter, and Report. The final outputs include an HTML report summarising the results.
 
@@ -72,19 +84,19 @@ The variant calling integrations step use variants fromemploys the Somatic Alter
   - OncoKB \- Precision Oncology Knowledge Base.
 - Outputs a VCF containing rescued variants.
 
-##### Inputs:
+#### Inputs
 
 - From DRAGEN: somatic small variant caller VCF
-  - ${tumor\_id}.main.dragen.vcf.gz
+  - `${tumor_id}.main.dragen.vcf.gz`
 - From oncoanalyser: SAGE VCF
-  - ${tumor\_id}.main.sage.filtered.vcf.gz
+  - `${tumor_id}.main.sage.filtered.vcf.gz`
 
   Filter on chr 1..22 and chr X,Y,M
 
-##### Output:
+##### Output
 
 - Rescue: VCF
-  - ${tumor\_id}.rescued.vcf.g
+  - `${tumor_id}.rescued.vcf.g`
 
 #### Details
 
@@ -142,12 +154,12 @@ Use PCGR to enrich the VCF with:
 ##### Inputs:
 
 - Small variant vcfRescue VCF
-  - ${tumor\_id}.main.sage.filtered.vcf.gz
+  - `${tumor_id}.main.sage.filtered.vcf.gz`
 
 ##### Output:
 
 - Annotated VCF
-  - ${tumor\_id}.annotations.vcf.g
+  - `${tumor_id}.annotations.vcf.g`
 
 Details:
 
@@ -167,10 +179,10 @@ Steps are:
    - Use vcfanno and bcftools to annotate the VCF with counts from the UMCCR panel of normals, built from tumor-only Mutect2 calls from approximately 200 normal samples. This helps identify and filter out recurrent sequencing artifacts or germline variants.
 4. Standardize the VCF fields
    - Add new `INFO` fields for use with PCGR:
-- `TUMOR_AF`, `NORMAL_AF`: Tumor and normal allele frequencies.
-- `TUMOR_DP`, `NORMAL_DP`: Tumor and normal read depths.
-- Add the `AD` FORMAT field:
-- `AD`: Allelic depths for the reference and alternate alleles.
+   - `TUMOR_AF`, `NORMAL_AF`: Tumor and normal allele frequencies.
+   - `TUMOR_DP`, `NORMAL_DP`: Tumor and normal read depths.
+   - Add the `AD` FORMAT field:
+   - `AD`: Allelic depths for the reference and alternate alleles.
 5. Prepare VCF for PCGR annotation
    - Exclude unnecessary data from the VCF header keeping on INFO AF/DP .
    - Move tumor and normal `FORMAT/AF` and `FORMAT/DP` annotations to the `INFO` field as required by PCGR.
@@ -208,9 +220,6 @@ Steps are:
 9. Report passing variants using PCGR, classified by the ACMG tier system
 10. Generate the final report of variants classified according to clinical significance using PCGR, ready for downstream analysis.
 
-    ####
-
-####
 
 ###  Filter
 
@@ -219,12 +228,12 @@ The Filter step applies a series of stringent filters to somatic variant calls i
 Inputs:
 
 - Annotated VCF
-  - ${meta.tumor\_id}.annotations.vcf.gz
+  - `${meta.tumor_id}.annotations.vcf.gz`
 
-#### Output:
+#### Output
 
 - Filter VCF
-  - ${meta.tumor\_id}\*filters\_set.vcf.gz
+  - `${meta.tumor_id}\*filters_set.vcf.gz`
 
 Filters:
 
@@ -296,14 +305,14 @@ These variants are retained even if they fail technical filters.
   - Removes variants with fewer than 4 supporting reads in the tumor sample.
 - Degraded Mappability AD Filter:
   - Applies stricter thresholds in regions with low sequence complexity or poor mappability, where errors are more likely.
-  - Requires a minimum of 6 supporting reads in low-sequence complexity regions(difficult region) to retain the variant. Tumor\_ad \ 6
+  - Requires a minimum of 6 supporting reads in low-sequence complexity regions(difficult region) to retain the variant. Tumor_ad \ 6
 - Non-GIAB AD Filter:
   - Removes variants not confirmed by the Genome in a Bottle (<GIAB) consortium if their allele depth falls below thresholds for challenging regions.
 - Population Frequency Filter (gnomAD):
-  - Excludes variants with a population allele frequency greater than 0.01, based on gnomAD data. Gnomad\_af \>= 0.01
+  - Excludes variants with a population allele frequency greater than 0.01, based on gnomAD data. Gnomad_af \>= 0.01
 - Panel of Normals (PON) Germline Filter:
   - Filters out variants with an allele frequency in the PON below 0.20.
-  - Additionally excludes variants that occur in more than 5 PON samples to mitigate germline contamination or recurrent artifacts. PON\_COUNT \>= 5
+  - Additionally excludes variants that occur in more than 5 PON samples to mitigate germline contamination or recurrent artifacts. PON_COUNT \>= 5
 - FIlter rescue variant:
 
 Variants meeting these criteria are flagged as `CLINICAL_POTENTIAL_RESCUE` are NOT filtered out
@@ -340,7 +349,7 @@ Inputs:
 #### Output:
 
 - PCGRCancer repor
-  - ${meta.tumor\_id}.pcgr\_acmg.grch38.html
+  - ${meta.tumor_id}.pcgr_acmg.grch38.html
 
 1. Generate BCFtools Statistics on the Input VCF:
    The code runs a helper function (`bcftools_stats_prepare`) to create a modified version of the input VCF, adjusting quality scores so that `bcftools stats` can produce more meaningful outputs. It then executes `bcftools stats` to gather statistics on variant quality and distribution, storing the results in a text file.
@@ -362,7 +371,7 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
 ### Summary:
 
 1. GRIPSS filtering:
-   - GRIPSS filtering refines the structural variant calls from Oncoanalyser using read counts, panel-of-normals, known fusion hotspots, and repeat masker annotations data are the specific to umccr like known\_fusions
+   - GRIPSS filtering refines the structural variant calls from Oncoanalyser using read counts, panel-of-normals, known fusion hotspots, and repeat masker annotations data are the specific to umccr like known_fusions
 2. PURPLE
    - Combines the GRIPSS-filtered SV calls with copy number variation (CNV) data and tumor purity/ploidy estimates. PURPLE adjusts SV breakpoints based on copy number transitions and robustly classifies events as somatic versus germline.
 3. Annotation
@@ -389,7 +398,7 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
    ### Primary SV VCFs:
 
    - GRIDSS2
-     - ${meta.tumor\_id}.gridss.vcf.gz
+     - ${meta.tumor_id}.gridss.vcf.gz
 
 ### Details
 
@@ -407,11 +416,11 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
    - Classify SVs as somatic or germline.
 3. Annotation
    - Compile SV and CNV information into a unified VCF file.
-   - Extend the VCF header with PURPLE-related INFO fields (e.g., PURPLE\_baf, PURPLE\_copyNumber).
+   - Extend the VCF header with PURPLE-related INFO fields (e.g., PURPLE_baf, PURPLE_copyNumber).
    - Convert CNV records from TSV format into VCF records with appropriate SVTYPE tags (e.g., 'DUP' for duplications, 'DEL' for deletions).
    - Run snpEff to annotate the unified VCF with functional information such as gene names, transcript effects, and coding consequences.
 4. Prioritization
-   - Run the prioritization module (forked from the AstraZeneca simple\_sv\_annotation tool) using reference data files including known fusion pairs, known fusion 5′ and 3′ lists, key genes, and key tumor suppressor genes.
+   - Run the prioritization module (forked from the AstraZeneca simple_sv_annotation tool) using reference data files including known fusion pairs, known fusion 5′ and 3′ lists, key genes, and key tumor suppressor genes.
    - Classify Variants:
      - Structural Variants (SVs): Variants labeled with the source `sv_gridss`.
      - Copy Number Variants (CNVs): Variants labeled with the source `cnv_purple`.
@@ -441,8 +450,8 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
     - Exclude Tier 3 and Tier 4 variants where `SR  5` and `PR < 5`.
     - Exclude Tier 3 and Tier 4 variants where `SR < 10`, `PR < 10`, and allele frequencies (<`AF0` or `AF1`) are below 0.1.
   - The module assigns a priority tier to each variant (ranging from Tier 1 for high priority to Tier 4 for no interest) and populates the INFO fields:
-    - SIMPLE\_ANN: A simplified annotation string that includes SV type, effect, involved genes, transcript(s), a description, and the assigned tier.
-    - SV\_TOP\_TIER: A numeric field indicating the highest priority tier for the variant.
+    - SIMPLE_ANN: A simplified annotation string that includes SV type, effect, involved genes, transcript(s), a description, and the assigned tier.
+    - SV_TOP_TIER: A numeric field indicating the highest priority tier for the variant.
   - The unified VCF is then split into separate files for SVs and CNVs using bcftools, and TSV summary reports are generated.
 1. Report
    - Cancer Report: Integrates the prioritized SV data with somatic SNVs, CNVs, and quality metrics to provide a comprehensive overview of the tumor’s genomic alterations. This report includes detailed tables, a fusion gene summary, and a Circos plot (produced by PURPLE) that visualizes copy number and SV data.
@@ -454,8 +463,8 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
    - The input includes both structural variants and copy number changes detected in the tumor sample.
 3. Assign Structural Variant Types:
    - Classify Variants:
-     - Structural Variants (SVs): Variants labeled with the source sv\_gridss.
-     - Copy Number Variants (CNVs): Variants labeled with the source cnv\_purple.
+     - Structural Variants (SVs): Variants labeled with the source sv_gridss.
+     - Copy Number Variants (CNVs): Variants labeled with the source cnv_purple.
 4. Prioritise variants on a 4 tier system:
    **1 (high)** - **2 (moderate)** - **3 (low)** - **4 (no interest)**
     - exon loss
@@ -556,7 +565,7 @@ Tumor Mutation Burden (TMB):
 
 #### HRD Score:
 
-- Data Source: HRD analysis output file (${meta.tumor\_id}.hrdscore.tsv)
+- Data Source: HRD analysis output file (${meta.tumor_id}.hrdscore.tsv)
 - Tool: DRAGEN
 
 #### MSI (Microsatellite Instability):
@@ -671,8 +680,8 @@ Databases/datasets PCGR Reference Data:
 - [dbMTS](http://database.liulab.science/dbMTS) \- Database of alterations in microRNA target sites (v1.0)
 - [ncER](https://github.com/TelentiLab/ncER_datasets) \- Non-coding essential regulation score (genome-wide percentile rank) (v2)
 - [GERP](http://mendel.stanford.edu/SidowLab/downloads/gerp/) \- Genomic Evolutionary Rate Profiling (GERP) \- rejected substitutions (RS) score (v1)
-- [Pfam](http://pfam.xfam.org) \- Collection of protein families/domains (2021\_11 (<v35.0)>)
-- [UniProtKB](http://www.uniprot.org) \- Comprehensive resource of protein sequence and functional information (2021\_04)
+- [Pfam](http://pfam.xfam.org) \- Collection of protein families/domains (2021_11 (<v35.0)>)
+- [UniProtKB](http://www.uniprot.org) \- Comprehensive resource of protein sequence and functional information (2021_04)
 - [gnomAD](http://gnomad.broadinstitute.org) \- Germline variant frequencies exome-wide (r2.1 (<October 2018)>)
 - [dbSNP](http://www.ncbi.nlm.nih.gov/SNP/) \- Database of short genetic variants (154)
 - [DoCM](http://docm.genome.wustl.edu) \- Database of curated mutations (release 3.2)
@@ -682,7 +691,7 @@ Databases/datasets PCGR Reference Data:
 - [OncoTree](http://oncotree.mskcc.org/) \- Open-source ontology developed at MSK-CC for standardization of cancer type diagnosis (2021-11-02)
 - [DiseaseOntology](http://disease-ontology.org) \- Standardized ontology for human disease (20220131)
 - [EFO](https://github.com/EBISPOT/efo) \- Experimental Factor Ontology (v3.38.0)
-- [GWAS\_Catalog](https://www.ebi.ac.uk/gwas/) \- The NHGRI-EBI Catalog of published genome-wide association studies (20211221)
+- [GWAS_Catalog](https://www.ebi.ac.uk/gwas/) \- The NHGRI-EBI Catalog of published genome-wide association studies (20211221)
 - [CGI](http://cancergenomeinterpreter.org/biomarkers) \- Cancer Genome Interpreter Cancer Biomarkers Database (20180117)
 
 ###
