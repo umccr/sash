@@ -68,22 +68,7 @@ Skeptically confirm that all dependencies are installed and reference data is co
 - **[Usage Instructions](docs/usage.md)**: Detailed parameters, sample sheet format, and output descriptions.  
 - **Oncoanalyser**: [github.com/nf-core/oncoanalyser](https://github.com/nf-core/oncoanalyser)  
 
-
 ---
-
-## Pipeline Steps
-
-Below is a simplified overview of the main pipeline stages (each stage may have multiple processes):
-
-1. **Somatic SNV**  
-   - Merge DRAGEN VCF & SAGE VCF → Annotate with PCGR → Filter → HTML report  
-2. **Somatic SV**  
-   - Integrate structural calls → PURPLE for CNVs/purity → Annotate (SnpEff) → Filter → Prioritize → Summaries in MultiQC
-3. **Germline**  
-   - Filter by known predisposition genes → CPSR classification → Germline report (HTML/TSV)  
-
-The pipeline concludes with a final MultiQC run to aggregate logs and QC.
-
 
 ## Contributions & Support
 
