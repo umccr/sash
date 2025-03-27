@@ -10,6 +10,8 @@ The sash Workflow is a genomic analysis framework comprising three primary pipel
 
 These pipelines utilise Bolt, a Python package designed for modular processing, and leverage outputs from the [DRAGEN](https://sapac.illumina.com/products/by-type/informatics-products/dragen-secondary-analysis.html) Variant Caller alongside and the Hartwig Medical Foundation WiGiTS toolkit (via [Oncoanalyser](https://github.com/nf-core/oncoanalyser)) [HMFtools WiGiTs](https://github.com/hartwigmedical/hmftools/tree/master)  in Oncoanalyser. Each pipeline is tailored to a specific type of genomic variant, incorporating filtering, annotation and HTML reports for research and curation.
 
+---
+
 ## [HMFtools WiGiTs](https://github.com/hartwigmedical/hmftools/tree/master)
 
 HMFtools WiGiTS is an open-source suite for cancer genomics developed by the Hartwig Medical Foundation. Key components used in Sash include:
@@ -25,6 +27,8 @@ Cobalt calculates read-depth ratios from sequencing data, providing essential in
 
 - [Amber](https://github.com/hartwigmedical/hmftools/blob/master/amber/README.md):
 Amber computes B-allele frequencies, which are critical for estimating tumor purity and ploidy. The Amber directory contains these measurements, supporting PURPLE's integrated analysis.
+
+---
 
 ## Pipeline Inputs
 
@@ -57,6 +61,8 @@ Description: This VCF contains structural variant calls produced by GRIDSS2.
 
 - Directory: `Amber`
 - Description: Contains B-allele frequency measurements used by PURPLE to estimate tumor purity and ploidy.
+ 
+---
 
 ## Workflows
 
@@ -495,6 +501,8 @@ PCGR TIER according to [ACMG](https://www.ncbi.nlm.nih.gov/pubmed/27993330):
 - Tier 3 (Low): Variants with uncertain significance.
 - Tier 4 (No Interest): Variants unlikely to be clinically relevant.
 
+---
+
 # Common Reports
 
 ### [Cancer report](https://umccr.github.io/gpgr/)
@@ -576,7 +584,7 @@ Key Metrics:
 
 Note: The PCGR tool is designed to process a maximum of 500,000 variants. If the input VCF file contains more than this limit, variants exceeding 500,000 will be filtered ou
 
-### CPSR Repor
+### CPSR Report
 
 The CPSR (Cancer Predisposition Sequencing Report) includes the following:
 
@@ -607,6 +615,8 @@ PCGR TIER according to [ACMG](https://www.ncbi.nlm.nih.gov/pubmed/27993330):
 - Tier 2 (Moderate): Variants with potential clinical significance.
 - Tier 3 (Low): Variants with uncertain significance.
 - Tier 4 (No Interest): Variants unlikely to be clinically relevant.
+
+---
 
 # Reference data
 
@@ -652,9 +662,7 @@ Databases/datasets PCGR Reference Data:
 - [GWAS_Catalog](https://www.ebi.ac.uk/gwas/) \- The NHGRI-EBI Catalog of published genome-wide association studies (20211221)
 - [CGI](http://cancergenomeinterpreter.org/biomarkers) \- Cancer Genome Interpreter Cancer Biomarkers Database (20180117)
 
-###
-
-###
+---
 
 # Sash Module Outputs:
 
@@ -697,6 +705,8 @@ DRAGEN HRD Score
 
 - File: `dragen_somatic_output/{tid}.hrdscore.tsv`
 - Description: Contains homologous recombination deficiency (HRD) score from DRAGEN analysis.
+
+---
 
 # FAQ
 
