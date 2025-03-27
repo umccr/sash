@@ -1,6 +1,6 @@
 # nf-core/sash
 
-sash is the UMCCR post-processing WGS workflow. The workflow takes DRAGEN small variant calls and oncoanalyser results as input to perform annotation, prioritisation, rescue and filtering, and reporting for the WGS variant data. Additionally, sash runs several sensors for biomarker assessment and genomic characterisation including HRD status, mutational signatures, purity/ploidy, MSI, and TMB.
+sash is the UMCCR post-processing WGS workflow. The workflow takes DRAGEN small variant calls and oncoanalyser results as input to perform annotation, prioritisation, integration and filtering, and reporting for the WGS variant data. Additionally, sash runs several sensors for biomarker assessment and genomic characterisation including HRD status, mutational signatures, purity/ploidy, MSI, and TMB.
 
 While the sash workflow utilises a range of tools and software, it is most closely coupled with bolt, a Python package that implements the UMCCR post-processing logic and supporting functionality.
 

@@ -88,7 +88,7 @@ The variant calling integrations step use variants fromemploys the Somatic Alter
    Cancer Genome Interpreter (CGI)
   - CIViC \- Clinical interpretations of variants in cancer.
   - OncoKB \- Precision Oncology Knowledge Base.
-- Outputs a VCF containing rescued variants.
+- Outputs a VCF containing integrated variants.
 
 #### Inputs
 
@@ -159,7 +159,7 @@ Use PCGR to enrich the VCF with:
 
 ##### Inputs:
 
-- Small variant vcfRescue VCF
+- Small variant vcf Rescue VCF
   - `${tumor_id}.main.sage.filtered.vcf.gz`
 
 ##### Output:
