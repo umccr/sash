@@ -23,7 +23,8 @@ The **Sash** pipeline has three main workflows (details in [Docs](docs/README.md
 Reports
 
 ---
-## Sample sheet input 
+
+## Sample sheet input
 
 ```csv
 id,subject_name,sample_name,filetype,filepath
@@ -33,6 +34,7 @@ subject_a.example,subject_a,sample_somatic,oncoanalyser_dir,/path/to/oncoanalyse
 ```
 
 ---
+
 ## Quick Start
 
 ```bash
@@ -43,9 +45,9 @@ nextflow run scwatts/sash \
   --outdir output/
 ```
 
-- `--input` specifies a CSV file listing your tumor/normal samples and any pre-existing Oncoanalyser outputs.  
-- `--ref_data_path` points to a directory containing reference resources (genome FASTA, PCGR/CPSR data bundle, hotspot lists, etc.).  
-- `-profile docker` runs the pipeline with Docker. Use `singularity` or `conda` if Docker is not available.  
+- `--input` specifies a CSV file listing your tumor/normal samples and any pre-existing Oncoanalyser outputs.
+- `--ref_data_path` points to a directory containing reference resources (genome FASTA, PCGR/CPSR data bundle, hotspot lists, etc.).
+- `-profile docker` runs the pipeline with Docker. Use `singularity` or `conda` if Docker is not available.
 
 Results are organized into subfolders for SNVs, SVs, germline calls, and final HTML reports (PCGR, CPSR). A `MultiQC` report aggregates quality metrics.
 
@@ -53,11 +55,11 @@ Results are organized into subfolders for SNVs, SVs, germline calls, and final H
 
 ## Installation
 
-For installation instructions, **[please see our tutorial page](https://nf-co.re/usage/installation)**.  
+For installation instructions, **[please see our tutorial page](https://nf-co.re/usage/installation)**.
 You will need:
-- **Nextflow** (≥22.10.0)  
-- A container engine (e.g., **Docker** or **Singularity**) or a Conda environment  
-- **Java 8/11** for running Nextflow  
+- **Nextflow** (≥22.10.0)
+- A container engine (e.g., **Docker** or **Singularity**) or a Conda environment
+- **Java 8/11** for running Nextflow
 
 Skeptically confirm that all dependencies are installed and reference data is correctly downloaded before proceeding. Erroneous references or mismatched genome builds (e.g., b37 vs GRCh38) are a common source of confusion [@nextflow_docs].
 
@@ -73,8 +75,8 @@ Skeptically confirm that all dependencies are installed and reference data is co
 ## Contributions & Support
 
 Contributions are welcomed. For issues or feature requests:
-1. Check [open issues on GitHub](https://github.com/nf-core/sash/issues)  
-2. If it’s new, submit a detailed report with logs and sample sheet.  
+1. Check [open issues on GitHub](https://github.com/nf-core/sash/issues)
+2. If it’s new, submit a detailed report with logs and sample sheet.
 
 For user support, join the **nf-core Slack** community. Always verify your environment and reference integrity before blaming pipeline scripts.
 
@@ -84,7 +86,7 @@ For user support, join the **nf-core Slack** community. Always verify your envir
 
 If you use **nf-core/sash** for your analysis, please cite:
 
-- **Nextflow**: [doi:10.1038/nbt.3820](https://doi.org/10.1038/nbt.3820)  
-- **nf-core**: [doi:10.1038/s41587-020-0439-x](https://doi.org/10.1038/s41587-020-0439-x)  
-- **PCGR**: [doi:10.1186/s12859-019-3220-4](https://doi.org/10.1186/s12859-019-3220-4)  
+- **Nextflow**: [doi:10.1038/nbt.3820](https://doi.org/10.1038/nbt.3820)
+- **nf-core**: [doi:10.1038/s41587-020-0439-x](https://doi.org/10.1038/s41587-020-0439-x)
+- **PCGR**: [doi:10.1186/s12859-019-3220-4](https://doi.org/10.1186/s12859-019-3220-4)
 - **Hartwig WiGiTS** (SAGE, PURPLE, LINX): [@hartwigmedicalfoundation_hmftools](https://github.com/hartwigmedical/hmftools)

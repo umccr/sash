@@ -14,10 +14,10 @@ These pipelines utilise Bolt, a Python package designed for modular processing, 
 
 ## [HMFtools WiGiTs](https://github.com/hartwigmedical/hmftools/tree/master)
 
-HMFtools WiGiTS is an open-source suite for cancer genomics developed by the Hartwig Medical Foundation. Key components used in Sash include:
+HMFtools WiGiTS is an open-source suite for cancer genomics developed by the Hartwig Medical Foundation. Key components used in Oncoanalyser, by sash include:
 
 - [SAGE (Somatic Alterations in Genome)](https://github.com/hartwigmedical/hmftools/blob/master/sage/README.md):
-  A tiered SNV/indel caller targeting ~10,000 cancer hotspots (e.g., OncoKB, CIViC) to recover low-frequency variants missed by DRAGEN. Outputs a VCF with confidence tiers (hotspot, panel, high/low confidence).
+  A tiered SNV/indel caller targeting ~10,000 cancer hotspots ([Cancer Genome Interpreter](https://www.cancergenomeinterpreter.org/home), [CIViC](http://civic.genome.wustl.edu/), [OncoKB](https://oncokb.org/)) to recover low-frequency variants missed by DRAGEN. Outputs a VCF with confidence tiers (hotspot, panel, high/low confidence).
 
 - [PURPLE](https://github.com/hartwigmedical/hmftools/tree/master/purple):
   Estimates tumor purity (tumor cell fraction) and ploidy (average copy number), integrates copy number data, and calculates TMB (tumor mutation burden) and MSI (microsatellite instability).
@@ -70,7 +70,7 @@ Description: This VCF contains structural variant calls produced by GRIDSS2.
 
 #### General
 
-In the Somatic Small Variants workflow, variant detection is performed using the DRAGEN Variant Caller and Oncoanalyser that is relaing on Somatic Alterations in Genome [SAGE)](https://github.com/hartwigmedical/hmftools/tree/master/sage),and  [Purple](https://github.com/hartwigmedical/hmftools/tree/master/purple)) outputs. It’s structured into four steps: Integrations, Annotation, Filter, and Report. The final outputs include an HTML report summarising the results.
+In the Somatic Small Variants workflow, variant detection is performed using the DRAGEN Variant Caller and Oncoanalyser that is relaing on Somatic Alterations in Genome [SAGE](https://github.com/hartwigmedical/hmftools/tree/master/sage),and  [Purple](https://github.com/hartwigmedical/hmftools/tree/master/purple) outputs. It’s structured into four steps: Integrations, Annotation, Filter, and Report. The final outputs include an HTML report summarising the results.
 
 #### Summary
 
@@ -81,11 +81,11 @@ In the Somatic Small Variants workflow, variant detection is performed using the
 
 ### Variant Calling integrations
 
-The variant calling integrations step use variants fromemploys the Somatic Alterations in Genome (SAGE) variant callertool, which is more sensitive than DRAGEN in detecting variants, particularly those with low allele frequency that might have been missed filtered out. [SAGE](https://github.com/hartwigmedical/hmftools/tree/sage-v1.0/sage) focuses on targets known cancer hotspots (from sources like CGI, CIViC, OncoKB) Targeted Hotspot. Analysis, prioritising predefined genomic regions of high clinical or biological relevance with his own [filter](https://github.com/hartwigmedical/hmftools/tree/master/sage#6-soft-filters). This enables the integration calling of biologically significant variants in a VCF that may have been missed otherwise.
+The variant calling integrations step use variants from the **Somatic Alterations in Genome** ([SAGE](https://github.com/hartwigmedical/hmftools/tree/sage-v1.0/sage)) variant caller tool, which is more sensitive than DRAGEN in detecting variants, particularly those with low allele frequency that might have been missed, or filtered out. SAGE focuses on targets known cancer hotspots prioritising predefined genomic regions of high clinical or biological relevance with his own [filter](https://github.com/hartwigmedical/hmftools/tree/master/sage#6-soft-filters). This enables the integration calling of biologically significant variants in a VCF that may have been missed otherwise.
 
 - Low-allele-frequency variants in hotspots genomic regions of clinical significance.
 - Hotspots are derived from:
-   Cancer Genome Interpreter (CGI)
+  - Cancer Genome Interpreter (CGI)
   - CIViC \- Clinical interpretations of variants in cancer.
   - OncoKB \- Precision Oncology Knowledge Base.
 - Outputs a VCF containing integrated variants.
@@ -113,10 +113,8 @@ Steps are:
    - Hotspot regions are derived from databases such as:
      - Cancer Genome Interpreter (CGI)
      - CIViC (Clinical Interpretations of Variants in Cancer)
-   - OncoKB (Precision Oncology Knowledge Base)
-   - This ensures that only high-confidence variants in clinically relevant regions are considered.
-2. Separate SAGE calls into existing and novel variants
-   - Compare the input VCF and the filtered SAGE VCF to identify overlapping and unique variants.
+     - OncoKB (Precision Oncology Knowledge Base)
+   - Compare the input VCF and the SAGE VCF to identify overlapping and unique variants.
 3. Annotate existing somatic variant calls also present in the SAGE calls in the input VCF
    - Annotate variants that are re-called by SAGE:
      - For each variant in the input VCF, check if it exists in the SAGE existing calls.
