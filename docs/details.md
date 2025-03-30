@@ -1,4 +1,4 @@
-# Sash Workflow Overview
+# sash workflow details
 
 ![Summary](images/sash_overview_qc.png)
 
@@ -27,6 +27,19 @@ Cobalt calculates read-depth ratios from sequencing data, providing essential in
 
 - [Amber](https://github.com/hartwigmedical/hmftools/blob/master/amber/README.md):
 Amber computes B-allele frequencies, which are critical for estimating tumor purity and ploidy. The Amber directory contains these measurements, supporting PURPLE's integrated analysis.
+
+---
+## Other Tools
+
+### [SIGRAP](https://github.com/umccr/sigrap)
+
+#### [Personal Cancer Genome Reporter (PCGR)](https://github.com/sigven/pcgr/tree/v1.4.1)
+
+#### [Cancer Predisposition Sequencing Report (CPSR)](https://github.com/sigven/cpsr)
+
+### [Genomics Platform Group Reporting(GPGR)](https://github.com/umccr/gpgr) for Cancer Report
+
+### [Linx](https://github.com/umccr/linxreport)
 
 ---
 
@@ -66,22 +79,23 @@ Description: This VCF contains structural variant calls produced by GRIDSS2.
 
 ## Workflows
 
-## Somatic Small Variants (SNV/Indel, Tumor)Somatic small variants
+## Somatic Small Variants (SNV/Indel, Tumor)
 
 #### General
 
-In the Somatic Small Variants workflow, variant detection is performed using the DRAGEN Variant Caller and Oncoanalyser that is relaing on Somatic Alterations in Genome [SAGE](https://github.com/hartwigmedical/hmftools/tree/master/sage),and  [Purple](https://github.com/hartwigmedical/hmftools/tree/master/purple) outputs. It’s structured into four steps: Integrations, Annotation, Filter, and Report. The final outputs include an HTML report summarising the results.
+In the Somatic Small Variants workflow, variant detection is performed using the DRAGEN Variant Caller and Oncoanalyser that is relying on Somatic Alterations in Genome [SAGE](https://github.com/hartwigmedical/hmftools/tree/master/sage), and [Purple](https://github.com/hartwigmedical/hmftools/tree/master/purple) outputs. It’s structured into four steps: Integrations, Annotation, Filter, and Report. The final outputs include an HTML report summarising the results.
 
 #### Summary
 
-1. Rescue variants using SAGE to recover low-frequency alterations in clinically important hotspots.
+1. Integration of SAGE variants to recover low-frequency mutations in hotspots.
 2. Annotate variants with clinical and functional information using PCGR.
-3. Filter variants based on quality and frequency criteria (e.g., allele frequency, read depth, population frequency), while retaining those of potential clinical significance (hotspots, high-impact, etc.).Filter variants based on allele frequency (AF), supporting reads (AD), and population frequency (gnomAD AF), removing low-confidence and common variants.
-4. Report final annotated variants in a comprehensive HTML report (PCGR, CANCER REPORT, LINX, multiqc)  format.
+3. Filter variants based on quality and frequency criteria (allele frequency, read depth, population frequency), while retaining those of potential clinical significance (hotspots, high-impact, etc.).
+4. 4.Filter variants based on allele frequency (AF), supporting reads (AD), population frequency (gnomAD AF), removing low-confidence and common variants.
+5. Report final annotated variants in a comprehensive HTML report (PCGR, CANCER REPORT, LINX, MultiQC)  format.
 
 ### Variant Calling integrations
 
-The variant calling integrations step use variants from the **Somatic Alterations in Genome** ([SAGE](https://github.com/hartwigmedical/hmftools/tree/sage-v1.0/sage)) variant caller tool, which is more sensitive than DRAGEN in detecting variants, particularly those with low allele frequency that might have been missed, or filtered out. SAGE focuses on targets known cancer hotspots prioritising predefined genomic regions of high clinical or biological relevance with his own [filter](https://github.com/hartwigmedical/hmftools/tree/master/sage#6-soft-filters). This enables the integration calling of biologically significant variants in a VCF that may have been missed otherwise.
+The variant calling integrations step use variants from the **Somatic Alterations in Genome** ([SAGE](https://github.com/hartwigmedical/hmftools/tree/sage-v1.0/sage)) variant caller tool, which is more sensitive than DRAGEN in detecting variants, particularly those with low allele frequency that might have been missed, or filtered out. SAGE focuses on targets known cancer hotspots prioritising predefined genomic regions of high clinical or biological relevance with its [filter](https://github.com/hartwigmedical/hmftools/tree/master/sage#6-soft-filters). This enables the integration calling of biologically significant variants in a VCF that may have been missed otherwise.
 
 - Low-allele-frequency variants in hotspots genomic regions of clinical significance.
 - Hotspots are derived from:
@@ -102,7 +116,7 @@ The variant calling integrations step use variants from the **Somatic Alteration
 ##### Output
 
 - Rescue: VCF
-  - `${tumor_id}.rescued.vcf.g`
+  - `${tumor_id}.rescued.vcf.gz`
 
 #### Details
 
@@ -115,35 +129,34 @@ Steps are:
      - CIViC (Clinical Interpretations of Variants in Cancer)
      - OncoKB (Precision Oncology Knowledge Base)
    - Compare the input VCF and the SAGE VCF to identify overlapping and unique variants.
-3. Annotate existing somatic variant calls also present in the SAGE calls in the input VCF
+2. Annotate existing somatic variant calls also present in the SAGE calls in the input VCF
    - Annotate variants that are re-called by SAGE:
      - For each variant in the input VCF, check if it exists in the SAGE existing calls.
      - For variants re-called by SAGE:
        - If `SAGE FILTER=PASS` and input VCF `FILTER=PASS`:
          - Set `INFO/SAGE_HOTSPOT` to indicate the variant is called by SAGE in a hotspot.
        - If `SAGE FILTER=PASS` and input VCF `FILTER` is not `PASS`:
-         - Set `INFO/SAGE_HOTSPOT` and `INFO/SAGE_RESCUE` to indicate the variant is rescued by SAGE.
+         - Set `INFO/SAGE_HOTSPOT` and `INFO/SAGE_RESCUE` to indicate the variant is integrated from SAGE.
          - Update `FILTER=PASS` to include the variant in the final analysis.
        - If `SAGE FILTER` is not `PASS`:
          - Append `SAGE_lowconf` to the `FILTER` field to flag low-confidence variants.
      - Transfer SAGE `FORMAT` fields to the input VCF with a `SAGE_` prefix
-4. Combine annotated input VCF with novel SAGE calls
-   - Prepare novel SAGE calls. For each variant in the SAGE VCF missing from the input VCF::
+3. Combine annotated input VCF with novel SAGE calls
+   - Prepare novel SAGE calls. For each variant in the SAGE VCF missing from the input VCF:
      - Rename certain `FORMAT` fields in the novel SAGE VCF to avoid namespace collisions:
        - For example, `FORMAT/SB` is renamed to `FORMAT/SAGE_SB`.
      - Retain necessary `INFO` and `FORMAT` annotations while removing others to streamline the data.
 
-   Summary Finalize the rescued of VCF file integration
+   Summary Finalize the integration of VCF file integration
 
    - The final VCF file includes:
      - Original variants from the input VCF, annotated with SAGE information where applicable.
      - Novel variants identified by SAGE in hotspot regions.
      - Updated `FILTER` and `INFO` fields reflecting the rescue and annotation process.
-   - The rescued VCF provides a comprehensive set of variants for downstream analysis, prioritizing clinically significant mutations.
 
 ### Annotation
 
-The Annotation consists of three processes:step employs Reference Sources (GA4GH/GIAB problem region stratifications, GIAB high confidence regions, gnomAD, Hartwig hotspots),UMCCR panel of normals and theand the Personal Cancer Genome Reporter (PCGR) tool to enrich variants with detailed functional and with clinical information using ACMG guidelines. PCGR classifies variants into tiers based on their clinical and biological significance and incorporates mutational signature analysis to provide insights into underlying mutational processes. To manage memory usage effectively, the input VCF file is divided into chunks, each containing up to 500,000 variants. Each chunk is processed independently through PCGR, and after annotation, the chunks are merged to produce an annotated VCF and TSV file.
+The Annotation consists of three step processes, employs Reference Sources (GA4GH/GIAB problem region stratifications, GIAB high confidence regions, gnomAD, Hartwig hotspots), UMCCR panel of normals  and the PCGR tool to enrich variants with detailed functional and with clinical information using ACMG guidelines. PCGR classifies variants into tiers based on their clinical and biological significance and incorporates mutational signature analysis to provide insights into underlying mutational processes. To manage memory usage effectively, the input VCF file is divided into chunks, each containing up to 500,000 variants. Each chunk is processed independently through PCGR, and after annotation, the chunks are merged to produce an annotated VCF and TSV file.
 
 #### These annotations are used to decide which variants are retained or filtered in the next step
 
@@ -155,12 +168,12 @@ Use PCGR to enrich the VCF with:
 - Process VCF files in chunks ≤500,000 variants each.
 - Merge annotated chunks into a unified VCF.
 
-##### Inputs:
+##### Inputs
 
 - Small variant vcf Rescue VCF
   - `${tumor_id}.main.sage.filtered.vcf.gz`
 
-##### Output:
+##### Output
 
 - Annotated VCF
   - `${tumor_id}.annotations.vcf.g`
@@ -213,7 +226,7 @@ Steps are:
        - TCGA pancancer count ≥5
        - ICGC PCAWG count ≥3.
    - Apply filters to other variants:
-     - Remove variants with `AF  10%`.
+     - Remove variants with AF >  10%.
      - Remove common variants in gnomAD (`population AF ≥ 1%`), adding them to the germline set.
      - Remove variants present in ≥5 samples of the Panel of Normals.
      - Remove indels in "bad promoter" regions (as defined by GA4GH).
@@ -223,7 +236,6 @@ Steps are:
      - Remove VarDict strand-biased variants unless supported by other callers.
 9. Report passing variants using PCGR, classified by the ACMG tier system
 10. Generate the final report of variants classified according to clinical significance using PCGR, ready for downstream analysis.
-
 
 ###  Filter
 
@@ -278,18 +290,18 @@ Filters:
   #### 2.2 Panel of Normals (PoN) Germline Filter
 
 - Variants present in more than 5 normal samples from the UMCCR Panel of Normals are removed.
-- Variants with a PoN AF \>20% are also excluded.
+- Variants with a PoN AF >20% are also excluded.
 - This step reduces contamination from sequencing artefacts or undetected germline variants.
 
-### 3\. Rescue and Clinical Significance Filters
+### 3. Clinical Significance Filters
 
-These variants are retained even if they fail technical filters.
+Variants with clinical significance are retained even if they fail technical filters.
 
-### 3.1 Hotspot Rescue
+### 3.1 Hotspot
 
 - Variants located in Hartwig, OncoKB, or other curated hotspot databases are retained, even if they fail other quality or frequency filters.
 
-  #### 3.2 Reference Database Hit Count Rescue
+  #### 3.2 Reference Database Hit Count
 
 - Variants with strong prior evidence in COSMIC, TCGA, or ICGC are retained, even if they fail standard filtering:
   - COSMIC count ≥10
@@ -352,7 +364,7 @@ Inputs:
 
 #### Output:
 
-- PCGRCancer repor
+- PCGR Cancer repor
   - ${tumor_id}.pcgr_acmg.grch38.html
 
 1. Generate BCFtools Statistics on the Input VCF:
@@ -485,11 +497,11 @@ Variant Classification:
 
 ClinVarc and Non-ClinVar
 
-- Class 5 \- Pathogenic variants
-- Class 4 \- Likely Pathogenic variants
-- Class 3 \- Variants of Uncertain Significance (VUS)
-- Class 2 \- Likely Benign variants
-- Class 1 \- Benign variants
+- Class 5 - Pathogenic variants
+- Class 4 - Likely Pathogenic variants
+- Class 3 - Variants of Uncertain Significance (VUS)
+- Class 2 - Likely Benign variants
+- Class 1 - Benign variants
 - Biomarkers
 
 PCGR TIER according to [ACMG](https://www.ncbi.nlm.nih.gov/pubmed/27993330):
@@ -662,7 +674,7 @@ Databases/datasets PCGR Reference Data:
 
 ---
 
-# Sash Module Outputs:
+# sash module outputs:
 
 Somatic SNVs
 
@@ -714,7 +726,7 @@ A: In Somatic SV, we used sage to make variant calling then we did annotation of
 
 ### Q: how are hypermutated samples handled in the current version, and is there any impact on derived metrics such as TMB or MSI?
 
-A: In the current version of Sash, hypermutated samples are identified based on a threshold 500,000 of total somatic variant counts. For instance, if the variant count exceeds the threshold , the sample is flagged as hypermutated. When this occurs we will filter variant that are not considered that don’t have clinical impact, in hotspot region, until we meet the threshold. We that wil impact the TMB and MSI calculated by purple. For Now we are using the TMB and MSI of purple is this edges case. New reale will be hable to get correct TMB and MSI from purple
+A: In the current version of sash, hypermutated samples are identified based on a threshold 500,000 of total somatic variant counts. For instance, if the variant count exceeds the threshold , the sample is flagged as hypermutated. When this occurs we will filter variant that 1. don’t have clinical impact, 2. in hotspot region, until we meet the threshold. That will impact the TMB and MSI calculated by purple. For Now we are using the TMB and MSI of purple is this edges case. New reale will be able to get correct TMB and MSI from purple
 
 ### Q: how are we handling non-standard chromosomes if present in the input VCFs (ALTs, chrM, etc)?
 A: Filter out as we Filter on chr 1..22 and chr X,Y,M
@@ -728,7 +740,7 @@ A: Circos plots come Purple
 A: The TMB display is the on calculated by pcgr
 
 ### Q: what filtered VCF is the source for the mutational signatures?
-A: We use the filtred VCF for mutational signatures
+A: We use the filtered VCF for mutational signatures
 
 ### Q: Where is the contamination score coming from currently?
 A: I don’t think there is contamination at the moment in sash
