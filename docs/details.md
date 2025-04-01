@@ -74,7 +74,7 @@ Description: This VCF contains structural variant calls produced by GRIDSS2.
 
 - Directory: `Amber`
 - Description: Contains B-allele frequency measurements used by PURPLE to estimate tumor purity and ploidy.
- 
+
 ---
 
 ## Workflows
@@ -241,6 +241,7 @@ Steps are:
 
 The Filter step applies a series of stringent filters to somatic variant calls in the VCF file, ensuring the retention of high-confidence and biologically meaningful variants.
 
+
 Inputs:
 
 - Annotated VCF
@@ -253,105 +254,29 @@ Inputs:
 
 Filters:
 
-1\. Technical Quality Filters
+1. Technical Quality Filters
 
-#### 1.1 Allele Frequency (AF) Filter
+| **Filter Type**                           | **Threshold/Criteria**                         |
+|-------------------------------------------|------------------------------------------------|
+| **Allele Frequency (AF) Filter**          | Tumor AF < 10% (0.10)                            |
+| **Allele Depth (AD) Filter**              | Fewer than 4 supporting reads (6 in low-complexity regions)  |
+| **Non-GIAB AD Filter**                    | Stricter thresholds outside GIAB high-confidence regions  |
+| **Strand Bias Filter**                    | Extreme strand bias (criteria not numerically defined)  |
+| **Problematic Genomic Regions Filter**    | Overlap with ENCODE blacklist, bad promoter, or low-complexity regions |
+| **Population Frequency (gnomAD) Filter**   | gnomAD AF ≥ 1% (0.01)                           |
+| **Panel of Normals (PoN) Germline Filter**  | Present in ≥ 5 normal samples or PoN AF > 20% (0.20)  |
+| **COSMIC Database Hit Count Filter**      | COSMIC count ≥ 10                              |
+| **TCGA Pan-cancer Count Filter**          | TCGA count ≥ 5                                 |
+| **ICGC PCAWG Count Filter**               | ICGC count ≥ 5                                 |
 
-- Removes variants with tumor allele frequency (AF) \10% to exclude low-confidence mutations.
-- Exception: Variants located in known cancer hotspots (Hartwig, OncoKB) are not filtered, even if their AF is below 10%.
+### 2. Clinical Significance execeptions
 
-  #### 1.2 Allele Depth (AD) Filter
-
-- Variants with fewer than 4 supporting reads in the tumor sample are excluded.
-- Higher Depth Requirement in Low-Complexity Regions:
-  - Variants located in low-complexity regions (defined by GIAB) require at least 6 supporting reads to be retained.
-
-  #### 1.3 Non-GIAB AD Filter
-
-- Variants that are not in high-confidence Genome in a Bottle (GIAB) regions must meet a stricter depth requirement.
-- Ensures high-quality variant detection outside of well-characterized genomic regions.
-
-  #### 1.4 Strand Bias Filter
-
-- Variants showing extreme strand bias (i.e., all ALT reads are on one strand while REF reads are distributed) are removed.
-- Exceptions are made for multi-caller support – if the variant is detected by multiple callers, it is retained.
-
-  #### 1.5 Exclusion of Problematic Genomic Regions
-
-- Variants overlapping the ENCODE Blacklist or known low-complexity regions are filtered out.
-- Indels found in bad promoter regions (as defined by GA4GH) are also removed.
-
-2\. Population Frequency & Panel of Normals (PoN) Filters
-
-#### 2.1 Population Frequency (gnomAD) Filter
-
-- Variants with a gnomAD maximum population allele frequency (AF) ≥1% are filtered as likely germline variants.
-
-  #### 2.2 Panel of Normals (PoN) Germline Filter
-
-- Variants present in more than 5 normal samples from the UMCCR Panel of Normals are removed.
-- Variants with a PoN AF >20% are also excluded.
-- This step reduces contamination from sequencing artefacts or undetected germline variants.
-
-### 3. Clinical Significance Filters
-
-Variants with clinical significance are retained even if they fail technical filters.
-
-### 3.1 Hotspot
-
-- Variants located in Hartwig, OncoKB, or other curated hotspot databases are retained, even if they fail other quality or frequency filters.
-
-  #### 3.2 Reference Database Hit Count
-
-- Variants with strong prior evidence in COSMIC, TCGA, or ICGC are retained, even if they fail standard filtering:
-  - COSMIC count ≥10
-  - TCGA pan-cancer count ≥5
-  - ICGC PCAWG count ≥5
-
-  #### 3.3 ClinVar Pathogenicity Rescue
-
-- Variants classified in ClinVar as:
-  - Likely Pathogenic
-  - Pathogenic
-  - Uncertain Significance (VUS) with strong clinical evidence
-
-- Allele Frequency (AF) Filter:
-  - Excludes variants with a tumor allele frequency below a threshold of 0.1.
-- Allele Depth (AD) Filter:
-  - Removes variants with fewer than 4 supporting reads in the tumor sample.
-- Degraded Mappability AD Filter:
-  - Applies stricter thresholds in regions with low sequence complexity or poor mappability, where errors are more likely.
-  - Requires a minimum of 6 supporting reads in low-sequence complexity regions(difficult region) to retain the variant. Tumor_ad \ 6
-- Non-GIAB AD Filter:
-  - Removes variants not confirmed by the Genome in a Bottle (GIAB) consortium if their allele depth falls below thresholds for challenging regions.
-- Population Frequency Filter (gnomAD):
-  - Excludes variants with a population allele frequency greater than 0.01, based on gnomAD data. Gnomad_af \>= 0.01
-- Panel of Normals (PON) Germline Filter:
-  - Filters out variants with an allele frequency in the PON below 0.20.
-  - Additionally excludes variants that occur in more than 5 PON samples to mitigate germline contamination or recurrent artifacts. PON_COUNT \>= 5
-- FIlter rescue variant:
-
-Variants meeting these criteria are flagged as `CLINICAL_POTENTIAL_RESCUE` are NOT filtered out
-
-- Reference Database Hit Counts:
-  - Variants with a COSMIC count of ≥10.
-  - Variants with a TCGA pan-cancer count of ≥5.
-  - Variants with an ICGC PCAWG count of ≥5.
-- ClinVar Significance:
-  - Variants with ClinVar classifications matching the following categories are rescued:
-    - `conflicting_interpretations_of_pathogenicity`
-    - `likely_pathogenic`
-    - `pathogenic`
-    - `uncertain_significance`
-- Mutation Hotspots:
-  - Variants identified as hotspots in:
-    - `HMF_HOTSPOT`
-    - `PCGR_MUTATION_HOTSPOT`
-- PCGR Tiers:
-  - Variants classified as:
-    - `TIER_1`
-    - `TIER_2`
-
+| Exception Category           | Criteria                                                                                                          |
+|------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| **Reference Database Hit Count** | COSMIC count ≥10 OR TCGA pan-cancer count ≥5 OR ICGC PCAWG count ≥5                                                  |
+| **ClinVar Pathogenicity**         | ClinVar classification of `conflicting_interpretations_of_pathogenicity`, `likely_pathogenic`, `pathogenic`, or `uncertain_significance` |
+| **Mutation Hotspots**             | Annotated as `HMF_HOTSPOT` OR `PCGR_MUTATION_HOTSPOT`                                                                |
+| **PCGR Tier Exception**           | Classified as `TIER_1` OR `TIER_2`                                                                                   |
 ### Reports
 
 The Report step utilises the Personal Cancer Genome Reporter (PCGR)
@@ -364,7 +289,7 @@ Inputs:
 
 #### Output:
 
-- PCGR Cancer repor
+- PCGR Cancer report
   - ${tumor_id}.pcgr_acmg.grch38.html
 
 1. Generate BCFtools Statistics on the Input VCF:
@@ -409,16 +334,14 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
 8. Generate Summary Reports:
 9. Create TSV (tab-separated values) files summarizing the prioritized SVs and CNVs for downstream analysis and reporting.
 
-   ### Input Files
+### Input File
 
-   ### Primary SV VCFs:
-
-   - GRIDSS2
-     - ${tumor_id}.gridss.vcf.gz
+- GRIDSS2
+  - ${tumor_id}.gridss.vcf.gz
 
 ### Details
 
-### Detailed Steps:
+### Detailed Steps
 
 1. GRIPSS filtering:
    - Evaluate split-read and paired-end support; discard variants with low support.
@@ -440,7 +363,7 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
    - Classify Variants:
      - Structural Variants (SVs): Variants labeled with the source `sv_gridss`.
      - Copy Number Variants (CNVs): Variants labeled with the source `cnv_purple`.
-4. Prioritise variants on a 4 tier system:
+5. Prioritise variants on a 4 tier system:
    **1 (high)** - **2 (moderate)** - **3 (low)** - **4 (no interest)**
     - exon loss
       - on cancer gene list (1)
@@ -462,7 +385,7 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
       - on cancer gene list (2)
       - other TS gene (3)
     - other (4)
-5. Filter Low-Quality Calls:
+6. Filter Low-Quality Calls:
         Apply Quality Filters:
         - Keep variants with sufficient read support (e.g., split reads (SR) ≥ 5 and paired reads (PR) ≥ 5).
         - Exclude Tier 3 and Tier 4 variants where `SR  5` and `PR < 5`.
