@@ -214,28 +214,6 @@ Steps are:
    - merge the PCGR annotations back into the original VCF file.
    - Ensure that all variants, including those not selected for PCGR annotation, have relevant clinical annotations where available.
    - Preserve the `FILTER` statuses and other annotations from the original VCF.
-8. Filter variants to remove putative germline variants and artefactsartifacts while keeping known hotspots/actionable variants
-   - Keep variants:
-     - Called by SAGE in known hotspots (CGI, CIViC, OncoKB) regardless of other evidence.
-     - With PCGR TIER 1 and 2 classifications, indicating strong or potential clinical significance according to ACMG guidelines.
-     - All driver mutations from;
-       - IntOGen
-       - mutation hotspots
-       - ClinVar pathogenic or uncertain significance
-       - COSMIC count ≥10
-       - TCGA pancancer count ≥5
-       - ICGC PCAWG count ≥3.
-   - Apply filters to other variants:
-     - Remove variants with AF >  10%.
-     - Remove common variants in gnomAD (`population AF ≥ 1%`), adding them to the germline set.
-     - Remove variants present in ≥5 samples of the Panel of Normals.
-     - Remove indels in "bad promoter" regions (as defined by GA4GH).
-     - Remove variants overlapping the ENCODE blacklist.
-     - Remove variants with variant depth `VD  4`.
-     - Remove variants with `VD < 6` and overlapping a low complexity region.
-     - Remove VarDict strand-biased variants unless supported by other callers.
-9. Report passing variants using PCGR, classified by the ACMG tier system
-10. Generate the final report of variants classified according to clinical significance using PCGR, ready for downstream analysis.
 
 ###  Filter
 
@@ -265,9 +243,9 @@ Filters:
 | **Problematic Genomic Regions Filter**    | Overlap with ENCODE blacklist, bad promoter, or low-complexity regions |
 | **Population Frequency (gnomAD) Filter**   | gnomAD AF ≥ 1% (0.01)                           |
 | **Panel of Normals (PoN) Germline Filter**  | Present in ≥ 5 normal samples or PoN AF > 20% (0.20)  |
-| **COSMIC Database Hit Count Filter**      | COSMIC count ≥ 10                              |
-| **TCGA Pan-cancer Count Filter**          | TCGA count ≥ 5                                 |
-| **ICGC PCAWG Count Filter**               | ICGC count ≥ 5                                 |
+| **COSMIC Database Hit Count Filter**      | COSMIC count < 10                              |
+| **TCGA Pan-cancer Count Filter**          | TCGA count < 5                                 |
+| **ICGC PCAWG Count Filter**               | ICGC count < 5                                 |
 
 ### 2. Clinical Significance execeptions
 
@@ -275,7 +253,7 @@ Filters:
 |------------------------------|-------------------------------------------------------------------------------------------------------------------|
 | **Reference Database Hit Count** | COSMIC count ≥10 OR TCGA pan-cancer count ≥5 OR ICGC PCAWG count ≥5                                                  |
 | **ClinVar Pathogenicity**         | ClinVar classification of `conflicting_interpretations_of_pathogenicity`, `likely_pathogenic`, `pathogenic`, or `uncertain_significance` |
-| **Mutation Hotspots**             | Annotated as `HMF_HOTSPOT` OR `PCGR_MUTATION_HOTSPOT`                                                                |
+| **Mutation Hotspots**             | Annotated as `HMF_HOTSPOT`, `PCGR_MUTATION_HOTSPOT` and SAGE Hotspots(CGI, CIViC, OncoKB)                                                                |
 | **PCGR Tier Exception**           | Classified as `TIER_1` OR `TIER_2`                                                                                   |
 ### Reports
 
@@ -601,42 +579,42 @@ Databases/datasets PCGR Reference Data:
 
 Somatic SNVs
 
-- File: `smlv_somatic/filter/{tid}.pass.vcf.gz`
+- File: `smlv_somatic/filter/{tumor_id}.pass.vcf.gz`
 - Description: Contains somatic single nucleotide variants (SNVs) with filtering applied.
 
 Somatic SVs
 
-- File: `sv_somatic/prioritise/{tid}.sv.prioritised.vcf.gz`
+- File: `sv_somatic/prioritise/{tumor_id}.sv.prioritised.vcf.gz`
 - Description: Contains somatic structural variants (SVs) with prioritization applied.
 
 Somatic CNVs
 
-- File: `cancer_report/cancer_report_tables/purple/{sid}_{tid}-purple_cnv_som.tsv.gz`
+- File: `cancer_report/cancer_report_tables/purple/{tumor_id}-purple_cnv_som.tsv.gz`
 - Description: Contains somatic copy number variations (CNVs) data.
 
 Somatic Gene CNVs
 
-- File: `cancer_report/cancer_report_tables/purple/{sid}_{tid}-purple_cnv_som_gene.tsv.gz`
+- File: `cancer_report/cancer_report_tables/purple/{tumor_id}-purple_cnv_som_gene.tsv.gz`
 - Description: Contains gene-level somatic copy number variations (CNVs) data.
 
 Germline SNVs
 
-- File: `dragen_germline_output/{nid}.hard-filtered.vcf.gz`
+- File: `dragen_germline_output/{normal_id}.hard-filtered.vcf.gz`
 - Description: Contains germline single nucleotide variants (SNVs) with hard filtering applied.
 
 Purple Purity, Ploidy, MS Status
 
-- File: `purple/{tid}.purple.purity.tsv`
+- File: `purple/{tumor_id}.purple.purity.tsv`
 - Description: Contains estimated tumor purity, ploidy, and microsatellite status.
 
 PCGR JSON with TMB
 
-- File: `smlv_somatic/report/pcgr/{tid}.pcgr_acmg.grch38.json.gz`
+- File: `smlv_somatic/report/pcgr/{tumor_id}.pcgr_acmg.grch38.json.gz`
 - Description: Contains PCGR annotations, including tumor mutational burden (TMB).
 
 DRAGEN HRD Score
 
-- File: `dragen_somatic_output/{tid}.hrdscore.tsv`
+- File: `dragen_somatic_output/{tumor_id}.hrdscore.tsv`
 - Description: Contains homologous recombination deficiency (HRD) score from DRAGEN analysis.
 
 ---
@@ -649,7 +627,7 @@ A: In Somatic SV, we used sage to make variant calling then we did annotation of
 
 ### Q: how are hypermutated samples handled in the current version, and is there any impact on derived metrics such as TMB or MSI?
 
-A: In the current version of sash, hypermutated samples are identified based on a threshold 500,000 of total somatic variant counts. For instance, if the variant count exceeds the threshold , the sample is flagged as hypermutated. When this occurs we will filter variant that 1. don’t have clinical impact, 2. in hotspot region, until we meet the threshold. That will impact the TMB and MSI calculated by purple. For Now we are using the TMB and MSI of purple is this edges case. New reale will be able to get correct TMB and MSI from purple
+A: In the current version of sash, hypermutated samples are identified based on a threshold 500,000 of total somatic variant counts. For instance, if the variant count exceeds the threshold , the sample is flagged as hypermutated. When this occurs we will filter variant that 1. don’t have clinical impact, 2. in hotspot region, until we meet the threshold. That will impact the TMB and MSI calculated by purple. For Now we are using the TMB and MSI of purple is this edges case. New release will be able to get correct TMB and MSI from purple.
 
 ### Q: how are we handling non-standard chromosomes if present in the input VCFs (ALTs, chrM, etc)?
 A: Filter out as we Filter on chr 1..22 and chr X,Y,M
@@ -657,7 +635,8 @@ A: Filter out as we Filter on chr 1..22 and chr X,Y,M
 ### Q: inputs for the cancer reporter \- have they changed (and what can we harmonize); e.g., where is the Circos plot from at this point?
 A: Circos plots come Purple
 
-### Q: we dropped the CACAO coverage reports; can we discuss how to utilize DRAGEN or WiGiTS coverage information instead?
+### Q: we dropped the CACAO coverage reports. can we discuss how to utilize DRAGEN or WiGiTS coverage information instead?
+
 
 ### Q: what TMB score is displayed in the cancer reporter?
 A: The TMB display is the on calculated by pcgr
