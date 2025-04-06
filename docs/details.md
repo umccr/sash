@@ -97,13 +97,6 @@ In the Somatic Small Variants workflow, variant detection is performed using the
 
 The variant calling integrations step use variants from the **Somatic Alterations in Genome** ([SAGE](https://github.com/hartwigmedical/hmftools/tree/sage-v1.0/sage)) variant caller tool, which is more sensitive than DRAGEN in detecting variants, particularly those with low allele frequency that might have been missed, or filtered out. SAGE focuses on targets known cancer hotspots prioritising predefined genomic regions of high clinical or biological relevance with its [filter](https://github.com/hartwigmedical/hmftools/tree/master/sage#6-soft-filters). This enables the integration calling of biologically significant variants in a VCF that may have been missed otherwise.
 
-- Low-allele-frequency variants in hotspots genomic regions of clinical significance.
-- Hotspots are derived from:
-  - Cancer Genome Interpreter (CGI)
-  - CIViC \- Clinical interpretations of variants in cancer.
-  - OncoKB \- Precision Oncology Knowledge Base.
-- Outputs a VCF containing integrated variants.
-
 #### Inputs
 
 - From DRAGEN: somatic small variant caller VCF
@@ -239,13 +232,13 @@ Filters:
 | **Allele Frequency (AF) Filter**          | Tumor AF < 10% (0.10)                            |
 | **Allele Depth (AD) Filter**              | Fewer than 4 supporting reads (6 in low-complexity regions)  |
 | **Non-GIAB AD Filter**                    | Stricter thresholds outside GIAB high-confidence regions  |
-| **Strand Bias Filter**                    | Extreme strand bias (criteria not numerically defined)  |
 | **Problematic Genomic Regions Filter**    | Overlap with ENCODE blacklist, bad promoter, or low-complexity regions |
 | **Population Frequency (gnomAD) Filter**   | gnomAD AF ≥ 1% (0.01)                           |
 | **Panel of Normals (PoN) Germline Filter**  | Present in ≥ 5 normal samples or PoN AF > 20% (0.20)  |
 | **COSMIC Database Hit Count Filter**      | COSMIC count < 10                              |
 | **TCGA Pan-cancer Count Filter**          | TCGA count < 5                                 |
 | **ICGC PCAWG Count Filter**               | ICGC count < 5                                 |
+<!-- | **Strand Bias Filter**                    | Extreme strand bias (criteria not numerically defined)  | -->
 
 ### 2. Clinical Significance execeptions
 
@@ -255,6 +248,8 @@ Filters:
 | **ClinVar Pathogenicity**         | ClinVar classification of `conflicting_interpretations_of_pathogenicity`, `likely_pathogenic`, `pathogenic`, or `uncertain_significance` |
 | **Mutation Hotspots**             | Annotated as `HMF_HOTSPOT`, `PCGR_MUTATION_HOTSPOT` and SAGE Hotspots(CGI, CIViC, OncoKB)                                                                |
 | **PCGR Tier Exception**           | Classified as `TIER_1` OR `TIER_2`                                                                                   |
+
+
 ### Reports
 
 The Report step utilises the Personal Cancer Genome Reporter (PCGR)
