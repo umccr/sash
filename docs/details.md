@@ -26,7 +26,7 @@ HMFtools WiGiTS is an open-source suite for cancer genomics developed by the Har
 Cobalt calculates read-depth ratios from sequencing data, providing essential input for copy number analysis. Its outputs are used by PURPLE to generate accurate copy number profiles across the genome.
 
 - [Amber](https://github.com/hartwigmedical/hmftools/blob/master/amber/README.md):
-Amber computes B-allele frequencies, which are critical for estimating tumor purity and ploidy. The Amber directory contains these measurements, supporting PURPLE's integrated analysis.
+Amber computes B-allele frequencies, which are critical for estimating tumor purity and ploidy. The Amber directory contains these measurements, supporting PURPLE's re-call analysis.
 
 ---
 ## Other Tools
@@ -40,6 +40,10 @@ Amber computes B-allele frequencies, which are critical for estimating tumor pur
 ### [Genomics Platform Group Reporting(GPGR)](https://github.com/umccr/gpgr) for Cancer Report
 
 ### [Linx](https://github.com/umccr/linxreport)
+
+### [GRIDSS/GRIPSS](https://github.com/PapenfussLab/gridss)
+
+#### [Virusbraken](https://github.com/PapenfussLab/gridss/blob/master/VIRUSBreakend_Readme.md)
 
 ---
 
@@ -56,23 +60,23 @@ Amber computes B-allele frequencies, which are critical for estimating tumor pur
 `{tumor_id}.gridss.vcf.gz`
 Description: This VCF contains structural variant calls produced by GRIDSS2.
 
-#### SAGE
+#### [SAGE](https://github.com/hartwigmedical/hmftools/blob/master/sage/README.md)
 
 `{tumor_id}.sage.somatic.vcf.gz`
 
 #### [Virusbraken](https://github.com/PapenfussLab/gridss/blob/master/VIRUSBreakend_Readme.md)
 
-- Directory: `virusbreakend`
+- Directory: `virusbreakend/`
 - Description:Contains outputs from Virusbraken, used for detecting viral integration events.
 
-#### Cobalt
+#### [Cobalt](https://github.com/hartwigmedical/hmftools/blob/master/cobalt/README.md)
 
-- Directory: `Cobalt`
+- Directory: `cobalt/`
 - Description: Contains read-depth ratio data required for copy number analysis by PURPLE.
 
-#### Amber
+#### [Amber](https://github.com/hartwigmedical/hmftools/blob/master/amber/README.md)
 
-- Directory: `Amber`
+- Directory: `amber/`
 - Description: Contains B-allele frequency measurements used by PURPLE to estimate tumor purity and ploidy.
 
 ---
@@ -83,19 +87,19 @@ Description: This VCF contains structural variant calls produced by GRIDSS2.
 
 #### General
 
-In the Somatic Small Variants workflow, variant detection is performed using the DRAGEN Variant Caller and Oncoanalyser that is relying on Somatic Alterations in Genome [SAGE](https://github.com/hartwigmedical/hmftools/tree/master/sage), and [Purple](https://github.com/hartwigmedical/hmftools/tree/master/purple) outputs. It’s structured into four steps: Integrations, Annotation, Filter, and Report. The final outputs include an HTML report summarising the results.
+In the Somatic Small Variants workflow, variant detection is performed using the DRAGEN Variant Caller and Oncoanalyser that is relying on Somatic Alterations in Genome [SAGE](https://github.com/hartwigmedical/hmftools/tree/master/sage), and [Purple](https://github.com/hartwigmedical/hmftools/tree/master/purple) outputs. It’s structured into four steps: Re-callings, Annotation, Filter, and Report. The final outputs include an HTML report summarising the results.
 
 #### Summary
 
-1. Integration of SAGE variants to recover low-frequency mutations in hotspots.
+1. re-callings of SAGE variants to recover low-frequency mutations in hotspots.
 2. Annotate variants with clinical and functional information using PCGR.
 3. Filter variants based on quality and frequency criteria (allele frequency, read depth, population frequency), while retaining those of potential clinical significance (hotspots, high-impact, etc.).
 4. 4.Filter variants based on allele frequency (AF), supporting reads (AD), population frequency (gnomAD AF), removing low-confidence and common variants.
 5. Report final annotated variants in a comprehensive HTML report (PCGR, CANCER REPORT, LINX, MultiQC)  format.
 
-### Variant Calling integrations
+### Variant Calling re-callings
 
-The variant calling integrations step use variants from the **Somatic Alterations in Genome** ([SAGE](https://github.com/hartwigmedical/hmftools/tree/sage-v1.0/sage)) variant caller tool, which is more sensitive than DRAGEN in detecting variants, particularly those with low allele frequency that might have been missed, or filtered out. SAGE focuses on targets known cancer hotspots prioritising predefined genomic regions of high clinical or biological relevance with its [filter](https://github.com/hartwigmedical/hmftools/tree/master/sage#6-soft-filters). This enables the integration calling of biologically significant variants in a VCF that may have been missed otherwise.
+The variant calling re-callings step use variants from the **Somatic Alterations in Genome** ([SAGE](https://github.com/hartwigmedical/hmftools/tree/sage-v1.0/sage)) variant caller tool, which is more sensitive than DRAGEN in detecting variants, particularly those with low allele frequency that might have been missed, or filtered out. SAGE focuses on targets known cancer hotspots prioritising predefined genomic regions of high clinical or biological relevance with its [filter](https://github.com/hartwigmedical/hmftools/tree/master/sage#6-soft-filters). This enables the re-callings calling of biologically significant variants in a VCF that may have been missed otherwise.
 
 #### Inputs
 
@@ -117,19 +121,14 @@ Steps are:
 
 1. Select High-Confidence SAGE Calls in Hotspot Regions to ensure only high-confidence variants in clinically relevant regions are considered:
    - Filter the SAGE output to retain only variants that pass quality filters and overlap with known hotspot regions.
-   - Hotspot regions are derived from databases such as:
-     - Cancer Genome Interpreter (CGI)
-     - CIViC (Clinical Interpretations of Variants in Cancer)
-     - OncoKB (Precision Oncology Knowledge Base)
    - Compare the input VCF and the SAGE VCF to identify overlapping and unique variants.
 2. Annotate existing somatic variant calls also present in the SAGE calls in the input VCF
-   - Annotate variants that are re-called by SAGE:
      - For each variant in the input VCF, check if it exists in the SAGE existing calls.
-     - For variants re-called by SAGE:
+     - For variants integrateed by SAGE:
        - If `SAGE FILTER=PASS` and input VCF `FILTER=PASS`:
          - Set `INFO/SAGE_HOTSPOT` to indicate the variant is called by SAGE in a hotspot.
        - If `SAGE FILTER=PASS` and input VCF `FILTER` is not `PASS`:
-         - Set `INFO/SAGE_HOTSPOT` and `INFO/SAGE_RESCUE` to indicate the variant is integrated from SAGE.
+         - Set `INFO/SAGE_HOTSPOT` and `INFO/SAGE_RESCUE` to indicate the variant is re-call from SAGE.
          - Update `FILTER=PASS` to include the variant in the final analysis.
        - If `SAGE FILTER` is not `PASS`:
          - Append `SAGE_lowconf` to the `FILTER` field to flag low-confidence variants.
@@ -140,31 +139,15 @@ Steps are:
        - For example, `FORMAT/SB` is renamed to `FORMAT/SAGE_SB`.
      - Retain necessary `INFO` and `FORMAT` annotations while removing others to streamline the data.
 
-   Summary Finalize the integration of VCF file integration
-
-   - The final VCF file includes:
-     - Original variants from the input VCF, annotated with SAGE information where applicable.
-     - Novel variants identified by SAGE in hotspot regions.
-     - Updated `FILTER` and `INFO` fields reflecting the rescue and annotation process.
-
 ### Annotation
 
-The Annotation consists of three step processes, employs Reference Sources (GA4GH/GIAB problem region stratifications, GIAB high confidence regions, gnomAD, Hartwig hotspots), UMCCR panel of normals  and the PCGR tool to enrich variants with detailed functional and with clinical information using ACMG guidelines. PCGR classifies variants into tiers based on their clinical and biological significance and incorporates mutational signature analysis to provide insights into underlying mutational processes. To manage memory usage effectively, the input VCF file is divided into chunks, each containing up to 500,000 variants. Each chunk is processed independently through PCGR, and after annotation, the chunks are merged to produce an annotated VCF and TSV file.
-
-#### These annotations are used to decide which variants are retained or filtered in the next step
-
-Summary:
-Use PCGR to enrich the VCF with:
-
-- Functional impact information (e.g., consequences, mutation hotspots).
-- Clinical relevance (e.g., tier classifications, mutational signatures).
-- Process VCF files in chunks ≤500,000 variants each.
-- Merge annotated chunks into a unified VCF.
+The Annotation consists of three step processes, employs Reference Sources (GA4GH/GIAB problem region stratifications, GIAB high confidence regions, gnomAD, Hartwig hotspots), UMCCR panel of normals  and the PCGR tool to enrich variants with [classification](https://sigven.github.io/pcgr/articles/variant_classification.html) and with clinical information.
+**These annotations are used to decide which variants are retained or filtered in the next step**
 
 ##### Inputs
 
-- Small variant vcf Rescue VCF
-  - `${tumor_id}.main.sage.filtered.vcf.gz`
+- Small variant VCF
+  - `${tumor_id}.rescued.vcf.gz`
 
 ##### Output
 
@@ -194,13 +177,13 @@ Steps are:
    - Add the `AD` FORMAT field:
    - `AD`: Allelic depths for the reference and alternate alleles.
 5. Prepare VCF for PCGR annotation
-   - Exclude unnecessary data from the VCF header keeping on INFO AF/DP .
+   - Make minimal VCF header keeping on INFO AF/DP, and contigs size .
    - Move tumor and normal `FORMAT/AF` and `FORMAT/DP` annotations to the `INFO` field as required by PCGR.
    - Set `FILTER` to `PASS` and remove all `FORMAT` and sample columns.
 
 6. Run PCGR to annotate VCF against external sources
-   - Use PCGR (Personal Cancer Genome Reporter) to annotate the VCF with clinical, functional, and biological information.
-   - Classify variants by tiers based on annotations and functional impact according to ACMG guidelines.
+   - Use PCGR to annotate the VCF
+   - Classify variants by tiers based on annotations and functional impact according to AMP/ASCO/CAP guidelines.
    - Add `INFO` fields into the VCF: `TIER`, `SYMBOL`, `CONSEQUENCE`, `MUTATION_HOTSPOT`, `INTOGEN_DRIVER_MUT`, `TCGA_PANCANCER_COUNT`, `CLINVAR_CLNSIG`, `ICGC_PCAWG_HITS`, `COSMIC_CNT`.
    - External sources used during this step include VEP, ClinVar, COSMIC, TCGA, ICGC, Open Targets Platform, CancerMine, DoCM, CBMDB, DisGeNET, Cancer Hotspots, dbNSFP, UniProt/SwissProt, Pfam, DGIdb, and ChEMBL.
 7. Transfer PCGR annotations to the full set of variants
@@ -280,7 +263,7 @@ Inputs:
 
 ## Somatic structural variants
 
-The Somatic Structural Variants (SVs) pipeline identifies and annotates large-scale genomic alterations, including deletions, duplications, inversions, insertions, and translocations in tumor samples. This step integrates outputs from DRAGEN Variant Caller, GRIDSS2, using PURPLE applies filtering criteria, and prioritizes clinically significant structural variants.The analysis of somatic structural variants (SVs) involves processing, annotating, and prioritizing variants to identify those with clinical and biological significance. This process uses outputs from tools like PURPLE and GRIDSS and involves several key steps:
+The Somatic Structural Variants (SVs) pipeline identifies and annotates large-scale genomic alterations, including deletions, duplications, inversions, insertions, and translocations in tumor samples. This step re-calls outputs from DRAGEN Variant Caller, GRIDSS2, using PURPLE applies filtering criteria, and prioritizes clinically significant structural variants.
 
 ### Summary:
 
@@ -297,15 +280,6 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
 5. Report
    - Cancer report
    - Multiqc
-6. Assign SV Types:
-   - Classify SVs as duplications or deletions based on copy number thresholds.
-   - Split variants into separate files for structural variants (SVs) and copy number variants (CNVs).
-7. Annotate and Prioritize Variants:
-   - Use SnpEff to annotate variants with gene-level and functional impact information.
-   - Prioritize variants based on clinical relevance and support metrics.
-   - Generate TSV (tab-separated values) files summarizing the prioritized SVs and CNVs.
-8. Generate Summary Reports:
-9. Create TSV (tab-separated values) files summarizing the prioritized SVs and CNVs for downstream analysis and reporting.
 
 ### Input File
 
@@ -336,7 +310,7 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
    - Classify Variants:
      - Structural Variants (SVs): Variants labeled with the source `sv_gridss`.
      - Copy Number Variants (CNVs): Variants labeled with the source `cnv_purple`.
-5. Prioritise variants on a 4 tier system:
+5. Prioritise variants on a 4 tier system using [prioritize_sv](https://github.com/umccr/vcf_stuff/blob/master/scripts/prioritize_sv.):
    **1 (high)** - **2 (moderate)** - **3 (low)** - **4 (no interest)**
     - exon loss
       - on cancer gene list (1)
@@ -365,6 +339,9 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
         - Exclude Tier 3 and Tier 4 variants where `SR < 10`, `PR < 10`, and allele frequencies (`AF0` or `AF1`) are below 0.1.
      - Structural Variants (SVs): Variants labeled with the source sv_gridss.
      - Copy Number Variants (CNVs): Variants labeled with the source cnv_purple.
+7. Report:
+   - Make Multiqc and cancer report
+
 
 ## Germline small variants
 
