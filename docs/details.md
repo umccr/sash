@@ -91,11 +91,10 @@ In the Somatic Small Variants workflow, variant detection is performed using the
 
 #### Summary
 
-1. re-callings of SAGE variants to recover low-frequency mutations in hotspots.
+1. re-callings SAGE variants to recover low-frequency mutations in hotspots.
 2. Annotate variants with clinical and functional information using PCGR.
 3. Filter variants based on quality and frequency criteria (allele frequency, read depth, population frequency), while retaining those of potential clinical significance (hotspots, high-impact, etc.).
-4. 4.Filter variants based on allele frequency (AF), supporting reads (AD), population frequency (gnomAD AF), removing low-confidence and common variants.
-5. Report final annotated variants in a comprehensive HTML report (PCGR, CANCER REPORT, LINX, MultiQC)  format.
+4. Report final annotated variants in a comprehensive HTML report(PCGR, CANCER REPORT, LINX, MultiQC)
 
 ### Variant Calling re-callings
 
@@ -115,9 +114,7 @@ The variant calling re-callings step use variants from the **Somatic Alterations
 - Rescue: VCF
   - `${tumor_id}.rescued.vcf.gz`
 
-#### Details
-
-Steps are:
+#### Steps
 
 1. Select High-Confidence SAGE Calls in Hotspot Regions to ensure only high-confidence variants in clinically relevant regions are considered:
    - Filter the SAGE output to retain only variants that pass quality filters and overlap with known hotspot regions.
@@ -154,9 +151,7 @@ The Annotation consists of three step processes, employs Reference Sources (GA4G
 - Annotated VCF
   - `${tumor_id}.annotations.vcf.g`
 
-Details:
-
-Steps are:
+#### Steps
 
 1. Set FILTER to "PASS" for unfiltered variants
    - Iterate over the input VCF file the `FILTER` field to `PASS` for any variants that currently have no filter status (`FILTER` is `.` or `None`). This standardization is necessary for downstream tools.
@@ -196,7 +191,7 @@ Steps are:
 The Filter step applies a series of stringent filters to somatic variant calls in the VCF file, ensuring the retention of high-confidence and biologically meaningful variants.
 
 
-Inputs:
+#### Inputs
 
 - Annotated VCF
   - `${tumor_id}.annotations.vcf.gz`
@@ -206,7 +201,7 @@ Inputs:
 - Filter VCF
   - `${tumor_id}\*filters_set.vcf.gz`
 
-Filters:
+#### Filters
 
 1. Technical Quality Filters
 
@@ -237,16 +232,20 @@ Filters:
 
 The Report step utilises the Personal Cancer Genome Reporter (PCGR)
 
-Inputs:
+#### Inputs
 
 - Purple purity
-- Filter VCF
+- Filterd VCF
+  -  `${tumor_id}\*filters_set.vcf.gz`
 - Dragen VCF
+  - `${tumor_id}.main.dragen.vcf.gz`
 
 #### Output:
 
 - PCGR Cancer report
-  - ${tumor_id}.pcgr_acmg.grch38.html
+  - `${tumor_id}.pcgr_acmg.grch38.html`
+
+#### Steps
 
 1. Generate BCFtools Statistics on the Input VCF:
    The code runs a helper function (`bcftools_stats_prepare`) to create a modified version of the input VCF, adjusting quality scores so that `bcftools stats` can produce more meaningful outputs. It then executes `bcftools stats` to gather statistics on variant quality and distribution, storing the results in a text file.
@@ -259,7 +258,7 @@ Inputs:
    - The code counts the total number and types of variants (SNPs, Indels, Others) passing filters in both a DRAGEN VCF and the FILTER BOLT VCF.
 4. Count Variants by Processing Stage
 5. Parse Purity and Ploidy Information (Purple Data)
-6. Run PCGR Annotation
+6. Run PCGR
 
 ## Somatic structural variants
 
@@ -354,7 +353,7 @@ Filtering Select passing variants in the given [gene panel transcript regions](h
       1. The filtered variants are then further restricted to regions defined by a gene panel transcript regions file.
 2. Report: CPSR
 
-The CPSR (Cancer Predisposition Sequencing Report) includes the following:
+### The CPSR (Cancer Predisposition Sequencing Report)
 
 Settings:
 
