@@ -43,7 +43,7 @@ Amber computes B-allele frequencies, which are critical for estimating tumor pur
 
 ### [GRIDSS/GRIPSS](https://github.com/PapenfussLab/gridss)
 
-#### [Virusbraken](https://github.com/PapenfussLab/gridss/blob/master/VIRUSBreakend_Readme.md)
+### [Virusbraken](https://github.com/PapenfussLab/gridss/blob/master/VIRUSBreakend_Readme.md)
 
 ---
 
@@ -138,7 +138,7 @@ The variant calling re-callings step use variants from the **Somatic Alterations
 
 ### Annotation
 
-The Annotation consists of three step processes, employs Reference Sources (GA4GH/GIAB problem region stratifications, GIAB high confidence regions, gnomAD, Hartwig hotspots), UMCCR panel of normals  and the PCGR tool to enrich variants with [classification](https://sigven.github.io/pcgr/articles/variant_classification.html) and with clinical information.
+The Annotation consists of three step processes, employs Reference Sources (GA4GH/GIAB problem region stratifications, GIAB high confidence regions, gnomAD, Hartwig hotspots), UMCCR panel of normals  and the PCGR tool to enrich variants with [classification](https://sigven.github.io/pcgr/articles/variant_classification.html) and clinical information.
 **These annotations are used to decide which variants are retained or filtered in the next step**
 
 ##### Inputs
@@ -186,10 +186,9 @@ The Annotation consists of three step processes, employs Reference Sources (GA4G
    - Ensure that all variants, including those not selected for PCGR annotation, have relevant clinical annotations where available.
    - Preserve the `FILTER` statuses and other annotations from the original VCF.
 
-###  Filter
+### Filter
 
 The Filter step applies a series of stringent filters to somatic variant calls in the VCF file, ensuring the retention of high-confidence and biologically meaningful variants.
-
 
 #### Inputs
 
@@ -216,7 +215,6 @@ The Filter step applies a series of stringent filters to somatic variant calls i
 | **COSMIC Database Hit Count Filter**      | COSMIC count < 10                              |
 | **TCGA Pan-cancer Count Filter**          | TCGA count < 5                                 |
 | **ICGC PCAWG Count Filter**               | ICGC count < 5                                 |
-<!-- | **Strand Bias Filter**                    | Extreme strand bias (criteria not numerically defined)  | -->
 
 ### 2. Clinical Significance execeptions
 
@@ -226,7 +224,6 @@ The Filter step applies a series of stringent filters to somatic variant calls i
 | **ClinVar Pathogenicity**         | ClinVar classification of `conflicting_interpretations_of_pathogenicity`, `likely_pathogenic`, `pathogenic`, or `uncertain_significance` |
 | **Mutation Hotspots**             | Annotated as `HMF_HOTSPOT`, `PCGR_MUTATION_HOTSPOT` and SAGE Hotspots(CGI, CIViC, OncoKB)                                                                |
 | **PCGR Tier Exception**           | Classified as `TIER_1` OR `TIER_2`                                                                                   |
-
 
 ### Reports
 
@@ -240,7 +237,7 @@ The Report step utilises the Personal Cancer Genome Reporter (PCGR)
 - Dragen VCF
   - `${tumor_id}.main.dragen.vcf.gz`
 
-#### Output:
+#### Output
 
 - PCGR Cancer report
   - `${tumor_id}.pcgr_acmg.grch38.html`
@@ -264,7 +261,7 @@ The Report step utilises the Personal Cancer Genome Reporter (PCGR)
 
 The Somatic Structural Variants (SVs) pipeline identifies and annotates large-scale genomic alterations, including deletions, duplications, inversions, insertions, and translocations in tumor samples. This step re-calls outputs from DRAGEN Variant Caller, GRIDSS2, using PURPLE applies filtering criteria, and prioritizes clinically significant structural variants.
 
-### Summary:
+### Summary
 
 1. GRIPSS filtering:
    - GRIPSS filtering refines the structural variant calls from Oncoanalyser using read counts, panel-of-normals, known fusion hotspots, and repeat masker annotations data are the specific to umccr like known_fusions
@@ -334,17 +331,28 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
 6. Filter Low-Quality Calls:
         Apply Quality Filters:
         - Keep variants with sufficient read support (e.g., split reads (SR) ≥ 5 and paired reads (PR) ≥ 5).
-        - Exclude Tier 3 and Tier 4 variants where `SR  5` and `PR < 5`.
+        - Exclude Tier 3 and Tier 4 variants where `SR < 5` and `PR < 5`.
         - Exclude Tier 3 and Tier 4 variants where `SR < 10`, `PR < 10`, and allele frequencies (`AF0` or `AF1`) are below 0.1.
      - Structural Variants (SVs): Variants labeled with the source sv_gridss.
      - Copy Number Variants (CNVs): Variants labeled with the source cnv_purple.
 7. Report:
-   - Make Multiqc and cancer report
-
+   - Generate MultiQC and cancer report outputs
 
 ## Germline small variants
 
-Filtering Select passing variants in the given [gene panel transcript regions](https://github.com/umccr/gene_panels/tree/main/germline_panel)  made with PMCC familial cancer clinic list then make CPSR report.
+Filtering Select passing variants in the given [gene panel transcript regions](https://github.com/umccr/gene_panels/tree/main/germline_panel) made with PMCC familial cancer clinic list then make CPSR report.
+
+#### Inputs
+
+- Dragen VCF
+  - `${normal_id}.hard-filtered.vcf.gz`
+
+#### Output
+
+- CPSR report
+  - `${normal_id}.cpsr.grch38.html`
+
+#### Steps
 
 1. Prepare
    1. Selection of Passing Variants:
@@ -352,36 +360,6 @@ Filtering Select passing variants in the given [gene panel transcript regions](h
    2. Selection of Gene Panel Variants:
       1. The filtered variants are then further restricted to regions defined by a gene panel transcript regions file.
 2. Report: CPSR
-
-### The CPSR (Cancer Predisposition Sequencing Report)
-
-Settings:
-
-- Sample metadata
-- Report configuration
-- Virtual gene panel
-
-Summary of Findings:
-
-- Variant statistics
-
-Variant Classification:
-
-ClinVarc and Non-ClinVar
-
-- Class 5 - Pathogenic variants
-- Class 4 - Likely Pathogenic variants
-- Class 3 - Variants of Uncertain Significance (VUS)
-- Class 2 - Likely Benign variants
-- Class 1 - Benign variants
-- Biomarkers
-
-PCGR TIER according to [ACMG](https://www.ncbi.nlm.nih.gov/pubmed/27993330):
-
-- Tier 1 (High): Highest priority variants with strong clinical relevance.
-- Tier 2 (Moderate): Variants with potential clinical significance.
-- Tier 3 (Low): Variants with uncertain significance.
-- Tier 4 (No Interest): Variants unlikely to be clinically relevant.
 
 ---
 
@@ -497,6 +475,9 @@ PCGR TIER according to [ACMG](https://www.ncbi.nlm.nih.gov/pubmed/27993330):
 - Tier 2 (Moderate): Variants with potential clinical significance.
 - Tier 3 (Low): Variants with uncertain significance.
 - Tier 4 (No Interest): Variants unlikely to be clinically relevant.
+
+---
+# Coverage
 
 ---
 
