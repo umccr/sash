@@ -12,8 +12,6 @@
 - [Common Reports](#common-reports)
 - [sash Module Outputs](#sash-module-outputs)
 - [FAQ](#faq)
-- [Key Metrics](#key-metrics)
-- [CPSR Report](#cpsr-report)
 
 ## Overview
 
