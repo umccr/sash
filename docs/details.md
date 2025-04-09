@@ -1,5 +1,22 @@
 # sash workflow details
 
+## Table of Contents
+- [Overview](#overview)
+- [HMFtools WiGiTs](#hmftools-wigits)
+- [Other Tools](#other-tools)
+- [Pipeline Inputs](#pipeline-inputs)
+- [Workflows](#workflows)
+  - [Somatic Small Variants](#somatic-small-variants)
+  - [Somatic Structural Variants](#somatic-structural-variants)
+  - [Germline Small Variants](#germline-small-variants)
+- [Common Reports](#common-reports)
+- [sash Module Outputs](#sash-module-outputs)
+- [FAQ](#faq)
+- [Key Metrics](#key-metrics)
+- [CPSR Report](#cpsr-report)
+
+## Overview
+
 ![Summary](images/sash_overview_qc.png)
 
 The sash Workflow is a genomic analysis framework comprising three primary pipelines:
@@ -12,7 +29,7 @@ These pipelines utilise Bolt, a Python package designed for modular processing, 
 
 ---
 
-## [HMFtools WiGiTs](https://github.com/hartwigmedical/hmftools/tree/master)
+## HMFtools WiGiTs
 
 HMFtools WiGiTS is an open-source suite for cancer genomics developed by the Hartwig Medical Foundation. Key components used in Oncoanalyser, by sash include:
 
@@ -29,6 +46,7 @@ Cobalt calculates read-depth ratios from sequencing data, providing essential in
 Amber computes B-allele frequencies, which are critical for estimating tumor purity and ploidy. The Amber directory contains these measurements, supporting PURPLE's re-call analysis.
 
 ---
+
 ## Other Tools
 
 ### [SIGRAP](https://github.com/umccr/sigrap)
@@ -83,7 +101,7 @@ Description: This VCF contains structural variant calls produced by GRIDSS2.
 
 ## Workflows
 
-## Somatic Small Variants (SNV/Indel, Tumor)
+### Somatic Small Variants
 
 #### General
 
@@ -257,11 +275,11 @@ The Report step utilises the Personal Cancer Genome Reporter (PCGR)
 5. Parse Purity and Ploidy Information (Purple Data)
 6. Run PCGR
 
-## Somatic structural variants
+### Somatic Structural Variants
 
 The Somatic Structural Variants (SVs) pipeline identifies and annotates large-scale genomic alterations, including deletions, duplications, inversions, insertions, and translocations in tumor samples. This step re-calls outputs from DRAGEN Variant Caller, GRIDSS2, using PURPLE applies filtering criteria, and prioritizes clinically significant structural variants.
 
-### Summary
+#### Summary
 
 1. GRIPSS filtering:
    - GRIPSS filtering refines the structural variant calls from Oncoanalyser using read counts, panel-of-normals, known fusion hotspots, and repeat masker annotations data are the specific to umccr like known_fusions
@@ -277,14 +295,12 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
    - Cancer report
    - Multiqc
 
-### Input File
+#### Inputs
 
 - GRIDSS2
   - ${tumor_id}.gridss.vcf.gz
 
-### Details
-
-### Detailed Steps
+#### Steps
 
 1. GRIPSS filtering:
    - Evaluate split-read and paired-end support; discard variants with low support.
@@ -338,7 +354,7 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
 7. Report:
    - Generate MultiQC and cancer report outputs
 
-## Germline small variants
+### Germline Small Variants
 
 Filtering Select passing variants in the given [gene panel transcript regions](https://github.com/umccr/gene_panels/tree/main/germline_panel) made with PMCC familial cancer clinic list then make CPSR report.
 
@@ -363,7 +379,7 @@ Filtering Select passing variants in the given [gene panel transcript regions](h
 
 ---
 
-# Common Reports
+## Common Reports
 
 ### [Cancer report](https://umccr.github.io/gpgr/)
 
@@ -374,37 +390,37 @@ Tumor Mutation Burden (TMB):
 - Data Source: filtered somatic VCF
 - Tool: PURPLE
 
-#### Mutational Signatures:
+#### Mutational Signatures
 
 - Data Source: filtered SNV/CNV VCF
 - Tool: MutationalPatterns R package (via PCGR)
 
-#### Contamination Score:
+#### Contamination Score
 
 - Data Source: –
 - Note: No dedicated contamination metric is currently generated
 
-#### Purity & Ploidy:
+#### Purity & Ploidy
 
 - Data Source: COBALT (providing read-depth ratios) and AMBER (providing B-allele frequency measurements)
 - Tool: PURPLE, which uses these inputs to compute sample purity (percentage of tumor cells) and overall ploidy (average copy number)
 
-#### HRD Score:
+#### HRD Score
 
 - Data Source: HRD analysis output file (${tumor_id}.hrdscore.tsv)
 - Tool: DRAGEN
 
-#### MSI (Microsatellite Instability):
+#### MSI (Microsatellite Instability)
 
 - Data Source: Indels in microsatellite regions from SNV/CNV
 - Tool: PURPLE
 
-#### Structural Variant Metrics:
+#### Structural Variant Metrics
 
 - Data Source: GRIDSS/GRIPSS SV VCF and PURPLE CNV segmentation
 - Tools: GRIDSS/GRIPSS and PURPLE
 
-#### Copy Number Metrics (Segments, Deleted Genes, etc.):
+#### Copy Number Metrics (Segments, Deleted Genes, etc.)
 
 - Data Source: PURPLE CNV outputs (segmentation files, gene-level CNV TSV)
 - Tool: PURPLE
@@ -571,7 +587,7 @@ DRAGEN HRD Score
 
 ---
 
-# FAQ
+## FAQ
 
 ### Q: Do we use PCGR for the rescue of sage?
 
