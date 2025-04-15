@@ -195,7 +195,7 @@ The Annotation consists of three step processes, employs Reference Sources (GA4G
 6. Run PCGR to annotate VCF against external sources
    - Use PCGR to annotate the VCF
    - Classify variants by tiers based on annotations and functional impact according to AMP/ASCO/CAP guidelines.
-   - Add `INFO` fields into the VCF: `TIER`, `SYMBOL`, `CONSEQUENCE`, `MUTATION_HOTSPOT`, `INTOGEN_DRIVER_MUT`, `TCGA_PANCANCER_COUNT`, `CLINVAR_CLNSIG`, `ICGC_PCAWG_HITS`, `COSMIC_CNT`.
+   - Add `INFO` fields into the VCF: `TIER`, `SYMBOL`, `CONSEQUENCE`, `MUTATION_HOTSPOT`, `TCGA_PANCANCER_COUNT`, `CLINVAR_CLNSIG`, `ICGC_PCAWG_HITS`, `COSMIC_CNT`.
    - External sources used during this step include VEP, ClinVar, COSMIC, TCGA, ICGC, Open Targets Platform, CancerMine, DoCM, CBMDB, DisGeNET, Cancer Hotspots, dbNSFP, UniProt/SwissProt, Pfam, DGIdb, and ChEMBL.
 7. Transfer PCGR annotations to the full set of variants
    - merge the PCGR annotations back into the original VCF file.
@@ -218,7 +218,7 @@ The Filter step applies a series of stringent filters to somatic variant calls i
 
 #### Filters
 
-1. Technical Quality Filters
+variant that do not meet this criteria will not be considered unless [Clinical Significance execeptions](#2-clinical-significance-execeptions)
 
 | **Filter Type**                           | **Threshold/Criteria**                         |
 |-------------------------------------------|------------------------------------------------|
