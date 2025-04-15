@@ -232,7 +232,7 @@ variant that do not meet this criteria will not be considered unless [Clinical S
 | **TCGA Pan-cancer Count Filter**          | TCGA count < 5                                 |
 | **ICGC PCAWG Count Filter**               | ICGC count < 5                                 |
 
-### 2. Clinical Significance execeptions
+#### Clinical Significance execeptions
 
 | Exception Category           | Criteria                                                                                                          |
 |------------------------------|-------------------------------------------------------------------------------------------------------------------|
