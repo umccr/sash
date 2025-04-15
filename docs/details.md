@@ -218,7 +218,7 @@ The Filter step applies a series of stringent filters to somatic variant calls i
 
 #### Filters
 
-variant that do not meet this criteria will not be considered unless [Clinical Significance execeptions](#2-clinical-significance-execeptions)
+variant that do not meet this criteria will not be considered unless [Clinical Significance Exceptions](#2-clinical-significance-Exceptions)
 
 | **Filter Type**                           | **Threshold/Criteria**                         |
 |-------------------------------------------|------------------------------------------------|
@@ -232,7 +232,7 @@ variant that do not meet this criteria will not be considered unless [Clinical S
 | **TCGA Pan-cancer Count Filter**          | TCGA count < 5                                 |
 | **ICGC PCAWG Count Filter**               | ICGC count < 5                                 |
 
-#### Clinical Significance execeptions
+#### Clinical Significance Exceptions
 
 | Exception Category           | Criteria                                                                                                          |
 |------------------------------|-------------------------------------------------------------------------------------------------------------------|
