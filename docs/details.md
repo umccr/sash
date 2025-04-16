@@ -188,18 +188,19 @@ The Annotation consists of three step processes, employs Reference Sources (GA4G
    - Add the `AD` FORMAT field:
    - `AD`: Allelic depths for the reference and alternate alleles.
 5. Prepare VCF for PCGR annotation
-   - Make minimal VCF header keeping INFO AF/DP and contigs size.
+   - Make minimal VCF header keeping on INFO AF/DP, and contigs size .
    - Move tumor and normal `FORMAT/AF` and `FORMAT/DP` annotations to the `INFO` field as required by PCGR.
    - Set `FILTER` to `PASS` and remove all `FORMAT` and sample columns.
+
 6. Run PCGR to annotate VCF against external sources
-   - Use PCGR to annotate the VCF.
+   - Use PCGR to annotate the VCF
    - Classify variants by tiers based on annotations and functional impact according to AMP/ASCO/CAP guidelines.
-   - Add the following INFO fields to the VCF: `TIER`, `SYMBOL`, `CONSEQUENCE`, `MUTATION_HOTSPOT`, `TCGA_PANCANCER_COUNT`, `CLINVAR_CLNSIG`, `ICGC_PCAWG_HITS`, `COSMIC_CNT`.
-   - (External sources include VEP, ClinVar, COSMIC, TCGA, ICGC, Open Targets Platform, CancerMine, DoCM, CBMDB, DisGeNET, Cancer Hotspots, dbNSFP, UniProt/SwissProt, Pfam, DGIdb, and ChEMBL.)
+   - Add `INFO` fields into the VCF: `TIER`, `SYMBOL`, `CONSEQUENCE`, `MUTATION_HOTSPOT`, `TCGA_PANCANCER_COUNT`, `CLINVAR_CLNSIG`, `ICGC_PCAWG_HITS`, `COSMIC_CNT`.
+   - External sources used during this step include VEP, ClinVar, COSMIC, TCGA, ICGC, Open Targets Platform, CancerMine, DoCM, CBMDB, DisGeNET, Cancer Hotspots, dbNSFP, UniProt/SwissProt, Pfam, DGIdb, and ChEMBL.
 7. Transfer PCGR annotations to the full set of variants
-   - Merge the PCGR annotations back into the original VCF.
-   - Ensure that all variants—including those not selected for PCGR annotation—have their relevant clinical annotations.
-   - Preserve the original FILTER statuses and other annotations.
+   - merge the PCGR annotations back into the original VCF file.
+   - Ensure that all variants, including those not selected for PCGR annotation, have relevant clinical annotations where available.
+   - Preserve the `FILTER` statuses and other annotations from the original VCF.
 
 ### Filter
 
@@ -213,11 +214,11 @@ The Filter step applies a series of stringent filters to somatic variant calls i
 #### Output
 
 - Filter VCF
-  - `${tumor_id}*filters_set.vcf.gz`
+  - `${tumor_id}\*filters_set.vcf.gz`
 
 #### Filters
 
-variants that do not meet these criteria will not be considered unless [Clinical Significance Exceptions](#2-clinical-significance-Exceptions)
+variant that do not meet this criteria will not be considered unless [Clinical Significance Exceptions](#2-clinical-significance-Exceptions)
 
 | **Filter Type**                           | **Threshold/Criteria**                         |
 |-------------------------------------------|------------------------------------------------|
