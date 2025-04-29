@@ -95,14 +95,29 @@ workflow SASH {
     // channel: [ meta, cobalt_dir ]
     ch_cobalt = ch_inputs.map { meta -> [meta, file(meta.oncoanalyser_dir).toUriString() + '/cobalt/'] }
 
-    // channel: [ meta, gripss_somatic_vcf, gripss_somatic_tbi ]
-    ch_gridss = ch_inputs
+    // channel: [ meta, esvee_somatic_vcf, esvee_somatic_tbi ]
+    ch_esvee_somatic = ch_inputs
         .map { meta ->
-            def subpath = "/gridss/${meta.tumor_id}.gridss.vcf.gz"
+            def subpath = "/esvee/caller/${meta.tumor_id}.esvee.somatic.vcf.gz"
             def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
             return [meta, vcf]
         }
 
+    // channel: [ meta, esvee_germline_vcf, esvee_germline_tbi ]
+    ch_esvee_germline = ch_inputs
+        .map { meta ->
+            def subpath = "/esvee/caller/${meta.tumor_id}.esvee.germline.vcf.gz"
+            def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
+            return [meta, vcf]
+        }
+
+    // channel: [ meta, esvee_somatic_unfiltred_vcf, esvee_somatic_unfiltred_tbi ]
+    ch_esvee_somatic_unfiltred = ch_inputs
+        .map { meta ->
+            def subpath = "/esvee/caller/${meta.tumor_id}.esvee.unfiltered.vcf.g"
+            def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
+            return [meta, vcf]
+        }
     // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
     ch_sage_somatic = ch_inputs
         .map { meta ->
@@ -246,27 +261,6 @@ workflow SASH {
     ch_smlv_germline_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_PREPARE.out.vcf, ch_inputs)
 
 
-
-
-
-    //
-    // Somatic structural variants
-    //
-    GRIPSS_FILTERING(
-        ch_inputs,
-        ch_gridss,
-        genome.fasta,
-        genome.version,
-        genome.fai,
-        hmf_data.gridss_pon_breakends,
-        hmf_data.gridss_pon_breakpoints,
-        umccr_data.known_fusions,
-        hmf_data.repeatmasker_annotations,
-    )
-
-
-
-
     //
     // CNV calling using UMCCR postprocessed variants
     //
@@ -284,11 +278,9 @@ workflow SASH {
         //   * https://github.com/hartwigmedical/hmftools/blob/a2f82e5/purple/src/main/java/com/hartwig/hmftools/purple/germline/GermlineGenotypeEnrichment.java#L63
         //ch_smlv_germline_out,
         ch_smlv_germline_out.map { meta, vcf -> return [meta, []] },
-
-
-        GRIPSS_FILTERING.out.somatic,
-        GRIPSS_FILTERING.out.germline,
-        GRIPSS_FILTERING.out.somatic_unfiltered,
+        ch_esvee_somatic,
+        ch_esvee_germline,
+        ch_esvee_somatic_unfiltred,
         genome.fasta,
         genome.version,
         genome.fai,
