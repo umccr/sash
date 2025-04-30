@@ -3,7 +3,7 @@ workflow PREPARE_INPUT {
         ch_samplesheet
 
     main:
-        ch_metas = Channel.of(ch_samplesheet)
+        def ch_metas = Channel.of(ch_samplesheet)
             .splitCsv(header: true)
             .map { [it.id, it] }
             .groupTuple()
