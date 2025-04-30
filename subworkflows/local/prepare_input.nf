@@ -52,17 +52,17 @@ workflow PREPARE_INPUT {
         def ch_esvee_somatic = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
             def vcf = "${base}/esvee/caller/${meta.tumor_id}.esvee.somatic.vcf.gz"
-            return [meta, vcf]
+            return [meta, vcf, "${vcf}.tbi"]
         }
         def ch_esvee_germline = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
             def vcf = "${base}/esvee/caller/${meta.tumor_id}.esvee.germline.vcf.gz"
-            return [meta, vcf]
+            return [meta, vcf, "${vcf}.tbi"]
         }
         def ch_esvee_somatic_unfiltered = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
             def vcf = "${base}/esvee/caller/${meta.tumor_id}.esvee.unfiltered.vcf.gz"
-            return [meta, vcf]
+            return [meta, vcf, "${vcf}.tbi"]
         }
         def ch_sage_somatic = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
