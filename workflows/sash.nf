@@ -87,52 +87,16 @@ workflow SASH {
     )
     ch_inputs = PREPARE_INPUT.out.metas
 
-    // TODO(SW): place into subworkflow; simplify with map of variable name -> subpath
-
-    // channel: [ meta, amber_dir ]
-    ch_amber = ch_inputs.map { meta -> [meta, file(meta.oncoanalyser_dir).toUriString() + '/amber/'] }
-
-    // channel: [ meta, cobalt_dir ]
-    ch_cobalt = ch_inputs.map { meta -> [meta, file(meta.oncoanalyser_dir).toUriString() + '/cobalt/'] }
-
-    // channel: [ meta, esvee_somatic_vcf, esvee_somatic_tbi ]
-    ch_esvee_somatic = ch_inputs
-        .map { meta ->
-            def subpath = "/esvee/caller/${meta.tumor_id}.esvee.somatic.vcf.gz"
-            def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
-            return [meta, vcf]
-        }
-
-    // channel: [ meta, esvee_germline_vcf, esvee_germline_tbi ]
-    ch_esvee_germline = ch_inputs
-        .map { meta ->
-            def subpath = "/esvee/caller/${meta.tumor_id}.esvee.germline.vcf.gz"
-            def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
-            return [meta, vcf]
-        }
-
-    // channel: [ meta, esvee_somatic_unfiltred_vcf, esvee_somatic_unfiltred_tbi ]
-    ch_esvee_somatic_unfiltred = ch_inputs
-        .map { meta ->
-            def subpath = "/esvee/caller/${meta.tumor_id}.esvee.unfiltered.vcf.g"
-            def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
-            return [meta, vcf]
-        }
-    // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
-    ch_sage_somatic = ch_inputs
-        .map { meta ->
-            def subpath = "/sage/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
-            def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
-            return [meta, vcf, "${vcf}.tbi"]
-        }
-
-    // channel: [ meta, virusbreakend_dir ]
-    ch_virusbreakend = ch_inputs
-        .map { meta ->
-            def subpath = '/virusbreakend/'
-            def virusbreakend_dir = file(meta.oncoanalyser_dir).toUriString() + subpath
-            return [meta, virusbreakend_dir]
-        }
+    ch_amber               = PREPARE_INPUT.out.amber
+    ch_cobalt              = PREPARE_INPUT.out.cobalt
+    ch_esvee_somatic       = PREPARE_INPUT.out.esvee_somatic
+    ch_esvee_germline      = PREPARE_INPUT.out.esvee_germline
+    ch_esvee_somatic_unfiltered = PREPARE_INPUT.out.esvee_somatic_unfiltered
+    ch_sage_somatic        = PREPARE_INPUT.out.sage_somatic
+    ch_virusbreakend       = PREPARE_INPUT.out.virusbreakend
+    ch_input_hrd          = PREPARE_INPUT.out.hrd
+    ch_input_vcf_germline  = PREPARE_INPUT.out.vcf_germline
+    ch_input_vcf_somatic   = PREPARE_INPUT.out.vcf_somatic
 
 
 
@@ -155,12 +119,6 @@ workflow SASH {
     // Somatic small variants
     //
 
-    // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
-    ch_input_vcf_somatic = ch_inputs
-        .map { meta ->
-            def vcf = file(meta.dragen_somatic_dir).toUriString() + "/${meta.tumor_id}.hard-filtered.vcf.gz"
-            return [meta, vcf, "${vcf}.tbi"]
-        }
 
 
     // channel: [ meta_bolt, dragen_somatic_vcf, dragen_somatic_tbi, sage_somatic_vcf, sage_somatic_tbi ]
@@ -176,7 +134,7 @@ workflow SASH {
                 tumor_id: meta.tumor_id,
                 normal_id: meta.normal_id,
             ]
-            return [meta_bolt, *it[1..-1]]
+            return [meta_bolt] + it[1..-1]
         }
 
     BOLT_SMLV_SOMATIC_RESCUE(
@@ -230,14 +188,6 @@ workflow SASH {
     // Germline small variants
     //
 
-    // channel: [ meta, dragen_germline_vcf ]
-    ch_input_vcf_germline = ch_inputs
-        .map { meta ->
-            def vcf = file(meta.dragen_germline_dir).toUriString() + "/${meta.normal_id}.hard-filtered.vcf.gz"
-            return [meta, vcf]
-        }
-
-    // channel: [ meta_bolt, dragen_germline_vcf ]
     ch_smlv_germline_prepare_inputs = ch_input_vcf_germline
         .map { meta, dragen_vcf ->
 
@@ -280,7 +230,7 @@ workflow SASH {
         ch_smlv_germline_out.map { meta, vcf -> return [meta, []] },
         ch_esvee_somatic,
         ch_esvee_germline,
-        ch_esvee_somatic_unfiltred,
+        ch_esvee_somatic_unfiltered,
         genome.fasta,
         genome.version,
         genome.fai,
@@ -455,11 +405,6 @@ workflow SASH {
     //
 
     // channel: [ meta, dragen_hrd ]
-    ch_input_hrd = ch_inputs
-        .map { meta ->
-            def hrd = file(meta.dragen_somatic_dir).toUriString() + "/${meta.tumor_id}.hrdscore.csv"
-            return [meta, hrd]
-        }
 
     // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_bcftools_stats, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, dragen_hrd ]
     ch_cancer_report_inputs = WorkflowSash.groupByMeta(
@@ -484,7 +429,7 @@ workflow SASH {
                 subject_id: meta.subject_id,
                 tumor_id: meta.tumor_id,
             ]
-            return [meta_bolt, *it[1..-1]]
+            return [meta_bolt] + it[1..-1]
         }
 
     BOLT_OTHER_CANCER_REPORT(
