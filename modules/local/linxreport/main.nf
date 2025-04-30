@@ -2,7 +2,7 @@ process LINXREPORT {
     tag "${meta.id}"
     label 'process_single'
 
-    container 'docker.io/scwatts/r-linxreport:1.0.0--0'
+    container 'docker.io/scwatts/r-linxreport:1.1.0--0'
 
     input:
     tuple val(meta), path(linx_annotation_dir), path(linx_visualiser_dir)
@@ -17,22 +17,24 @@ process LINXREPORT {
     script:
     def args = task.ext.args ?: ''
 
+    def plot_dir = linx_visualiser_dir.resolve('all/').toUriString()
+
     """
-    # Create input directory if it doesn't exist for linxreport
-    if [[ ! -e ${linx_visualiser_dir} ]]; then
-        mkdir -p ${linx_visualiser_dir};
+    # Set input plot directory and create it doesn't exist. See the LINX visualiser module for further info.
+    if [[ ! -e ${plot_dir} ]]; then
+        mkdir -p ${plot_dir};
     fi;
 
     linxreport.R \\
         ${args} \\
         --sample ${meta.sample_id} \\
-        --plot ${linx_visualiser_dir} \\
+        --plot ${plot_dir} \\
         --table ${linx_annotation_dir} \\
         --out ${meta.sample_id}_linx.html
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        R: \$(R --version | head -n1 | sed 's/^R version \\([0-9.]\\+\\).\\+/\\1/')
+        r: \$(R --version | head -n1 | sed 's/^R version \\([0-9.]\\+\\).\\+/\\1/')
         linxreport: \$(linxreport.R --version)
     END_VERSIONS
     """
@@ -40,6 +42,7 @@ process LINXREPORT {
     stub:
     """
     touch ${meta.sample_id}_linx.html
+
     echo -e '${task.process}:\n  stub: noversions\n' > versions.yml
     """
 }
