@@ -39,8 +39,6 @@ process PURPLE {
     def sv_tumor_vcf_arg = sv_tumor_vcf ? "-somatic_sv_vcf ${sv_tumor_vcf}" : ''
     def sv_normal_vcf_arg = sv_normal_vcf ? "-germline_sv_vcf ${sv_normal_vcf}" : ''
 
-    def sv_tumor_recovery_vcf_arg = sv_tumor_unfiltered_vcf ? "-sv_recovery_vcf ${sv_tumor_unfiltered_vcf}" : ''
-
     // NOTE(SW): use of 'smlv_tumor.vcf.gz' is intended here; see comment below in script block
     def smlv_tumor_vcf_arg = smlv_tumor_vcf ? "-somatic_vcf smlv_tumor.vcf.gz" : ''
     def smlv_normal_vcf_arg = smlv_normal_vcf ? "-germline_vcf ${smlv_normal_vcf}" : ''
@@ -77,7 +75,6 @@ process PURPLE {
         -cobalt ${cobalt} \\
         ${sv_tumor_vcf_arg} \\
         ${sv_normal_vcf_arg} \\
-        ${sv_tumor_recovery_vcf_arg} \\
         ${smlv_tumor_vcf_arg} \\
         ${smlv_normal_vcf_arg} \\
         -ref_genome ${genome_fasta} \\
