@@ -49,21 +49,17 @@ workflow PREPARE_INPUT {
             def base = file(meta.oncoanalyser_dir).toUriString()
             return [meta, "${base}/cobalt/"]
         }
-        def ch_esvee_somatic = ch_metas.map { meta ->
+        def ref_depth_vcf = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def vcf = "${base}/esvee/caller/${meta.tumor_id}.esvee.somatic.vcf.gz"
+            def vcf = "${base}/esvee/depth_annotation/${meta.tumor_id}.esvee.ref_depth.vcf.gz"
             return [meta, vcf, "${vcf}.tbi"]
         }
-        def ch_esvee_germline = ch_metas.map { meta ->
+        def prep_dir = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def vcf = "${base}/esvee/caller/${meta.tumor_id}.esvee.germline.vcf.gz"
-            return [meta, vcf, "${vcf}.tbi"]
+            def dir = "${base}/esvee/prep/"
+            return [meta, dir]
         }
-        def ch_esvee_somatic_unfiltered = ch_metas.map { meta ->
-            def base = file(meta.oncoanalyser_dir).toUriString()
-            def vcf = "${base}/esvee/caller/${meta.tumor_id}.esvee.unfiltered.vcf.gz"
-            return [meta, vcf, "${vcf}.tbi"]
-        }
+
         def ch_sage_somatic = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
             def vcf = "${base}/sage/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
@@ -86,17 +82,15 @@ workflow PREPARE_INPUT {
             def vcf = "${base}/${meta.tumor_id}.hard-filtered.vcf.gz"
             return [meta, vcf, "${vcf}.tbi"]
         }
-
     emit:
         metas = ch_metas
         amber = ch_amber
         cobalt = ch_cobalt
-        esvee_somatic = ch_esvee_somatic
-        esvee_germline = ch_esvee_germline
-        esvee_somatic_unfiltered = ch_esvee_somatic_unfiltered
         sage_somatic = ch_sage_somatic
         virusbreakend = ch_virusbreakend
         hrd = ch_input_hrd
         vcf_germline = ch_input_vcf_germline
         vcf_somatic = ch_input_vcf_somatic
+        ref_depth_vcf = ref_depth_vcf
+        prep_dir = prep_dir
 }

@@ -47,8 +47,8 @@ include { BOLT_SMLV_SOMATIC_RESCUE   } from '../modules/local/bolt/smlv_somatic/
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
 include { PAVE_SOMATIC               } from '../modules/local/pave/somatic/main'
+include { ESVEE_CALL                 } from '../modules/local/esvee/call/main'
 
-include { GRIPSS_FILTERING           } from '../subworkflows/local/gripss_filtering'
 include { LINX_ANNOTATION            } from '../subworkflows/local/linx_annotation'
 include { LINX_PLOTTING              } from '../subworkflows/local/linx_plotting'
 include { PREPARE_INPUT              } from '../subworkflows/local/prepare_input'
@@ -89,14 +89,13 @@ workflow SASH {
 
     ch_amber               = PREPARE_INPUT.out.amber
     ch_cobalt              = PREPARE_INPUT.out.cobalt
-    ch_esvee_somatic       = PREPARE_INPUT.out.esvee_somatic
-    ch_esvee_germline      = PREPARE_INPUT.out.esvee_germline
-    ch_esvee_somatic_unfiltered = PREPARE_INPUT.out.esvee_somatic_unfiltered
     ch_sage_somatic        = PREPARE_INPUT.out.sage_somatic
     ch_virusbreakend       = PREPARE_INPUT.out.virusbreakend
     ch_input_hrd          = PREPARE_INPUT.out.hrd
     ch_input_vcf_germline  = PREPARE_INPUT.out.vcf_germline
     ch_input_vcf_somatic   = PREPARE_INPUT.out.vcf_somatic
+    ch_ref_depth_vcf = PREPARE_INPUT.out.ref_depth_vcf
+    ch_prep_dir = PREPARE_INPUT.out.prep_dir
 
 
 
@@ -243,8 +242,33 @@ workflow SASH {
         hmf_data.purple_germline_del,
     )
 
+    //
+    // Somatic structural variants
 
+    //
+    // MODULE: ESVEE call somatic structural variants
+    //
+    // Create process input channel
+    // channel: [meta_esvee, ref_depth_vcf, prep_dir]
+    ch_call_inputs = WorkflowOncoanalyser.groupByMeta(
+        ch_ref_depth_vcf,
+        ch_prep_dir,
+    )
 
+    //TODO update ref data
+    ESVEE_CALL(
+        ch_call_inputs,
+        genome.fasta,
+        genome.version,
+        hmf_data.gridss_pon_breakends,
+        hmf_data.gridss_pon_breakpoints,
+        umccr_data.known_fusions,
+        hmf_data.repeatmasker_annotations,
+    )
+
+    ch_esvee_somatic       = ESVEE_CALL.out.somatic_vcf
+    ch_esvee_germline      = ESVEE_CALL.out.germline_vcf
+    ch_esvee_somatic_unfiltered = ESVEE_CALL.out.unfiltered_vcf
 
     //
     // Small variant reporting (PCGR, CPSR, stats)
@@ -367,7 +391,6 @@ workflow SASH {
     ch_sv_somatic_sv_vcf_out = WorkflowSash.restoreMeta(BOLT_SV_SOMATIC_PRIORITISE.out.sv_vcf, ch_inputs)
     // channel: [ meta, cnv_tsv ]
     ch_sv_somatic_cnv_tsv_out = WorkflowSash.restoreMeta(BOLT_SV_SOMATIC_PRIORITISE.out.cnv_tsv, ch_inputs)
-
 
 
 
