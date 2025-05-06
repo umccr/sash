@@ -49,12 +49,12 @@ workflow PREPARE_INPUT {
             def base = file(meta.oncoanalyser_dir).toUriString()
             return [meta, "${base}/cobalt/"]
         }
-        def ref_depth_vcf = ch_metas.map { meta ->
+        def ch_ref_depth_vcf = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
             def vcf = "${base}/esvee/depth_annotation/${meta.tumor_id}.esvee.ref_depth.vcf.gz"
             return [meta, vcf, "${vcf}.tbi"]
         }
-        def prep_dir = ch_metas.map { meta ->
+        def chprep_dir = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
             def dir = "${base}/esvee/prep/"
             return [meta, dir]
@@ -91,6 +91,6 @@ workflow PREPARE_INPUT {
         hrd = ch_input_hrd
         vcf_germline = ch_input_vcf_germline
         vcf_somatic = ch_input_vcf_somatic
-        ref_depth_vcf = ref_depth_vcf
-        prep_dir = prep_dir
+        ref_depth_vcf = ch_ref_depth_vcf
+        prep_dir = ch_prep_dir
 }
