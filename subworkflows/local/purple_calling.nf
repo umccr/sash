@@ -12,9 +12,9 @@ workflow PURPLE_CALLING {
         ch_cobalt                    // channel: [mandatory] [ meta, cobalt_dir ]
         ch_smlv_somatic              // channel: [optional]  [ meta, pave_vcf ]
         ch_smlv_germline             // channel: [optional]  [ meta, pave_vcf ]
-        ch_sv_somatic                // channel: [optional]  [ meta, gripss_vcf, gripss_tbi ]
-        ch_sv_germline               // channel: [optional]  [ meta, gripss_vcf, gripss_tbi ]
-        ch_sv_somatic_unfiltered     // channel: [optional]  [ meta, gripss_vcf, gripss_tbi ]
+        ch_sv_somatic                // channel: [optional]  [ meta, esvee_vcf, esvee_tbi ]
+        ch_sv_germline               // channel: [optional]  [ meta, esvee_vcf, esvee_tbi ]
+        ch_sv_somatic_unfiltered     // channel: [optional]  [ meta, esvee_vcf, esvee_tbi ]
 
         // Reference data
         genome_fasta                 // channel: [mandatory] /path/to/genome_fasta
