@@ -46,8 +46,8 @@ include { BOLT_SMLV_SOMATIC_REPORT   } from '../modules/local/bolt/smlv_somatic/
 include { BOLT_SMLV_SOMATIC_RESCUE   } from '../modules/local/bolt/smlv_somatic/rescue/main'
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
-include { PAVE_SOMATIC               } from '../modules/local/pave/somatic/main'
 include { ESVEE_CALL                 } from '../modules/local/esvee/call/main'
+include { PAVE_SOMATIC               } from '../modules/local/pave/somatic/main'
 
 include { LINX_ANNOTATION            } from '../subworkflows/local/linx_annotation'
 include { LINX_PLOTTING              } from '../subworkflows/local/linx_plotting'
@@ -91,11 +91,11 @@ workflow SASH {
     ch_cobalt              = PREPARE_INPUT.out.cobalt
     ch_sage_somatic        = PREPARE_INPUT.out.sage_somatic
     ch_virusbreakend       = PREPARE_INPUT.out.virusbreakend
-    ch_input_hrd          = PREPARE_INPUT.out.hrd
+    ch_input_hrd           = PREPARE_INPUT.out.hrd
     ch_input_vcf_germline  = PREPARE_INPUT.out.vcf_germline
     ch_input_vcf_somatic   = PREPARE_INPUT.out.vcf_somatic
-    ch_ref_depth_vcf = PREPARE_INPUT.out.ref_depth_vcf
-    ch_prep_dir = PREPARE_INPUT.out.prep_dir
+    ch_ref_depth_vcf       = PREPARE_INPUT.out.ref_depth_vcf
+    ch_prep_dir            = PREPARE_INPUT.out.prep_dir
 
 
 
@@ -106,10 +106,10 @@ workflow SASH {
 
     // channel: [ meta ]
     PREPARE_REFERENCE()
-    genome = PREPARE_REFERENCE.out.genome
-    umccr_data = PREPARE_REFERENCE.out.umccr_data
-    hmf_data = PREPARE_REFERENCE.out.hmf_data
-    misc_data = PREPARE_REFERENCE.out.misc_data
+    genome               = PREPARE_REFERENCE.out.genome
+    umccr_data           = PREPARE_REFERENCE.out.umccr_data
+    hmf_data             = PREPARE_REFERENCE.out.hmf_data
+    misc_data            = PREPARE_REFERENCE.out.misc_data
 
 
 
