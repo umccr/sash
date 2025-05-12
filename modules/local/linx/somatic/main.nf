@@ -12,7 +12,6 @@ process LINX_SOMATIC {
     path driver_gene_panel
     path gene_id_file
 
-
     output:
     tuple val(meta), path('linx_somatic/'), emit: annotation_dir
     path 'versions.yml'                   , emit: versions
@@ -23,7 +22,6 @@ process LINX_SOMATIC {
     script:
     def args = task.ext.args ?: ''
     def gene_id_file_arg = gene_id_file ? "-gene_id_file ${gene_id_file}" : ''
-
 
     def xmx_mod = task.ext.xmx_mod ?: 0.75
 
