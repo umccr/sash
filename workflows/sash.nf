@@ -209,14 +209,13 @@ workflow SASH {
     // channel: [ meta, smlv_germline_vcf ]
     ch_smlv_germline_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_PREPARE.out.vcf, ch_inputs)
 
+
+
+
     //
     // Somatic structural variants
 
     //
-    // MODULE: ESVEE call somatic structural variants
-    //
-    // Create process input channel
-    // channel: [meta_esvee, ref_depth_vcf, prep_dir]
     ch_call_inputs = WorkflowSash.groupByMeta(
         ch_ref_depth_vcf,
         ch_prep_dir,
@@ -231,9 +230,6 @@ workflow SASH {
         umccr_data.known_fusions,
         hmf_data.repeatmasker_annotations,
     )
-
-    ch_esvee_somatic       = ESVEE_CALL.out.somatic_vcf
-    ch_esvee_germline      = ESVEE_CALL.out.germline_vcf
 
     //
     // CNV calling using UMCCR postprocessed variants
