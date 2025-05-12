@@ -14,7 +14,6 @@ workflow PURPLE_CALLING {
         ch_smlv_germline             // channel: [optional]  [ meta, pave_vcf ]
         ch_sv_somatic                // channel: [optional]  [ meta, esvee_vcf, esvee_tbi ]
         ch_sv_germline               // channel: [optional]  [ meta, esvee_vcf, esvee_tbi ]
-        ch_sv_somatic_unfiltered     // channel: [optional]  [ meta, esvee_vcf, esvee_tbi ]
 
         // Reference data
         genome_fasta                 // channel: [mandatory] /path/to/genome_fasta
@@ -41,7 +40,6 @@ workflow PURPLE_CALLING {
             ch_cobalt,
             // Optional inputs
             ch_sv_somatic,
-            ch_sv_somatic_unfiltered,
             ch_sv_germline,
             ch_smlv_somatic,
             ch_smlv_germline,
