@@ -249,7 +249,7 @@ workflow SASH {
         //ch_smlv_germline_out,
         ch_smlv_germline_out.map { meta, vcf -> return [meta, []] },
         ESVEE_CALL.out.somatic_vcf,
-        ESVEE_CALL.out.germline_vcfe,
+        ESVEE_CALL.out.germline_vcf,
         genome.fasta,
         genome.version,
         genome.fai,
