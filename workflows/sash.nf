@@ -133,7 +133,7 @@ workflow SASH {
                 tumor_id: meta.tumor_id,
                 normal_id: meta.normal_id,
             ]
-            return [meta_bolt], *it[1..-1]]
+            return [[meta_bolt], *it[1..-1]]
         }
 
     BOLT_SMLV_SOMATIC_RESCUE(
@@ -444,7 +444,7 @@ workflow SASH {
                 subject_id: meta.subject_id,
                 tumor_id: meta.tumor_id,
             ]
-            return [meta_bolt], *it[1..-1]]
+            return [[meta_bolt], *it[1..-1]]
         }
 
     BOLT_OTHER_CANCER_REPORT(
