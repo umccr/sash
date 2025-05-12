@@ -2,7 +2,7 @@ process BOLT_SV_SOMATIC_PRIORITISE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/qclayssen/bolt:oncoanalyser-v2'
+    container 'docker.io/qclayssen/bolt:oncoanalyser-v2-2'
 
     input:
     tuple val(meta), path(sv_vcf)
