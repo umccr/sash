@@ -133,7 +133,7 @@ workflow SASH {
                 tumor_id: meta.tumor_id,
                 normal_id: meta.normal_id,
             ]
-            return [meta_bolt] + it[1..-1]
+            return [meta_bolt], *it[1..-1]
         }
 
     BOLT_SMLV_SOMATIC_RESCUE(
@@ -222,7 +222,6 @@ workflow SASH {
         ch_prep_dir,
     )
 
-    //TODO update ref data
     ESVEE_CALL(
         ch_call_inputs,
         genome.fasta,
@@ -235,7 +234,6 @@ workflow SASH {
 
     ch_esvee_somatic       = ESVEE_CALL.out.somatic_vcf
     ch_esvee_germline      = ESVEE_CALL.out.germline_vcf
-    ch_esvee_somatic_unfiltered = ESVEE_CALL.out.unfiltered_vcf
 
     //
     // CNV calling using UMCCR postprocessed variants
@@ -254,9 +252,8 @@ workflow SASH {
         //   * https://github.com/hartwigmedical/hmftools/blob/a2f82e5/purple/src/main/java/com/hartwig/hmftools/purple/germline/GermlineGenotypeEnrichment.java#L63
         //ch_smlv_germline_out,
         ch_smlv_germline_out.map { meta, vcf -> return [meta, []] },
-        ch_esvee_somatic,
-        ch_esvee_germline,
-        ch_esvee_somatic_unfiltered,
+        ESVEE_CALL.out.somatic_vcf,
+        ESVEE_CALL.out.germline_vcfe,
         genome.fasta,
         genome.version,
         genome.fai,
@@ -451,7 +448,7 @@ workflow SASH {
                 subject_id: meta.subject_id,
                 tumor_id: meta.tumor_id,
             ]
-            return [meta_bolt] + it[1..-1]
+            return [meta_bolt], *it[1..-1]
         }
 
     BOLT_OTHER_CANCER_REPORT(
