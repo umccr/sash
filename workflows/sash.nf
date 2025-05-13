@@ -234,6 +234,7 @@ workflow SASH {
         hmf_data.repeatmasker_annotations,
     )
 
+    ch_versions = ch_versions.mix(ESVEE_CALL.out.versions)
     //
     // CNV calling using UMCCR postprocessed variants
     //
@@ -251,6 +252,7 @@ workflow SASH {
         //   * https://github.com/hartwigmedical/hmftools/blob/a2f82e5/purple/src/main/java/com/hartwig/hmftools/purple/germline/GermlineGenotypeEnrichment.java#L63
         //ch_smlv_germline_out,
         ch_smlv_germline_out.map { meta, vcf -> return [meta, []] },
+
         ESVEE_CALL.out.somatic_vcf,
         ESVEE_CALL.out.germline_vcf,
         genome.fasta,
@@ -264,6 +266,9 @@ workflow SASH {
         umccr_data.ensembl_data_resources,
         hmf_data.purple_germline_del,
     )
+
+
+
 
     //
     // Small variant reporting (PCGR, CPSR, stats)
