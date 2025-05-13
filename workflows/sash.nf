@@ -81,21 +81,24 @@ workflow SASH {
     // Prepare inputs from samplesheet
     //
 
-    // channel: [ meta ]
     PREPARE_INPUT(
         file(params.input),
     )
-    ch_inputs = PREPARE_INPUT.out.metas
+    ch_inputs = PREPARE_INPUT.out.metas            // channel: [ meta ]
 
-    ch_amber               = PREPARE_INPUT.out.amber
-    ch_cobalt              = PREPARE_INPUT.out.cobalt
-    ch_sage_somatic        = PREPARE_INPUT.out.sage_somatic
-    ch_virusbreakend       = PREPARE_INPUT.out.virusbreakend
-    ch_input_hrd           = PREPARE_INPUT.out.hrd
-    ch_input_vcf_germline  = PREPARE_INPUT.out.vcf_germline
-    ch_input_vcf_somatic   = PREPARE_INPUT.out.vcf_somatic
-    ch_ref_depth_vcf       = PREPARE_INPUT.out.ref_depth_vcf
-    ch_prep_dir            = PREPARE_INPUT.out.prep_dir
+    // OncoAnalyser outputs
+    ch_amber               = PREPARE_INPUT.out.amber             // channel: [ meta, amber_dir ]
+    ch_cobalt              = PREPARE_INPUT.out.cobalt            // channel: [ meta, cobalt_dir ]
+    ch_sage_somatic        = PREPARE_INPUT.out.sage_somatic      // channel: [ meta, vcf, tbi ]
+    ch_virusbreakend       = PREPARE_INPUT.out.virusbreakend     // channel: [ meta, virusbreakend_dir ]
+
+    // DRAGEN outputs
+    ch_input_hrd           = PREPARE_INPUT.out.hrd               // channel: [ meta, hrdscore_csv ]
+    ch_input_vcf_germline  = PREPARE_INPUT.out.vcf_germline      // channel: [ meta, germline_vcf ]
+    ch_input_vcf_somatic   = PREPARE_INPUT.out.vcf_somatic       // channel: [ meta, somatic_vcf, tbi ]
+
+    // eSVee inputs
+    ch_call_inputs         = PREPARE_INPUT.out.call_inputs       // channel: [ meta, esvee_prep_dir, esvee_ref_depth_vcf ]
 
 
 
