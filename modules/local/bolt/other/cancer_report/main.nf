@@ -60,7 +60,7 @@ process BOLT_OTHER_CANCER_REPORT {
     stub:
     """
     mkdir -p output/
-    touch -p output/cancer_report.stub
+    touch output/cancer_report.stub
     touch ${meta.tumor_id}.cancer_report.html
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
