@@ -60,6 +60,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
     stub:
     """
     mkdir -p output/pcgr/
+    touch output/pcgr/pcgr.stub
     touch output/af_tumor.txt
     touch output/af_tumor_keygenes.txt
     touch output/${meta.tumor_id}.somatic.variant_counts_type.yaml
