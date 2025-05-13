@@ -219,10 +219,6 @@ workflow SASH {
     // Somatic structural variants
 
     //
-    ch_call_inputs = WorkflowSash.groupByMeta(
-        ch_ref_depth_vcf,
-        ch_prep_dir
-    )
 
     ESVEE_CALL(
         ch_call_inputs,
