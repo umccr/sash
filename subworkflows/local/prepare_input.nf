@@ -53,9 +53,9 @@ workflow PREPARE_INPUT {
 
         def ch_call_inputs = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def dir = "${base}/esvee/prep/"
             def vcf = "${base}/esvee/depth_annotation/${meta.tumor_id}.esvee.ref_depth.vcf.gz"
-            return [meta, dir, vcf]
+            def dir = "${base}/esvee/prep/"
+            return [meta, vcf, dir]
         }
 
         def ch_sage_somatic = ch_metas.map { meta ->
