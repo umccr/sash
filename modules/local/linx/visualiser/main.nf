@@ -18,7 +18,6 @@ process LINX_VISUALISER {
 
     script:
     def args = task.ext.args ?: ''
-    def args2 = task.ext.args2 ?: ''
 
     def xmx_mod = task.ext.xmx_mod ?: 0.75
 
