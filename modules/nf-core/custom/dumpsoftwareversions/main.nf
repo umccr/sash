@@ -26,6 +26,6 @@ process CUSTOM_DUMPSOFTWAREVERSIONS {
     """
     touch software_versions.yml
     touch software_versions_mqc.yml
-    touch versions.yml
+    echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
