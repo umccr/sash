@@ -57,6 +57,7 @@ workflow PREPARE_INPUT {
                 id: meta.id,
                 tumor_id: meta.tumor_id,
                 normal_id: meta.normal_id,
+                sample_id: meta.tumor_id
             ]
 
             def base = file(meta.oncoanalyser_dir).toUriString()
