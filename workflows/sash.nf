@@ -135,6 +135,7 @@ workflow SASH {
                 id: meta.id,
                 tumor_id: meta.tumor_id,
                 normal_id: meta.normal_id,
+                sample_id: meta.tumor_id
             ]
             return [meta_bolt, *it[1..-1]]
         }
@@ -233,6 +234,9 @@ workflow SASH {
 
     ch_versions = ch_versions.mix(ESVEE_CALL.out.versions)
 
+    ch_esvee_somatic_out = WorkflowSash.restoreMeta(ESVEE_CALL.out.somatic_vcf, ch_inputs)
+    ch_esvee_germline_out =  WorkflowSash.restoreMeta(ESVEE_CALL.out.germline_vcf, ch_inputs)
+
 
 
 
@@ -254,8 +258,8 @@ workflow SASH {
         //ch_smlv_germline_out,
         ch_smlv_germline_out.map { meta, vcf -> return [meta, []] },
 
-        ESVEE_CALL.out.somatic_vcf,
-        ESVEE_CALL.out.germline_vcf,
+        ch_esvee_somatic_out,
+        ch_esvee_germline_out,
         genome.fasta,
         genome.version,
         genome.fai,
@@ -267,6 +271,8 @@ workflow SASH {
         umccr_data.ensembl_data_resources,
         hmf_data.purple_germline_del,
     )
+
+    ch_versions = ch_versions.mix(PURPLE_CALLING.out.versions)
 
 
 
