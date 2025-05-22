@@ -33,7 +33,7 @@ workflow PURPLE_CALLING {
         ch_versions = Channel.empty()
 
         // Collect inputs
-        // channel: [ meta, amber_dir, cobalt_dir, sv_somatic_vcf, sv_somatic_tbi, sv_somatic_unfiltered_vcf, sv_somatic_unfiltered_tbi, sv_germline_vcf, sv_germline_tbi, smlv_somatic_vcf, smlv_germline_vcf ]
+        // channel: [ meta, amber_dir, cobalt_dir, sv_somatic_vcf, sv_somatic_tbi, sv_germline_vcf, sv_germline_tbi, smlv_somatic_vcf, smlv_germline_vcf ]
         ch_purple_inputs_source = WorkflowSash.groupByMeta(
             // Required inputs
             ch_amber,
@@ -47,7 +47,7 @@ workflow PURPLE_CALLING {
         )
 
         // Create process-specific meta
-        // channel: [ meta_purple, amber_dir, cobalt_dir, sv_somatic_vcf, sv_somatic_tbi, sv_somatic_unfiltered_vcf, sv_somatic_unfilt_vcf, sv_germline_tbi, smlv_somatic_vcf, smlv_germline_vcf ]
+        // channel: [ meta_purple, amber_dir, cobalt_dir, sv_somatic_vcf, sv_somatic_tbi, sv_germline_tbi, smlv_somatic_vcf, smlv_germline_vcf ]
         ch_purple_inputs = ch_purple_inputs_source
             .map {
                 def meta = it[0]

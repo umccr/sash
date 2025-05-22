@@ -14,3 +14,43 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 ### `Dependencies`
 
 ### `Deprecated`
+
+## [0.6.0] – 2025-05-19
+
+### Added
+
+- _none_
+
+### Changed
+
+- SV caller switched GRIPSS → eSVe
+- Cancer-report Structural Variants plot: `SR`→`SF`, `PR`→`DF`
+- Linx upgraded 1.25 → 2.0
+- Purple upgraded 4.0.1 → 4.1.0
+- Bolt & GPGR updated for the adpat to above change
+
+### Removed
+
+- Kataegis module
+- CHORD HRD metrics
+
+### Deprecated
+
+- Metric aliases `SR`, `PR`
+
+### Fixed
+
+- _none_
+
+### Security
+
+- _none_
+
+### Dependencies
+
+| Tool | Old | New |
+|------|-----|-----|
+| Linx | 1.25 | 2.0 |
+| Purple | 4.0.1 | 4.1.0 |
+| Bolt | — | umccr/bolt#6 |
+| GPGR | — | umccr/gpgr#88 |
