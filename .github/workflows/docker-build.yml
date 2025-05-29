@@ -1,0 +1,72 @@
+name: Build
+on:
+  push:
+    tags: [ 'v*.*.*' ]
+
+jobs:
+  docker_build:
+    name: Docker build
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - build_name: 'purple'
+            dockerfile_path: 'modules/local/purple'
+            tool_name: 'purple'
+          - build_name: 'linx'
+            dockerfile_path: 'modules/local/linx'
+            tool_name: 'linx'
+          - build_name: 'gripss'
+            dockerfile_path: 'modules/local/gripss'
+            tool_name: 'gripss'
+          - build_name: 'esvee-call'
+            dockerfile_path: 'modules/local/esvee/call'
+            tool_name: 'esvee'
+          - build_name: 'pave'
+            dockerfile_path: 'modules/local/pave'
+            tool_name: 'pave'
+          - build_name: 'linxreport'
+            dockerfile_path: 'modules/local/linxreport'
+            tool_name: 'linxreport'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Extract tool version from Dockerfile
+        id: version
+        run: |
+          dockerfile="${{ matrix.dockerfile_path }}/Dockerfile"
+          tool_name="${{ matrix.tool_name }}"
+          
+          # Extract version from the hmftools line in Dockerfile
+          if [[ "$tool_name" == "linxreport" ]]; then
+            # Special case for linxreport (uses r-linxreport)
+            version=$(grep "FROM.*r-linxreport:" "$dockerfile" | sed -E 's/.*r-linxreport:([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          else
+            # Standard hmftools pattern
+            version=$(grep "FROM.*hmftools-${tool_name}:" "$dockerfile" | sed -E 's/.*hmftools-'${tool_name}':([0-9]+\.[0-9]+(\.[0-9]+)?).*/\1/')
+          fi
+          
+          if [[ -z "$version" ]]; then
+            echo "Error: Could not extract version from $dockerfile"
+            exit 1
+          fi
+          
+          echo "version=${version}" >> $GITHUB_OUTPUT
+          echo "Extracted version: ${version} for tool: ${tool_name}"
+      - name: Build image
+        run: |
+          tool_version="${{ steps.version.outputs.version }}"
+          docker_tag="${{ matrix.tool_name }}:${tool_version}"
+          dockerfile_path="${{ matrix.dockerfile_path }}"
+          
+          echo "Building ${docker_tag} from ${dockerfile_path}"
+          docker build --push -f ${dockerfile_path}/Dockerfile -t docker.io/umccr/${docker_tag} ${dockerfile_path}
