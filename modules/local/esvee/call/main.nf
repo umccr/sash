@@ -2,8 +2,7 @@ process ESVEE_CALL {
     tag "${meta.id}"
     label 'process_high'
 
-    container 'docker.io/qclayssen/esvee:1.0.3'
-
+    container 'docker.io/umccr/esvee:1.0.3'
 
     input:
     tuple val(meta), path(ref_depth_vcf), path(prep_dir)

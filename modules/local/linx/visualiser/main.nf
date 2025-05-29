@@ -2,7 +2,7 @@ process LINX_VISUALISER {
     tag "${meta.id}"
     label 'process_medium'
 
-    container 'docker.io/qclayssen/hmftools-linx:2.0--1'
+    container 'docker.io/umccr/linx:2.0'
 
     input:
     tuple val(meta), path(linx_annotation_dir)
