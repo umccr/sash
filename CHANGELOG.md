@@ -33,6 +33,7 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 - Kataegis module
 - CHORD HRD metrics
+- MSI load and status from purple
 
 ### Deprecated
 
