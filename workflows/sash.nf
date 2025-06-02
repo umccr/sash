@@ -84,14 +84,15 @@ workflow SASH {
     PREPARE_INPUT(
         file(params.input),
     )
-    ch_inputs = PREPARE_INPUT.out.metas            // channel: [ meta ]
+
+    ch_inputs              = PREPARE_INPUT.out.metas             // channel: [ meta ]
 
     // OncoAnalyser inputs
     ch_amber               = PREPARE_INPUT.out.amber             // channel: [ meta, amber_dir ]
     ch_cobalt              = PREPARE_INPUT.out.cobalt            // channel: [ meta, cobalt_dir ]
     ch_sage_somatic        = PREPARE_INPUT.out.sage_somatic      // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
     ch_virusbreakend       = PREPARE_INPUT.out.virusbreakend     // channel: [ meta, virusbreakend_dir ]
-    ch_call_inputs         = PREPARE_INPUT.out.call_inputs       // channel: [ meta, esvee_prep_dir, esvee_ref_depth_vcf ]
+    ch_call_inputs         = PREPARE_INPUT.out.call_inputs       // channel: [ meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir ]
 
     // DRAGEN inputs
     ch_input_hrd           = PREPARE_INPUT.out.hrd               // channel: [ meta, hrdscore_csv ]
