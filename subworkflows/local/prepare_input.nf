@@ -112,20 +112,18 @@ workflow PREPARE_INPUT {
             return [meta, vcf, "${vcf}.tbi"]
         }
     emit:
-        // Meta information for each sample
-        metas = ch_metas                   // channel: [ meta ]
+        // Sample metadata
+        metas            = ch_metas                   // channel: [ meta ]
 
-        // Oncoanalyser inputs
-        amber = ch_amber                   // channel: [ meta, amber_dir ]
-        cobalt = ch_cobalt                 // channel: [ meta, cobalt_dir ]
-        sage_somatic = ch_sage_somatic     // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
-        virusbreakend = ch_virusbreakend   // channel: [ meta, virusbreakend_dir ]
+        // oncoanalyser channels
+        amber            = ch_amber                   // channel: [ meta, amber_dir ]
+        cobalt           = ch_cobalt                  // channel: [ meta, cobalt_dir ]
+        sage_somatic     = ch_sage_somatic            // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
+        virusbreakend    = ch_virusbreakend           // channel: [ meta, virusbreakend_dir ]
+        call_inputs      = ch_call_inputs             // channel: [ meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir ]
 
-        // DRAGEN inputs
-        hrd = ch_input_hrd                 // channel: [ meta, hrdscore_csv ]
-        vcf_germline = ch_input_vcf_germline // channel: [ meta, dragen_germline_vcf ]
-        vcf_somatic = ch_input_vcf_somatic   // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
-
-        // eSVee inputs
-        call_inputs = ch_call_inputs             // channel: [ meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir ]
+        // DRAGEN channels
+        hrd              = ch_input_hrd               // channel: [ meta, hrdscore_csv ]
+        vcf_germline     = ch_input_vcf_germline      // channel: [ meta, dragen_germline_vcf ]
+        vcf_somatic      = ch_input_vcf_somatic       // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
 }
