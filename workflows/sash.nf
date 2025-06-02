@@ -91,14 +91,12 @@ workflow SASH {
     ch_cobalt              = PREPARE_INPUT.out.cobalt            // channel: [ meta, cobalt_dir ]
     ch_sage_somatic        = PREPARE_INPUT.out.sage_somatic      // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
     ch_virusbreakend       = PREPARE_INPUT.out.virusbreakend     // channel: [ meta, virusbreakend_dir ]
+    ch_call_inputs         = PREPARE_INPUT.out.call_inputs       // channel: [ meta, esvee_prep_dir, esvee_ref_depth_vcf ]
 
     // DRAGEN inputs
     ch_input_hrd           = PREPARE_INPUT.out.hrd               // channel: [ meta, hrdscore_csv ]
     ch_input_vcf_germline  = PREPARE_INPUT.out.vcf_germline      // channel: [ meta, dragen_germline_vcf ]
     ch_input_vcf_somatic   = PREPARE_INPUT.out.vcf_somatic       // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
-
-    // eSVee inputs
-    ch_call_inputs         = PREPARE_INPUT.out.call_inputs       // channel: [ meta, esvee_prep_dir, esvee_ref_depth_vcf ]
 
 
 
