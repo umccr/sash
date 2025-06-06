@@ -1,13 +1,11 @@
 name: Build
 on:
   push:
-    paths:
-      - 'modules/local/*/Dockerfile'
-      - 'modules/local/*/*/Dockerfile'
   pull_request:
     paths:
       - 'modules/local/*/Dockerfile'
       - 'modules/local/*/*/Dockerfile'
+      - '.github/workflows/docker-build.yml'
   workflow_dispatch:
     inputs:
       force_build:
