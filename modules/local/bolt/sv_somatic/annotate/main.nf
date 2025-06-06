@@ -2,7 +2,7 @@ process BOLT_SV_SOMATIC_ANNOTATE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/scwatts/bolt:0.2.13-snpeff'
+    container 'ghcr.io/umccr/bolt:0.2.14-dev-snpeff'
 
     input:
     tuple val(meta), path(sv_vcf), path(cnv_tsv)

@@ -1,26 +1,30 @@
 name: Build
 on:
   push:
-    tags: [ 'v*.*.*' ]
+    paths:
+      - 'modules/local/*/Dockerfile'
+      - 'modules/local/*/*/Dockerfile'
+  pull_request:
+    paths:
+      - 'modules/local/*/Dockerfile'
+      - 'modules/local/*/*/Dockerfile'
   workflow_dispatch:
     inputs:
-      registry:
-        description: 'Container registry to use'
-        required: true
-        default: 'docker.io/umccr'
-        type: choice
-        options:
-          - 'docker.io/umccr'
-          - 'ghcr.io/umccr'
+      force_build:
+        description: 'Force build all containers'
+        required: false
+        default: false
+        type: boolean
 
 env:
-  # Default registry if not specified via workflow_dispatch
-  DEFAULT_REGISTRY: 'docker.io/umccr'
+  # Use GitHub Container Registry
+  REGISTRY: 'ghcr.io/umccr'
 
 jobs:
   docker_build:
     name: Docker build
     runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[build]')
     permissions:
       contents: read
       packages: write
@@ -49,21 +53,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Login to Docker Hub
-        if: startsWith(steps.registry.outputs.registry, 'docker.io')
-        uses: docker/login-action@v3
-        with:
-          registry: docker.io
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       
       - name: Login to GitHub Container Registry
-        if: startsWith(steps.registry.outputs.registry, 'ghcr.io')
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Extract tool version from Dockerfile
         id: version
         run: |
@@ -86,13 +86,29 @@ jobs:
           
           echo "version=${version}" >> $GITHUB_OUTPUT
           echo "Extracted version: ${version} for tool: ${tool_name}"
-      - name: Build and push image
-        run: |
-          tool_version="${{ steps.version.outputs.version }}"
-          docker_tag="${{ matrix.tool_name }}:${tool_version}"
-          dockerfile_path="${{ matrix.dockerfile_path }}"
-          registry="${{ steps.registry.outputs.registry }}"
-          
-          echo "Building ${docker_tag} from ${dockerfile_path}"
-          echo "Pushing to registry: ${registry}"
-          docker build --push -f ${dockerfile_path}/Dockerfile -t ${registry}/${docker_tag} ${dockerfile_path}
+      
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ matrix.tool_name }}
+          tags: |
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.title=${{ matrix.tool_name }}
+            org.opencontainers.image.description=UMCCR SASH pipeline container for ${{ matrix.tool_name }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.vendor=UMCCR
+      
+      - name: Build and push container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.dockerfile_path }}
+          file: ${{ matrix.dockerfile_path }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
