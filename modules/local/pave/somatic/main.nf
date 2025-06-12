@@ -2,7 +2,7 @@ process PAVE_SOMATIC {
     tag "${meta.id}"
     label 'process_medium'
 
-    container 'ghcr.io/umccr/pave:1.7'
+    container 'quay.io/biocontainers/hmftools-pave:1.7--hdfd78af_0'
 
     input:
     tuple val(meta), path(vcf), path(tbi)
