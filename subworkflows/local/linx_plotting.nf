@@ -38,9 +38,9 @@ workflow LINX_PLOTTING {
             ensembl_data_resources,
         )
 
-        ch_versions = ch_versions.mix(VISUALISER.out.versions)
+        ch_versions = ch_versions.mix(LINX_VISUALISER.out.versions)
 
-        ch_visualiser_out = WorkflowSash.restoreMeta(VISUALISER.out.plots, ch_inputs)
+        ch_visualiser_out = WorkflowSash.restoreMeta(LINX_VISUALISER.out.plots, ch_inputs)
 
         // Create inputs and create process-specific meta
         // channel: [ meta_linxreport, linx_annotation_dir, linx_plot_dir ]
@@ -61,7 +61,7 @@ workflow LINX_PLOTTING {
             ch_linxreport_inputs,
         )
 
-        ch_versions = ch_versions.mix(REPORT.out.versions)
+        ch_versions = ch_versions.mix(LINXREPORT.out.versions)
 
     emit:
         plot_dir = ch_visualiser_out // channel: [ meta, plot_dir ]
