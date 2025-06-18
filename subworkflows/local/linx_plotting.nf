@@ -2,8 +2,8 @@
 // LINX plotting visualises clusters structural variants
 //
 
-include { LINXREPORT as REPORT          } from '../../modules/local/linxreport/main'
-include { LINX_VISUALISER as VISUALISER } from '../../modules/local/linx/visualiser/main'
+include { LINXREPORT } from '../../modules/local/linxreport/main'
+include { LINX_VISUALISER } from '../../modules/local/linx/visualiser/main'
 
 workflow LINX_PLOTTING {
     take:
@@ -32,7 +32,7 @@ workflow LINX_PLOTTING {
                 return [meta_linx, anno_dir]
             }
 
-        VISUALISER(
+        LINX_VISUALISER(
             ch_linx_visualiser_inputs,
             genome_version,
             ensembl_data_resources,
@@ -57,7 +57,7 @@ workflow LINX_PLOTTING {
                 return [meta_linxreport, anno_dir, plot_dir]
             }
 
-        REPORT(
+        LINXREPORT(
             ch_linxreport_inputs,
         )
 
