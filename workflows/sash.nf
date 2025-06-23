@@ -46,13 +46,13 @@ include { BOLT_SMLV_SOMATIC_REPORT   } from '../modules/local/bolt/smlv_somatic/
 include { BOLT_SMLV_SOMATIC_RESCUE   } from '../modules/local/bolt/smlv_somatic/rescue/main'
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
+include { ESVEE_CALL                 } from '../modules/local/esvee/call/main'
 include { PAVE_SOMATIC               } from '../modules/local/pave/somatic/main'
 include { SIGRAP_CHORD               } from '../modules/local/sigrap/chord/main'
 include { SIGRAP_HRDETECT            } from '../modules/local/sigrap/hrdetect/main'
 include { SIGRAP_MUTPAT              } from '../modules/local/sigrap/mutpat/main'
 
 
-include { GRIPSS_FILTERING           } from '../subworkflows/local/gripss_filtering'
 include { LINX_ANNOTATION            } from '../subworkflows/local/linx_annotation'
 include { LINX_PLOTTING              } from '../subworkflows/local/linx_plotting'
 include { PREPARE_INPUT              } from '../subworkflows/local/prepare_input'
@@ -65,7 +65,7 @@ include { PURPLE_CALLING             } from '../subworkflows/local/purple_callin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -85,43 +85,23 @@ workflow SASH {
     // Prepare inputs from samplesheet
     //
 
-    // channel: [ meta ]
     PREPARE_INPUT(
         file(params.input),
     )
-    ch_inputs = PREPARE_INPUT.out.metas
 
-    // TODO(SW): place into subworkflow; simplify with map of variable name -> subpath
+    ch_inputs              = PREPARE_INPUT.out.metas             // channel: [ meta ]
 
-    // channel: [ meta, amber_dir ]
-    ch_amber = ch_inputs.map { meta -> [meta, file(meta.oncoanalyser_dir).toUriString() + '/amber/'] }
+    // OncoAnalyser inputs
+    ch_amber               = PREPARE_INPUT.out.amber             // channel: [ meta, amber_dir ]
+    ch_cobalt              = PREPARE_INPUT.out.cobalt            // channel: [ meta, cobalt_dir ]
+    ch_sage_somatic        = PREPARE_INPUT.out.sage_somatic      // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
+    ch_virusbreakend       = PREPARE_INPUT.out.virusbreakend     // channel: [ meta, virusbreakend_dir ]
+    ch_call_inputs         = PREPARE_INPUT.out.call_inputs       // channel: [ meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir ]
 
-    // channel: [ meta, cobalt_dir ]
-    ch_cobalt = ch_inputs.map { meta -> [meta, file(meta.oncoanalyser_dir).toUriString() + '/cobalt/'] }
-
-    // channel: [ meta, gripss_somatic_vcf, gripss_somatic_tbi ]
-    ch_gridss = ch_inputs
-        .map { meta ->
-            def subpath = "/gridss/${meta.tumor_id}.gridss.vcf.gz"
-            def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
-            return [meta, vcf]
-        }
-
-    // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
-    ch_sage_somatic = ch_inputs
-        .map { meta ->
-            def subpath = "/sage/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
-            def vcf = file(meta.oncoanalyser_dir).toUriString() + subpath
-            return [meta, vcf, "${vcf}.tbi"]
-        }
-
-    // channel: [ meta, virusbreakend_dir ]
-    ch_virusbreakend = ch_inputs
-        .map { meta ->
-            def subpath = '/virusbreakend/'
-            def virusbreakend_dir = file(meta.oncoanalyser_dir).toUriString() + subpath
-            return [meta, virusbreakend_dir]
-        }
+    // DRAGEN inputs
+    ch_input_hrd           = PREPARE_INPUT.out.hrd               // channel: [ meta, hrdscore_csv ]
+    ch_input_vcf_germline  = PREPARE_INPUT.out.vcf_germline      // channel: [ meta, dragen_germline_vcf ]
+    ch_input_vcf_somatic   = PREPARE_INPUT.out.vcf_somatic       // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
 
 
 
@@ -132,10 +112,10 @@ workflow SASH {
 
     // channel: [ meta ]
     PREPARE_REFERENCE()
-    genome = PREPARE_REFERENCE.out.genome
-    umccr_data = PREPARE_REFERENCE.out.umccr_data
-    hmf_data = PREPARE_REFERENCE.out.hmf_data
-    misc_data = PREPARE_REFERENCE.out.misc_data
+    genome               = PREPARE_REFERENCE.out.genome
+    umccr_data           = PREPARE_REFERENCE.out.umccr_data
+    hmf_data             = PREPARE_REFERENCE.out.hmf_data
+    misc_data            = PREPARE_REFERENCE.out.misc_data
 
 
 
@@ -144,12 +124,6 @@ workflow SASH {
     // Somatic small variants
     //
 
-    // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
-    ch_input_vcf_somatic = ch_inputs
-        .map { meta ->
-            def vcf = file(meta.dragen_somatic_dir).toUriString() + "/${meta.tumor_id}.hard-filtered.vcf.gz"
-            return [meta, vcf, "${vcf}.tbi"]
-        }
 
 
     // channel: [ meta_bolt, dragen_somatic_vcf, dragen_somatic_tbi, sage_somatic_vcf, sage_somatic_tbi ]
@@ -164,6 +138,7 @@ workflow SASH {
                 id: meta.id,
                 tumor_id: meta.tumor_id,
                 normal_id: meta.normal_id,
+                sample_id: meta.tumor_id
             ]
             return [meta_bolt, *it[1..-1]]
         }
@@ -219,13 +194,6 @@ workflow SASH {
     // Germline small variants
     //
 
-    // channel: [ meta, dragen_germline_vcf ]
-    ch_input_vcf_germline = ch_inputs
-        .map { meta ->
-            def vcf = file(meta.dragen_germline_dir).toUriString() + "/${meta.normal_id}.hard-filtered.vcf.gz"
-            return [meta, vcf]
-        }
-
     // channel: [ meta_bolt, dragen_germline_vcf ]
     ch_smlv_germline_prepare_inputs = ch_input_vcf_germline
         .map { meta, dragen_vcf ->
@@ -252,21 +220,25 @@ workflow SASH {
 
 
 
-
     //
     // Somatic structural variants
+
     //
-    GRIPSS_FILTERING(
-        ch_inputs,
-        ch_gridss,
+
+    ESVEE_CALL(
+        ch_call_inputs,
         genome.fasta,
         genome.version,
-        genome.fai,
         hmf_data.gridss_pon_breakends,
         hmf_data.gridss_pon_breakpoints,
         umccr_data.known_fusions,
         hmf_data.repeatmasker_annotations,
     )
+
+    ch_versions = ch_versions.mix(ESVEE_CALL.out.versions)
+
+    ch_esvee_somatic_out = WorkflowSash.restoreMeta(ESVEE_CALL.out.somatic_vcf, ch_inputs)
+    ch_esvee_germline_out =  WorkflowSash.restoreMeta(ESVEE_CALL.out.germline_vcf, ch_inputs)
 
 
 
@@ -289,10 +261,8 @@ workflow SASH {
         //ch_smlv_germline_out,
         ch_smlv_germline_out.map { meta, vcf -> return [meta, []] },
 
-
-        GRIPSS_FILTERING.out.somatic,
-        GRIPSS_FILTERING.out.germline,
-        GRIPSS_FILTERING.out.somatic_unfiltered,
+        ch_esvee_somatic_out,
+        ch_esvee_germline_out,
         genome.fasta,
         genome.version,
         genome.fai,
@@ -304,6 +274,8 @@ workflow SASH {
         umccr_data.ensembl_data_resources,
         hmf_data.purple_germline_del,
     )
+
+    ch_versions = ch_versions.mix(PURPLE_CALLING.out.versions)
 
 
 
@@ -429,7 +401,6 @@ workflow SASH {
     ch_sv_somatic_sv_vcf_out = WorkflowSash.restoreMeta(BOLT_SV_SOMATIC_PRIORITISE.out.sv_vcf, ch_inputs)
     // channel: [ meta, cnv_tsv ]
     ch_sv_somatic_cnv_tsv_out = WorkflowSash.restoreMeta(BOLT_SV_SOMATIC_PRIORITISE.out.cnv_tsv, ch_inputs)
-
 
 
 
@@ -600,11 +571,15 @@ workflow SASH {
 
 
     //
-    // Collect software versions
+    // TASK: Aggregate software versions
     //
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    )
+    softwareVersionsToYAML(ch_versions)
+        .collectFile(
+            storeDir: "${params.outdir}/pipeline_info",
+            name: 'software_versions.yml',
+            sort: true,
+            newLine: true,
+        )
 
 }
 

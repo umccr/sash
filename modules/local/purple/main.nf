@@ -1,11 +1,11 @@
 process PURPLE {
     tag "${meta.id}"
-    label 'process_low'
+    label 'process_medium'
 
-    container 'docker.io/scwatts/purple:4.0.2--1'
+    container 'ghcr.io/umccr/purple:4.1'
 
     input:
-    tuple val(meta), path(amber), path(cobalt), path(sv_tumor_vcf), path(sv_tumor_tbi), path(sv_tumor_unfiltered_vcf), path(sv_tumor_unfiltered_tbi), path(sv_normal_vcf), path(sv_normal_tbi), path(smlv_tumor_vcf), path(smlv_normal_vcf)
+    tuple val(meta), path(amber), path(cobalt), path(sv_tumor_vcf), path(sv_tumor_tbi), path(sv_normal_vcf), path(sv_normal_tbi), path(smlv_tumor_vcf), path(smlv_normal_vcf)
     path genome_fasta
     val genome_ver
     path genome_fai
@@ -30,12 +30,13 @@ process PURPLE {
     script:
     def args = task.ext.args ?: ''
 
+    // allow custom heap fraction
+    def xmx_mod = task.ext.xmx_mod ?: 0.75
+
     def reference_arg = meta.containsKey('normal_id') ? "-reference ${meta.normal_id}" : ''
 
     def sv_tumor_vcf_arg = sv_tumor_vcf ? "-somatic_sv_vcf ${sv_tumor_vcf}" : ''
     def sv_normal_vcf_arg = sv_normal_vcf ? "-germline_sv_vcf ${sv_normal_vcf}" : ''
-
-    def sv_tumor_recovery_vcf_arg = sv_tumor_unfiltered_vcf ? "-sv_recovery_vcf ${sv_tumor_unfiltered_vcf}" : ''
 
     // NOTE(SW): use of 'smlv_tumor.vcf.gz' is intended here; see comment below in script block
     def smlv_tumor_vcf_arg = smlv_tumor_vcf ? "-somatic_vcf smlv_tumor.vcf.gz" : ''
@@ -65,7 +66,7 @@ process PURPLE {
     fi;
 
     purple \\
-        -Xmx${Math.round(task.memory.bytes * 0.95)} \\
+        -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
         ${args} \\
         -tumor ${meta.tumor_id} \\
         ${reference_arg} \\
@@ -73,7 +74,6 @@ process PURPLE {
         -cobalt ${cobalt} \\
         ${sv_tumor_vcf_arg} \\
         ${sv_normal_vcf_arg} \\
-        ${sv_tumor_recovery_vcf_arg} \\
         ${smlv_tumor_vcf_arg} \\
         ${smlv_normal_vcf_arg} \\
         -ref_genome ${genome_fasta} \\
@@ -99,7 +99,7 @@ process PURPLE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        purple: \$(purple -version | sed 's/^.* //')
+        purple: \$(purple -version | sed -n '/^Purple version / { s/^.* //p }')
     END_VERSIONS
     """
 
