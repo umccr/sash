@@ -437,27 +437,29 @@ workflow SASH {
     // Generate the cancer report
     //
 
-    // channel: [ meta, dragen_hrd ]
-    ch_input_hrd = ch_inputs
-        .map { meta ->
-            def hrd = file(meta.dragen_somatic_dir).toUriString() + "/${meta.tumor_id}.hrdscore.csv"
-            return [meta, hrd]
-        }
-
     SIGRAP_CHORD(
         ch_smlv_somatic_out,
         ch_sv_somatic_sv_vcf_out
     )
+
+    ch_smlv_somatic_chord = WorkflowSash.restoreMeta(SIGRAP_CHORD.out.chord_json, ch_inputs)
+    ch_versions = ch_versions.mix(SIGRAP_CHORD.out.versions)
+
     SIGRAP_HRDETECT(
         ch_smlv_somatic_out,
         ch_sv_somatic_sv_vcf_out,
         ch_sv_somatic_cnv_tsv_out,
-
-
     )
+
+    ch_smlv_somatic_hrdetect = WorkflowSash.restoreMeta(SIGRAP_HRDETECT.out.hrdetect_json, ch_inputs)
+    ch_versions = ch_versions.mix(SIGRAP_HRDETECT.out.versions)
+    
     SIGRAP_MUTPAT(
         ch_smlv_somatic_out
     )
+
+    ch_smlv_somatic_mutpat = WorkflowSash.restoreMeta(SIGRAP_MUTPAT.out.mutpat_output, ch_inputs)
+    ch_versions = ch_versions.mix(SIGRAP_MUTPAT.out.versions)
 
     // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_bcftools_stats, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, dragen_hrd ]
     ch_cancer_report_inputs = WorkflowSash.groupByMeta(
@@ -473,9 +475,9 @@ workflow SASH {
         PURPLE_CALLING.out.purple_dir,
         ch_virusbreakend,
         ch_input_hrd,
-        SIGRAP_MUTPAT.out.mutpat_output,
-        SIGRAP_HRDETECT.out.hrdetect_json,
-        SIGRAP_CHORD.out.chord_json
+        ch_smlv_somatic_mutpat,
+        ch_smlv_somatic_hrdetect,
+        ch_smlv_somatic_chord
     )
         .map {
             def meta = it[0]
