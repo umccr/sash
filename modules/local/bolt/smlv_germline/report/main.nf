@@ -8,6 +8,7 @@ process BOLT_SMLV_GERMLINE_REPORT {
     tuple val(meta), path(smlv_vcf), path(smlv_unfiltered_vcf)
     path germline_predisposition_panel_genes
     path pcgr_data_dir
+    path vep_dir
 
     output:
     tuple val(meta), path("output/*.variant_counts_type.yaml"), emit: counts_type
@@ -32,6 +33,7 @@ process BOLT_SMLV_GERMLINE_REPORT {
         --pcgrr_conda pcgrr \\
         --germline_panel_list_fp ${germline_predisposition_panel_genes} \\
         --pcgr_data_dir ${pcgr_data_dir} \\
+        --vep_dir ${vep_dir} \\
         --threads ${task.cpus} \\
         --output_dir output/
 

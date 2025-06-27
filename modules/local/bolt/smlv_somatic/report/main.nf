@@ -7,6 +7,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
     input:
     tuple val(meta), path(smlv_vcf), path(smlv_filters_vcf), path(smlv_dragen_vcf), path(purple_purity)
     path pcgr_data_dir
+    path vep_dir
     path somatic_driver_panel_regions_coding
     path giab_regions
     path genome_fasta
@@ -40,6 +41,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
         --pcgr_conda pcgr \\
         --pcgrr_conda pcgrr \\
         --pcgr_data_dir ${pcgr_data_dir} \\
+        --vep_dir ${vep_dir} \\
         --purple_purity_fp ${purple_purity} \\
         \\
         --cancer_genes_fp ${somatic_driver_panel_regions_coding} \\
