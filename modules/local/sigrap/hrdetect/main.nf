@@ -10,7 +10,7 @@ process SIGRAP_HRDETECT {
     tuple val(meta), path(cnv_somatic_tsv)
 
     output:
-    path 'output/hrdetect.json.gz'                            , emit: hrdetect_json
+    tuple val(meta), path('output/hrdetect.json.gz')                           , emit: hrdetect_json
     path 'versions.yml'                                       , emit: versions
 
     when:

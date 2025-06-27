@@ -8,7 +8,7 @@ process SIGRAP_MUTPAT {
     tuple val(meta), path(smlv_somatic_vcf)
 
     output:
-    path 'output/'                                            , emit: mutpat_output
+    tuple val(meta), path('output/')                                            , emit: mutpat_output
     path 'versions.yml'                                       , emit: versions
 
     when:

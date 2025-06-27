@@ -9,7 +9,7 @@ process SIGRAP_CHORD {
     tuple val(meta), path(sv_somatic_vcf)
 
     output:
-    path 'output/chord.json.gz'                               , emit: chord_json
+    tuple val(meta), path('output/chord.json.gz')                           , emit: chord_json
     path 'versions.yml'                                       , emit: versions
 
     when:
