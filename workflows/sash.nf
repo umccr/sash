@@ -442,6 +442,7 @@ workflow SASH {
         ch_sv_somatic_sv_vcf_out
     )
 
+    // channel: [ meta, chord_json ]
     ch_smlv_somatic_chord = WorkflowSash.restoreMeta(SIGRAP_CHORD.out.chord_json, ch_inputs)
     ch_versions = ch_versions.mix(SIGRAP_CHORD.out.versions)
 
@@ -451,6 +452,7 @@ workflow SASH {
         ch_sv_somatic_cnv_tsv_out,
     )
 
+    // channel: [ meta, hrdetect_json ]
     ch_smlv_somatic_hrdetect = WorkflowSash.restoreMeta(SIGRAP_HRDETECT.out.hrdetect_json, ch_inputs)
     ch_versions = ch_versions.mix(SIGRAP_HRDETECT.out.versions)
     
@@ -458,6 +460,7 @@ workflow SASH {
         ch_smlv_somatic_out
     )
 
+    // channel: [ meta, mutpat_output ]
     ch_smlv_somatic_mutpat = WorkflowSash.restoreMeta(SIGRAP_MUTPAT.out.mutpat_output, ch_inputs)
     ch_versions = ch_versions.mix(SIGRAP_MUTPAT.out.versions)
 
