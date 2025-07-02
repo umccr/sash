@@ -20,7 +20,7 @@ process SIGRAP_HRDETECT {
     def args = task.ext.args ?: ''
 
     """
-    sigrap hrdetect \\
+    sigrap.R hrdetect \\
         --sample ${meta.subject_id} \\
         --snv ${smlv_somatic_vcf} \\
         --sv ${sv_somatic_vcf} \\

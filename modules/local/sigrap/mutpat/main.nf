@@ -18,7 +18,7 @@ process SIGRAP_MUTPAT {
     def args = task.ext.args ?: ''
 
     """
-    sigrap mutpat \\
+    sigrap.R mutpat \\
         --sample ${meta.subject_id} \\
         --snv ${smlv_somatic_vcf} \\
         --out  output/

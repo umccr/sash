@@ -19,7 +19,7 @@ process SIGRAP_CHORD {
     def args = task.ext.args ?: ''
 
     """
-    sigrap chord \\
+    sigrap.R chord \\
         --sample ${meta.subject_id} \\
         --snv ${smlv_somatic_vcf} \\
         --sv ${sv_somatic_vcf} \\
