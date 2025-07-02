@@ -5,10 +5,11 @@ process SIGRAP_CHORD {
     container 'ghcr.io/umccr/sigrap:0.2.0'
 
     input:
-    tuple val(meta), path(chord_prediction_tsv)
+    tuple val(meta), path(smlv_somatic_vcf)
+    tuple val(meta1), path(sv_somatic_vcf)
 
     output:
-    tuple val(meta), path('chord.json.gz')                  , emit: chord_json
+    tuple val(meta), path('./chord.json.gz')                  , emit: chord_json
     path 'versions.yml'                                       , emit: versions
 
     when:
@@ -20,8 +21,9 @@ process SIGRAP_CHORD {
     """
     sigrap.R chord \\
         --sample ${meta.subject_id} \\
-        --chord ${chord_prediction_tsv} \\
-        --out chord.json.gz
+        --snv ${smlv_somatic_vcf} \\
+        --sv ${sv_somatic_vcf} \\
+        --out  ./chord.json.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -32,7 +34,7 @@ process SIGRAP_CHORD {
     stub:
     """
     mkdir -p output/
-    touch chord.json.gz
+    touch ./chord.json.gz
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
