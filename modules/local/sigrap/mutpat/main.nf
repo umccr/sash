@@ -25,7 +25,7 @@ process SIGRAP_MUTPAT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        sigrap: \$(sigrap --version | sed 's/^.*version //')
+        sigrap: \$(sigrap.R --version | sed 's/^.*version //')
     END_VERSIONS
     """
 
