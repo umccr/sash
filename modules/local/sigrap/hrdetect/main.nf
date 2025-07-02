@@ -10,7 +10,7 @@ process SIGRAP_HRDETECT {
     tuple val(meta), path(cnv_somatic_tsv)
 
     output:
-    tuple val(meta), path('output/hrdetect.json.gz')                           , emit: hrdetect_json
+    tuple val(meta), path('hrdetect.json.gz')                 , emit: hrdetect_json
     path 'versions.yml'                                       , emit: versions
 
     when:
@@ -25,7 +25,7 @@ process SIGRAP_HRDETECT {
         --snv ${smlv_somatic_vcf} \\
         --sv ${sv_somatic_vcf} \\
         --cnv ${cnv_somatic_tsv} \\
-        --out  output/
+        --out  hrdetect.json.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -35,8 +35,7 @@ process SIGRAP_HRDETECT {
 
     stub:
     """
-    mkdir -p output/
-    touch output/hrdetect.json.gz
+    touch hrdetect.json.gz
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
