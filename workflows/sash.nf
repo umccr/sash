@@ -395,7 +395,7 @@ workflow SASH {
 
     SIGRAP_CHORD(
         ch_smlv_somatic_out,
-        ch_sv_somatic_vcf_out
+        ch_sv_somatic_sv_vcf_out
     )
         .map { meta, smlv_vcf, sv_vcf, cnv_tsv -> [meta, smlv_vcf, sv_vcf, cnv_tsv] }
 
