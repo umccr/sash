@@ -20,7 +20,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
     tuple val(meta), path("output/*.variant_counts_type.yaml")   , emit: counts_type
     tuple val(meta), path("output/*.variant_counts_process.json"), emit: counts_process
     path 'output/pcgr/'                                          , emit: pcgr_dir
-    path "output/*.pcgr_acmg.grch38.html"                        , emit: pcgr_report
+    path "output/*.pcgr.grch38.html"                        , emit: pcgr_report
     path 'versions.yml'                                          , emit: versions
 
     when:
@@ -51,7 +51,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
         --threads ${task.cpus} \\
         --output_dir output/
 
-    mv output/pcgr/${meta.tumor_id}.pcgr_acmg.grch38.html output/
+    mv output/pcgr/${meta.tumor_id}.pcgr.grch38.html output/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -68,7 +68,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
     touch output/${meta.tumor_id}.somatic.variant_counts_type.yaml
     touch output/${meta.tumor_id}.somatic.variant_counts_process.json
     touch output/${meta.tumor_id}.somatic.bcftools_stats.txt
-    touch output/${meta.tumor_id}.pcgr_acmg.grch38.html
+    touch output/${meta.tumor_id}.pcgr.grch38.html
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
