@@ -40,6 +40,7 @@ include { BOLT_OTHER_MULTIQC_REPORT  } from '../modules/local/bolt/other/multiqc
 include { BOLT_OTHER_PURPLE_BAF_PLOT } from '../modules/local/bolt/other/purple_baf_plot/main'
 include { BOLT_SMLV_GERMLINE_PREPARE } from '../modules/local/bolt/smlv_germline/prepare/main'
 include { BOLT_SMLV_GERMLINE_REPORT  } from '../modules/local/bolt/smlv_germline/report/main'
+include { BOLT_SMLV_SOMATIC_REPORT   } from '../modules/local/bolt/smlv_somatic/report/main'
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
 include { ESVEE_CALL                 } from '../modules/local/esvee/call/main'
