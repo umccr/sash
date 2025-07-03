@@ -396,7 +396,7 @@ workflow SASH {
 
     SIGRAP_CHORD(
         ch_smlv_somatic_out,
-        ch_sv_somatic_vcf_out
+        ch_sv_somatic_sv_vcf_out
     )
 
     // channel: [ meta, chord_json ]
