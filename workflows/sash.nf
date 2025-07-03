@@ -43,13 +43,16 @@ include { BOLT_SMLV_GERMLINE_REPORT  } from '../modules/local/bolt/smlv_germline
 include { BOLT_SMLV_SOMATIC_REPORT   } from '../modules/local/bolt/smlv_somatic/report/main'
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
+include { SIGRAP_CHORD               } from '../modules/local/sigrap/chord/main'
+include { SIGRAP_HRDETECT            } from '../modules/local/sigrap/hrdetect/main'
+include { SIGRAP_MUTPAT              } from '../modules/local/sigrap/mutpat/main'
+
 include { ESVEE_CALL                 } from '../modules/local/esvee/call/main'
 include { LINX_ANNOTATION            } from '../subworkflows/local/linx_annotation'
 include { LINX_PLOTTING              } from '../subworkflows/local/linx_plotting'
 include { PREPARE_INPUT              } from '../subworkflows/local/prepare_input'
 include { PREPARE_REFERENCE          } from '../subworkflows/local/prepare_reference'
 include { PURPLE_CALLING             } from '../subworkflows/local/purple_calling'
-include { SIGRAP_ANALYSIS            } from '../subworkflows/local/sigrap_analysis'
 include { SMLV_SOMATIC_PROCESSING    } from '../subworkflows/local/smlv_somatic_processing'
 
 /*
@@ -389,18 +392,32 @@ workflow SASH {
 
 
 
-    //
-    // Mutational signature analysis
-    //
-
-    SIGRAP_ANALYSIS(
-        ch_inputs,
-        ch_smlv_somatic_out,
-        ch_sv_somatic_sv_vcf_out,
-        ch_sv_somatic_cnv_tsv_out,
+    SIGRAP_CHORD(
+        ch_smlv_somatic,
+        ch_sv_somatic_vcf
     )
 
-    ch_versions = ch_versions.mix(SIGRAP_ANALYSIS.out.versions)
+    // channel: [ meta, chord_json ]
+    ch_sigrap_chord = WorkflowSash.restoreMeta(SIGRAP_CHORD.out.chord_json, ch_inputs)
+    ch_versions = ch_versions.mix(SIGRAP_CHORD.out.versions)
+
+    SIGRAP_HRDETECT(
+        ch_smlv_somatic,
+        ch_sv_somatic_vcf,
+        ch_sv_somatic_cnv_tsv,
+    )
+
+    // channel: [ meta, hrdetect_json ]
+    ch_sigrap_hrdetect = WorkflowSash.restoreMeta(SIGRAP_HRDETECT.out.hrdetect_json, ch_inputs)
+    ch_versions = ch_versions.mix(SIGRAP_HRDETECT.out.versions)
+    
+    SIGRAP_MUTPAT(
+        ch_smlv_somatic
+    )
+
+    // channel: [ meta, mutpat_output ]
+    ch_sigrap_mutpat = WorkflowSash.restoreMeta(SIGRAP_MUTPAT.out.mutpat_output, ch_inputs)
+    ch_versions = ch_versions.mix(SIGRAP_MUTPAT.out.versions)
 
     //
     // Generate the cancer report
@@ -420,9 +437,9 @@ workflow SASH {
         PURPLE_CALLING.out.purple_dir,
         ch_virusbreakend,
         ch_input_hrd,
-        SIGRAP_ANALYSIS.out.mutpat,
-        SIGRAP_ANALYSIS.out.hrdetect,
-        SIGRAP_ANALYSIS.out.chord
+        ch_sigrap_mutpat,
+        ch_sigrap_hrdetect,
+        ch_sigrap_chord
     )
         .map {
             def meta = it[0]
