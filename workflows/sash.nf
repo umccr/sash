@@ -40,9 +40,13 @@ include { BOLT_OTHER_MULTIQC_REPORT  } from '../modules/local/bolt/other/multiqc
 include { BOLT_OTHER_PURPLE_BAF_PLOT } from '../modules/local/bolt/other/purple_baf_plot/main'
 include { BOLT_SMLV_GERMLINE_PREPARE } from '../modules/local/bolt/smlv_germline/prepare/main'
 include { BOLT_SMLV_GERMLINE_REPORT  } from '../modules/local/bolt/smlv_germline/report/main'
+include { BOLT_SMLV_SOMATIC_ANNOTATE } from '../modules/local/bolt/smlv_somatic/annotate/main'
+include { BOLT_SMLV_SOMATIC_FILTER   } from '../modules/local/bolt/smlv_somatic/filter/main'
+include { BOLT_SMLV_SOMATIC_RESCUE   } from '../modules/local/bolt/smlv_somatic/rescue/main'
 include { BOLT_SMLV_SOMATIC_REPORT   } from '../modules/local/bolt/smlv_somatic/report/main'
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
+include { PAVE_SOMATIC               } from '../modules/local/pave/somatic/main'
 include { SIGRAP_CHORD               } from '../modules/local/sigrap/chord/main'
 include { SIGRAP_HRDETECT            } from '../modules/local/sigrap/hrdetect/main'
 include { SIGRAP_MUTPAT              } from '../modules/local/sigrap/mutpat/main'
@@ -53,7 +57,6 @@ include { LINX_PLOTTING              } from '../subworkflows/local/linx_plotting
 include { PREPARE_INPUT              } from '../subworkflows/local/prepare_input'
 include { PREPARE_REFERENCE          } from '../subworkflows/local/prepare_reference'
 include { PURPLE_CALLING             } from '../subworkflows/local/purple_calling'
-include { SMLV_SOMATIC_PROCESSING    } from '../subworkflows/local/smlv_somatic_processing'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -121,31 +124,71 @@ workflow SASH {
     // Somatic small variants processing
     //
 
-    SMLV_SOMATIC_PROCESSING(
-        ch_inputs,
+    // Prepare rescue inputs with meta transformation
+    // channel: [ meta_bolt, dragen_somatic_vcf, dragen_somatic_tbi, sage_somatic_vcf, sage_somatic_tbi ]
+    ch_smlv_somatic_rescue_inputs = WorkflowSash.groupByMeta(
         ch_input_vcf_somatic,
         ch_sage_somatic,
-        genome.fasta,
-        genome.version,
-        genome.fai,
+    )
+        .map {
+            def meta = it[0]
+            def meta_bolt = [
+                key: meta.id,
+                id: meta.id,
+                tumor_id: meta.tumor_id,
+                normal_id: meta.normal_id,
+                sample_id: meta.tumor_id
+            ]
+            return [meta_bolt] + it[1..-1]
+        }
+
+    BOLT_SMLV_SOMATIC_RESCUE(
+        ch_smlv_somatic_rescue_inputs,
         umccr_data.hotspots,
+    )
+
+    ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_RESCUE.out.versions)
+
+    BOLT_SMLV_SOMATIC_ANNOTATE(
+        BOLT_SMLV_SOMATIC_RESCUE.out.vcf,
         umccr_data.somatic_panel_regions_gene,
         umccr_data.annotations_dir,
         misc_data.pon_dir,
         misc_data.pcgr_dir,
-        misc_data.vep_dir,
+        misc_data.vep_dir
+    )
+
+    ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_ANNOTATE.out.versions)
+
+    BOLT_SMLV_SOMATIC_FILTER(
+        BOLT_SMLV_SOMATIC_ANNOTATE.out.vcf,
+    )
+
+    ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_FILTER.out.versions)
+
+    // Restore meta and create clean outputs
+    // channel: [ meta, smlv_somatic_vcf ]
+    ch_smlv_somatic_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf, ch_inputs)
+        .map { meta, vcf, tbi -> [meta, vcf] }
+    // channel: [ meta, smlv_somatic_filters_vcf ]
+    ch_smlv_somatic_filters_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf_filters, ch_inputs)
+
+    // NOTE(SW): PAVE is run so that we obtain a complete PURPLE driver catalogue
+    PAVE_SOMATIC(
+        BOLT_SMLV_SOMATIC_FILTER.out.vcf,
+        genome.fasta,
+        genome.version,
+        genome.fai,
         hmf_data.clinvar_annotations,
         hmf_data.segment_mappability,
         umccr_data.driver_gene_panel,
         umccr_data.ensembl_data_resources,
     )
 
-    ch_versions = ch_versions.mix(SMLV_SOMATIC_PROCESSING.out.versions)
+    ch_versions = ch_versions.mix(PAVE_SOMATIC.out.versions)
 
-    // Clean outputs from subworkflow
-    ch_smlv_somatic_out = SMLV_SOMATIC_PROCESSING.out.smlv_somatic
-    ch_smlv_somatic_filters_out = SMLV_SOMATIC_PROCESSING.out.smlv_somatic_filters
-    ch_pave_somatic_out = SMLV_SOMATIC_PROCESSING.out.pave_somatic
+    // channel: [ meta, pave_somatic_vcf ]
+    ch_pave_somatic_out = WorkflowSash.restoreMeta(PAVE_SOMATIC.out.vcf, ch_inputs)
 
 
 
@@ -443,9 +486,9 @@ workflow SASH {
     ch_versions = ch_versions.mix(SIGRAP_MUTPAT.out.versions)
 
     // Debug views
-    ch_sigrap_mutpat.view { "SIGRAP_MUTPAT: $it" }
-    ch_sigrap_hrdetect.view { "SIGRAP_HRDETECT: $it" }
-    ch_sigrap_chord.view { "SIGRAP_CHORD: $it" }
+    SIGRAP_CHORD.out.chord_json.view { "SIGRAP_CHORD output: $it" }
+    SIGRAP_HRDETECT.out.hrdetect_json.view { "SIGRAP_HRDETECT output: $it" }
+    SIGRAP_MUTPAT.out.mutpat_output.view { "SIGRAP_MUTPAT output: $it" }
 
     //
     // Generate the cancer report
@@ -479,6 +522,9 @@ workflow SASH {
             ]
             return [meta_bolt] + it[1..-1]
         }
+
+    // Debug cancer report inputs
+    ch_cancer_report_inputs.view { "CANCER_REPORT_INPUTS: $it" }
 
     BOLT_OTHER_CANCER_REPORT(
         ch_cancer_report_inputs,
