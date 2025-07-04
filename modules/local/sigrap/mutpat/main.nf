@@ -32,7 +32,7 @@ process SIGRAP_MUTPAT {
     stub:
     """
     mkdir -p output/
-    touch output/chord.json.gz
+    touch output/
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
