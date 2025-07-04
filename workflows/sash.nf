@@ -393,9 +393,28 @@ workflow SASH {
 
 
 
-    SIGRAP_CHORD(
+    // Debug input channels to SIGRAP
+    ch_smlv_somatic_out.view { "Input to SIGRAP - smlv_somatic: $it" }
+    ch_sv_somatic_sv_vcf_out.view { "Input to SIGRAP - sv_vcf: $it" }
+    ch_sv_somatic_cnv_tsv_out.view { "Input to SIGRAP - cnv_tsv: $it" }
+
+    // channel: [ meta, smlv_somatic_vcf, sv_somatic_vcf ]
+    ch_sigrap_chord_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
-        ch_sv_somatic_sv_vcf_out
+        ch_sv_somatic_sv_vcf_out,
+    )
+        .map { meta, smlv_vcf, sv_vcf -> [meta, smlv_vcf, sv_vcf] }
+
+    // channel: [ meta, smlv_somatic_vcf, sv_somatic_vcf, cnv_somatic_tsv ]
+    ch_sigrap_hrdetect_inputs = WorkflowSash.groupByMeta(
+        ch_smlv_somatic_out,
+        ch_sv_somatic_sv_vcf_out,
+        ch_sv_somatic_cnv_tsv_out,
+    )
+        .map { meta, smlv_vcf, sv_vcf, cnv_tsv -> [meta, smlv_vcf, sv_vcf, cnv_tsv] }
+
+    SIGRAP_CHORD(
+        ch_sigrap_chord_inputs
     )
         .map { meta, smlv_vcf, sv_vcf, cnv_tsv -> [meta, smlv_vcf, sv_vcf, cnv_tsv] }
 
@@ -408,9 +427,7 @@ workflow SASH {
     ch_versions = ch_versions.mix(SIGRAP_CHORD.out.versions)
 
     SIGRAP_HRDETECT(
-        ch_smlv_somatic_out,
-        ch_sv_somatic_sv_vcf_out,
-        ch_sv_somatic_cnv_tsv_out,
+        ch_sigrap_hrdetect_inputs
     )
 
     // channel: [ meta, hrdetect_json ]
@@ -424,6 +441,11 @@ workflow SASH {
     // channel: [ meta, mutpat_output ]
     ch_sigrap_mutpat = WorkflowSash.restoreMeta(SIGRAP_MUTPAT.out.mutpat_output, ch_inputs)
     ch_versions = ch_versions.mix(SIGRAP_MUTPAT.out.versions)
+
+    // Debug views
+    ch_sigrap_mutpat.view { "SIGRAP_MUTPAT: $it" }
+    ch_sigrap_hrdetect.view { "SIGRAP_HRDETECT: $it" }
+    ch_sigrap_chord.view { "SIGRAP_CHORD: $it" }
 
     //
     // Generate the cancer report
