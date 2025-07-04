@@ -5,9 +5,7 @@ process SIGRAP_HRDETECT {
     container 'ghcr.io/umccr/sigrap:0.2.0'
 
     input:
-    tuple val(meta), path(smlv_somatic_vcf)
-    tuple val(meta), path(sv_somatic_vcf)
-    tuple val(meta), path(cnv_somatic_tsv)
+    tuple val(meta), path(smlv_somatic_vcf), path(sv_somatic_vcf), path(cnv_somatic_tsv)
 
     output:
     tuple val(meta), path('hrdetect.json.gz')                 , emit: hrdetect_json
