@@ -96,6 +96,7 @@ workflow SASH {
     ch_sage_somatic        = PREPARE_INPUT.out.sage_somatic      // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
     ch_virusbreakend       = PREPARE_INPUT.out.virusbreakend     // channel: [ meta, virusbreakend_dir ]
     ch_call_inputs         = PREPARE_INPUT.out.call_inputs       // channel: [ meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir ]
+    ch_chord               = PREPARE_INPUT.out.chord             // channel: [ meta, chord_prediction_tsv ]
 
     // DRAGEN inputs
     ch_input_hrd           = PREPARE_INPUT.out.hrd               // channel: [ meta, hrdscore_csv ]
