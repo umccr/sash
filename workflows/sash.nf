@@ -505,7 +505,7 @@ workflow SASH {
         ch_input_hrd,
         ch_sigrap_mutpat,
         ch_sigrap_hrdetect,
-        ch_sigrap_chord
+        ch_chord
     )
         .map {
             def meta = it[0]
