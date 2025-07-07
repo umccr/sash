@@ -5,7 +5,7 @@ process BOLT_OTHER_CANCER_REPORT {
     container 'ghcr.io/umccr/bolt:0.2.14-gpgr'
 
     input:
-    tuple val(meta), path(smlv_somatic_vcf), path(smlv_somatic_bcftools_stats), path(smlv_somatic_counts_process), path(sv_somatic_tsv), path(sv_somatic_vcf), path(cnv_somatic_tsv), path(af_global), path(af_keygenes), path(purple_baf_plot), path(purple_dir), path(virusbreakend_dir), path(dragen_hrd), path(smlv_somatic_mutpat), path(smlv_somatic_hrdetect), path(smlv_somatic_chord)
+    tuple val(meta), path(smlv_somatic_vcf), path(smlv_somatic_bcftools_stats), path(smlv_somatic_counts_process), path(sv_somatic_tsv), path(sv_somatic_vcf), path(cnv_somatic_tsv), path(af_global), path(af_keygenes), path(purple_baf_plot), path(purple_dir), path(virusbreakend_dir), path(dragen_hrd), path(smlv_somatic_mutpat), path(smlv_somatic_hrdetect), path(chord_prediction_tsv)
     path somatic_driver_panel
     path oncokb_genes
 
@@ -35,7 +35,7 @@ process BOLT_OTHER_CANCER_REPORT {
         \\
         --mutpat_dir \$(pwd)/${smlv_somatic_mutpat} \\
         --hrdetect_file \$(pwd)/${smlv_somatic_hrdetect} \\
-        --chord_file \$(pwd)/${smlv_somatic_chord} \\
+        --chord_file \$(pwd)/${chord_prediction_tsv} \\
         \\
         --sv_somatic_tsv_fp \$(pwd)/${sv_somatic_tsv} \\
         --sv_somatic_vcf_fp \$(pwd)/${sv_somatic_vcf} \\
