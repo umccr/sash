@@ -434,17 +434,6 @@ workflow SASH {
     // channel: [ meta, purple_baf_circos_plot ]
     ch_purple_baf_plot_out = WorkflowSash.restoreMeta(BOLT_OTHER_PURPLE_BAF_PLOT.out.plot, ch_inputs)
 
-
-
-
-    // Debug input channels to SIGRAP
-    ch_smlv_somatic_out.view { "Input to SIGRAP - smlv_somatic: $it" }
-    ch_sv_somatic_sv_vcf_out.view { "Input to SIGRAP - sv_vcf: $it" }
-    ch_sv_somatic_cnv_tsv_out.view { "Input to SIGRAP - cnv_tsv: $it" }
-    
-    // Debug CHORD channel
-    ch_chord.view { "CHORD channel: $it" }
-
     // channel: [ meta, smlv_somatic_vcf, sv_somatic_vcf, cnv_somatic_tsv ]
     ch_sigrap_hrdetect_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
@@ -458,7 +447,6 @@ workflow SASH {
     )
 
     // channel: [ meta, hrdetect_json ]
-    // ch_sigrap_hrdetect = WorkflowSash.restoreMeta(SIGRAP_HRDETECT.out.hrdetect_json, ch_inputs)
     ch_sigrap_hrdetect = SIGRAP_HRDETECT.out.hrdetect_json
     ch_versions = ch_versions.mix(SIGRAP_HRDETECT.out.versions)
     
@@ -467,42 +455,14 @@ workflow SASH {
     )
 
     // channel: [ meta, mutpat_output ]
-    // ch_sigrap_mutpat = WorkflowSash.restoreMeta(SIGRAP_MUTPAT.out.mutpat_output, ch_inputs)
     ch_sigrap_mutpat = SIGRAP_MUTPAT.out.mutpat_output
     ch_versions = ch_versions.mix(SIGRAP_MUTPAT.out.versions)
-
-    // Debug views
-    SIGRAP_HRDETECT.out.hrdetect_json.view { "SIGRAP_HRDETECT output: $it" }
-    SIGRAP_MUTPAT.out.mutpat_output.view { "SIGRAP_MUTPAT output: $it" }
-    
-    // Debug restored meta channels
-    ch_sigrap_hrdetect.view { "RESTORED sigrap_hrdetect: $it" }
-    ch_sigrap_mutpat.view { "RESTORED sigrap_mutpat: $it" }
 
     //
     // Generate the cancer report
     //
 
-    // Debug all channels before grouping
-    ch_smlv_somatic_out.view { "PRE-GROUP smlv_somatic: $it" }
-    ch_smlv_somatic_report_stats_out.view { "PRE-GROUP stats: $it" }
-    ch_smlv_somatic_report_counts_process_out.view { "PRE-GROUP counts_process: $it" }
-    ch_sv_somatic_sv_tsv_out.view { "PRE-GROUP sv_tsv: $it" }
-    ch_sv_somatic_sv_vcf_out.view { "PRE-GROUP sv_vcf: $it" }
-    ch_sv_somatic_cnv_tsv_out.view { "PRE-GROUP cnv_tsv: $it" }
-    ch_smlv_somatic_report_af_global_out.view { "PRE-GROUP af_global: $it" }
-    ch_smlv_somatic_report_af_keygenes_out.view { "PRE-GROUP af_keygenes: $it" }
-    ch_purple_baf_plot_out.view { "PRE-GROUP purple_baf: $it" }
-    ch_virusbreakend.view { "PRE-GROUP virusbreakend: $it" }
-    ch_input_hrd.view { "PRE-GROUP hrd: $it" }
-    ch_chord.view { "PRE-GROUP chord: $it" }
-
     // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_bcftools_stats, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, dragen_hrd, mutpat, hrdetect, chord ]
-    
-    // Debug SIGRAP channels after they're defined
-    ch_sigrap_mutpat.view { "PRE-GROUP sigrap_mutpat: $it" }
-    ch_sigrap_hrdetect.view { "PRE-GROUP sigrap_hrdetect: $it" }
-    
     ch_cancer_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_smlv_somatic_report_stats_out,
@@ -530,15 +490,6 @@ workflow SASH {
             ]
             return [meta_bolt] + it[1..-1]
         }
-
-    // Debug cancer report inputs
-    ch_cancer_report_inputs.view { "CANCER_REPORT_INPUTS: $it" }
-    
-    // Debug individual inputs to cancer report
-    ch_smlv_somatic_out.view { "Cancer report input - smlv_somatic: $it" }
-    ch_sigrap_mutpat.view { "Cancer report input - sigrap_mutpat: $it" }
-    ch_sigrap_hrdetect.view { "Cancer report input - sigrap_hrdetect: $it" }
-    ch_chord.view { "Cancer report input - chord: $it" }
 
     BOLT_OTHER_CANCER_REPORT(
         ch_cancer_report_inputs,
