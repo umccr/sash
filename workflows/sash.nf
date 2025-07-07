@@ -47,7 +47,6 @@ include { BOLT_SMLV_SOMATIC_REPORT   } from '../modules/local/bolt/smlv_somatic/
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
 include { PAVE_SOMATIC               } from '../modules/local/pave/somatic/main'
-include { SIGRAP_CHORD               } from '../modules/local/sigrap/chord/main'
 include { SIGRAP_HRDETECT            } from '../modules/local/sigrap/hrdetect/main'
 include { SIGRAP_MUTPAT              } from '../modules/local/sigrap/mutpat/main'
 
@@ -441,13 +440,6 @@ workflow SASH {
     ch_sv_somatic_sv_vcf_out.view { "Input to SIGRAP - sv_vcf: $it" }
     ch_sv_somatic_cnv_tsv_out.view { "Input to SIGRAP - cnv_tsv: $it" }
 
-    // channel: [ meta, smlv_somatic_vcf, sv_somatic_vcf ]
-    ch_sigrap_chord_inputs = WorkflowSash.groupByMeta(
-        ch_smlv_somatic_out,
-        ch_sv_somatic_sv_vcf_out,
-    )
-        .map { meta, smlv_vcf, sv_vcf -> [meta, smlv_vcf, sv_vcf] }
-
     // channel: [ meta, smlv_somatic_vcf, sv_somatic_vcf, cnv_somatic_tsv ]
     ch_sigrap_hrdetect_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
@@ -455,14 +447,6 @@ workflow SASH {
         ch_sv_somatic_cnv_tsv_out,
     )
         .map { meta, smlv_vcf, sv_vcf, cnv_tsv -> [meta, smlv_vcf, sv_vcf, cnv_tsv] }
-
-    SIGRAP_CHORD(
-        ch_sigrap_chord_inputs
-    )
-
-    // channel: [ meta, chord_json ]
-    ch_sigrap_chord = WorkflowSash.restoreMeta(SIGRAP_CHORD.out.chord_json, ch_inputs)
-    ch_versions = ch_versions.mix(SIGRAP_CHORD.out.versions)
 
     SIGRAP_HRDETECT(
         ch_sigrap_hrdetect_inputs
@@ -481,7 +465,6 @@ workflow SASH {
     ch_versions = ch_versions.mix(SIGRAP_MUTPAT.out.versions)
 
     // Debug views
-    SIGRAP_CHORD.out.chord_json.view { "SIGRAP_CHORD output: $it" }
     SIGRAP_HRDETECT.out.hrdetect_json.view { "SIGRAP_HRDETECT output: $it" }
     SIGRAP_MUTPAT.out.mutpat_output.view { "SIGRAP_MUTPAT output: $it" }
 
