@@ -8,7 +8,7 @@ process SIGRAP_MUTPAT {
     tuple val(meta), path(smlv_somatic_vcf)
 
     output:
-    tuple val(meta), path('output/')                          , emit: mutpat_output
+    tuple val(meta), path('mutpat/')                   , emit: mutpat_output
     path 'versions.yml'                                       , emit: versions
 
     when:
@@ -18,7 +18,6 @@ process SIGRAP_MUTPAT {
     def args = task.ext.args ?: ''
 
     """
-    echo "${meta}"
     sigrap.R mutpat \\
         --sample ${meta.subject_id} \\
         --snv ${smlv_somatic_vcf} \\
@@ -32,8 +31,8 @@ process SIGRAP_MUTPAT {
 
     stub:
     """
-    mkdir -p output/
-    touch output/
+    mkdir -p sigrap/mutpat/
+    touch sigrap/mutpat/stub_output
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
