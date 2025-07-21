@@ -2,7 +2,7 @@ process BOLT_OTHER_MULTIQC_REPORT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/umccr/bolt:0.2.17-multiqc'
+    container 'ghcr.io/umccr/bolt:0.3.0-dev-6-multiqc'
 
     input:
     tuple val(meta), path(input_files)
