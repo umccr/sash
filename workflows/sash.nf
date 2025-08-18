@@ -48,6 +48,10 @@ include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/an
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
 include { ESVEE_CALL                 } from '../modules/local/esvee/call/main'
 include { PAVE_SOMATIC               } from '../modules/local/pave/somatic/main'
+include { SIGRAP_CHORD               } from '../modules/local/sigrap/chord/main'
+include { SIGRAP_HRDETECT            } from '../modules/local/sigrap/hrdetect/main'
+include { SIGRAP_MUTPAT              } from '../modules/local/sigrap/mutpat/main'
+
 
 include { LINX_ANNOTATION            } from '../subworkflows/local/linx_annotation'
 include { LINX_PLOTTING              } from '../subworkflows/local/linx_plotting'
@@ -433,6 +437,28 @@ workflow SASH {
     // Generate the cancer report
     //
 
+    // channel: [ meta, dragen_hrd ]
+    ch_input_hrd = ch_inputs
+        .map { meta ->
+            def hrd = file(meta.dragen_somatic_dir).toUriString() + "/${meta.tumor_id}.hrdscore.csv"
+            return [meta, hrd]
+        }
+
+    SIGRAP_CHORD(
+        ch_smlv_somatic_out,
+        ch_sv_somatic_sv_vcf_out
+    )
+    SIGRAP_HRDETECT(
+        ch_smlv_somatic_out,
+        ch_sv_somatic_sv_vcf_out,
+        ch_sv_somatic_cnv_tsv_out,
+
+
+    )
+    SIGRAP_MUTPAT(
+        ch_smlv_somatic_out
+    )
+
     // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_bcftools_stats, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, dragen_hrd ]
     ch_cancer_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
@@ -447,6 +473,9 @@ workflow SASH {
         PURPLE_CALLING.out.purple_dir,
         ch_virusbreakend,
         ch_input_hrd,
+        SIGRAP_MUTPAT.out.mutpat_output,
+        SIGRAP_HRDETECT.out.hrdetect_json,
+        SIGRAP_CHORD.out.chord_json
     )
         .map {
             def meta = it[0]
