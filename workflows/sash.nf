@@ -476,11 +476,11 @@ workflow SASH {
 
     // channel: [ meta, somatic_dragen_dir ]
     ch_input_dragen_somatic_dir = ch_inputs
-        .map { meta -> [meta, meta.dragen_somatic_dir] }
+        .map { meta -> [meta, file(meta.dragen_somatic_dir)] }
 
     // channel: [ meta, germline_dragen_dir ]
     ch_input_dragen_germline_dir = ch_inputs
-        .map { meta -> [meta, meta.dragen_germline_dir] }
+        .map { meta -> [meta, file(meta.dragen_germline_dir)] }
 
     // channel: [ meta_multiqc, [somatic_dragen_dir, germline_dragen_dir, somatic_bcftools_stats, germline_bcftools_stats, somatic_counts_type, germline_counts_type, purple_dir] ]
     ch_multiqc_report_inputs = WorkflowSash.groupByMeta(
