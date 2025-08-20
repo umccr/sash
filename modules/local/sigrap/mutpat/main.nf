@@ -21,6 +21,8 @@ process SIGRAP_MUTPAT {
     sigrap.R mutpat \\
         --sample ${meta.subject_id} \\
         --snv ${smlv_somatic_vcf} \\
+        --rainfall \\
+        --strand-bias \\
         --out mutpat/
 
     cat <<-END_VERSIONS > versions.yml
