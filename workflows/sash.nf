@@ -445,14 +445,6 @@ workflow SASH {
     ch_purple_baf_plot_out = WorkflowSash.restoreMeta(BOLT_OTHER_PURPLE_BAF_PLOT.out.plot, ch_inputs)
 
 
-    // VCF2MAF
-    VCF2MAF(
-        ch_smlv_somatic_out,
-        umccr_data.vep_cache,
-        ref
-
-    )
-
 
     //
     // Generate the cancer report
