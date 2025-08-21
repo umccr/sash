@@ -2,13 +2,12 @@ process VCF2MAF {
     tag "${meta.id}"
     label 'process_medium'
 
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/vcf2maf:1.6.22--hdfd78af_0':
-        'biocontainers/vcf2maf:1.6.22--hdfd78af_0' }"
+    container 'docker.io/qclayssen/vcf2maf:v1.6.22'
 
     input:
     tuple val(meta), path(vcf)
     path genome_fasta
+    path vep_dir
 
 
     output:
@@ -20,13 +19,10 @@ process VCF2MAF {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    def tumor_id = meta.tumor_id ?: meta.id
-    def normal_id = meta.normal_id ?: "${meta.id}_normal"
     def ncbi_build = params.genome.build == 'hg38' ? 'GRCh38' : params.genome.build == 'GRCh37' ? 'GRCh37' : 'GRCh38'
-    def vep_dir_cmd = params.vep_dir ? "--vep-data ${params.vep_dir}" : ""
-    def uncompressed_vcf = "${prefix}-temp.vcf"
-    
+    def vep_dir_cmd = vep_dir ? "--vep-data ${vep_dir}" : ""
+    def uncompressed_vcf = "${meta.id}-temp.vcf"
+
     """
     # Handle VEP settings like nf-core module
     if [ "${params.vep_dir}" ]; then
@@ -49,8 +45,8 @@ process VCF2MAF {
         --input-vcf ${uncompressed_vcf} \\
         --output-maf ${prefix}.maf \\
         --ref-fasta ${genome_fasta} \\
-        --tumor-id ${tumor_id} \\
-        --normal-id ${normal_id} \\
+        --tumor-id ${meta.tumor_id} \\
+        --normal-id ${meta.normal_id} \\
         --ncbi-build ${ncbi_build} \\
         2> >(grep -v "Use of uninitialized value" >&2)
 
