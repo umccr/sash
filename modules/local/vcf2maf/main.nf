@@ -24,12 +24,12 @@ process VCF2MAF {
     def tumor_id = meta.tumor_id ?: meta.id
     def normal_id = meta.normal_id ?: "${meta.id}_normal"
     def ncbi_build = params.genome.build == 'hg38' ? 'GRCh38' : params.genome.build == 'GRCh37' ? 'GRCh37' : 'GRCh38'
-    def vep_cache_cmd = params.vep_cache ? "--vep-data ${params.vep_cache}" : ""
+    def vep_dir_cmd = params.vep_dir ? "--vep-data ${params.vep_dir}" : ""
     def uncompressed_vcf = "${prefix}-temp.vcf"
     
     """
     # Handle VEP settings like nf-core module
-    if [ "${params.vep_cache}" ]; then
+    if [ "${params.vep_dir}" ]; then
         VEP_CMD="--vep-path \$(dirname \$(type -p vep))"
     else
         VEP_CMD=""
@@ -45,7 +45,7 @@ process VCF2MAF {
     vcf2maf.pl \\
         ${args} \\
         \$VEP_CMD \\
-        ${vep_cache_cmd} \\
+        ${vep_dir_cmd} \\
         --input-vcf ${uncompressed_vcf} \\
         --output-maf ${prefix}.maf \\
         --ref-fasta ${genome_fasta} \\
