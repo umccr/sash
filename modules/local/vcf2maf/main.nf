@@ -25,7 +25,7 @@ process VCF2MAF {
 
     """
     # Handle VEP settings like nf-core module
-    if [ "${params.vep_dir}" ]; then
+    if [ "${vep_dir}" ]; then
         VEP_CMD="--vep-path \$(dirname \$(type -p vep))"
     else
         VEP_CMD=""
@@ -43,7 +43,7 @@ process VCF2MAF {
         \$VEP_CMD \\
         ${vep_dir_cmd} \\
         --input-vcf ${uncompressed_vcf} \\
-        --output-maf ${prefix}.maf \\
+        --output-maf ${meta.id}.maf \\
         --ref-fasta ${genome_fasta} \\
         --tumor-id ${meta.tumor_id} \\
         --normal-id ${meta.normal_id} \\
