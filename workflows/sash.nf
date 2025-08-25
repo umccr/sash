@@ -120,7 +120,7 @@ workflow SASH {
 
 
     //
-    // Somatic small variants processing
+    // Somatic small variants
     //
 
     // Prepare rescue inputs with meta transformation
