@@ -138,7 +138,7 @@ workflow SASH {
                 normal_id: meta.normal_id,
                 sample_id: meta.tumor_id
             ]
-            return [meta_bolt] + it[1..-1]
+            return [meta_bolt, *it[1..-1]]
         }
 
     BOLT_SMLV_SOMATIC_RESCUE(
@@ -224,7 +224,6 @@ workflow SASH {
 
     //
     // Somatic structural variants
-
     //
 
     ESVEE_CALL(
@@ -432,6 +431,13 @@ workflow SASH {
     // channel: [ meta, purple_baf_circos_plot ]
     ch_purple_baf_plot_out = WorkflowSash.restoreMeta(BOLT_OTHER_PURPLE_BAF_PLOT.out.plot, ch_inputs)
 
+
+
+
+    //
+    // Sigrap
+    //
+
     // channel: [ meta_sigrap, smlv_somatic_vcf, sv_somatic_vcf, cnv_somatic_tsv ]
     ch_sigrap_hrdetect_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
@@ -473,6 +479,10 @@ workflow SASH {
     ch_sigrap_mutpat = SIGRAP_MUTPAT.out.mutpat_output
     ch_versions = ch_versions.mix(SIGRAP_MUTPAT.out.versions)
 
+
+
+
+
     //
     // Generate the cancer report
     //
@@ -503,7 +513,7 @@ workflow SASH {
                 subject_id: meta.subject_id,
                 tumor_id: meta.tumor_id,
             ]
-            return [meta_bolt] + it[1..-1]
+            return [meta_bolt, *it[1..-1]]
         }
 
     BOLT_OTHER_CANCER_REPORT(
