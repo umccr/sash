@@ -434,13 +434,20 @@ workflow SASH {
     // channel: [ meta, purple_baf_circos_plot ]
     ch_purple_baf_plot_out = WorkflowSash.restoreMeta(BOLT_OTHER_PURPLE_BAF_PLOT.out.plot, ch_inputs)
 
-    // channel: [ meta, smlv_somatic_vcf, sv_somatic_vcf, cnv_somatic_tsv ]
+    // channel: [ meta_sigrap, smlv_somatic_vcf, sv_somatic_vcf, cnv_somatic_tsv ]
     ch_sigrap_hrdetect_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_sv_somatic_sv_vcf_out,
         ch_sv_somatic_cnv_tsv_out,
     )
-        .map { meta, smlv_vcf, sv_vcf, cnv_tsv -> [meta, smlv_vcf, sv_vcf, cnv_tsv] }
+        .map { meta, smlv_vcf, sv_vcf, cnv_tsv -> 
+            def meta_sigrap = [
+                key: meta.id,
+                id: meta.id,
+                tumor_id: meta.tumor_id,
+            ]
+            return [meta_sigrap, smlv_vcf, sv_vcf, cnv_tsv] 
+        }
 
     SIGRAP_HRDETECT(
         ch_sigrap_hrdetect_inputs
@@ -449,9 +456,19 @@ workflow SASH {
     // channel: [ meta, hrdetect_json ]
     ch_sigrap_hrdetect = WorkflowSash.restoreMeta(SIGRAP_HRDETECT.out.hrdetect_json, ch_inputs)
     ch_versions = ch_versions.mix(SIGRAP_HRDETECT.out.versions)
-    
+
+    // channel: [ meta_sigrap, smlv_somatic_vcf ]
+    ch_sigrap_mutpat_inputs = ch_smlv_somatic_out.map { meta, vcf -> 
+        def meta_sigrap = [
+            key: meta.id,
+            id: meta.id,
+            tumor_id: meta.tumor_id,
+        ]
+        return [meta_sigrap, vcf] 
+    }
+
     SIGRAP_MUTPAT(
-        ch_smlv_somatic_out
+        ch_sigrap_mutpat_inputs
     )
 
     // channel: [ meta, mutpat_output ]
