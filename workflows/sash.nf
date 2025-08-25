@@ -48,6 +48,7 @@ include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/an
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
 include { ESVEE_CALL                 } from '../modules/local/esvee/call/main'
 include { PAVE_SOMATIC               } from '../modules/local/pave/somatic/main'
+include { VCF2MAF                    } from '../modules/local/vcf2maf/main'
 
 include { LINX_ANNOTATION            } from '../subworkflows/local/linx_annotation'
 include { LINX_PLOTTING              } from '../subworkflows/local/linx_plotting'
@@ -182,6 +183,34 @@ workflow SASH {
 
     // channel: [ meta, pave_somatic_vcf ]
     ch_pave_somatic_out = WorkflowSash.restoreMeta(PAVE_SOMATIC.out.vcf, ch_inputs)
+
+
+
+
+    //
+    // Convert somatic VCF to MAF format
+    //
+
+    // channel: [ meta_vcf2maf, smlv_somatic_vcf ]
+    ch_vcf2maf_inputs = ch_smlv_somatic_out.map { meta, vcf -> 
+        def meta_vcf2maf = [
+            key: meta.id,
+            id: meta.id,
+            tumor_id: meta.tumor_id,
+            normal_id: meta.normal_id,
+        ]
+        return [meta_vcf2maf, vcf] 
+    }
+
+    VCF2MAF(
+        ch_vcf2maf_inputs,
+        genome.fasta
+    )
+
+    ch_versions = ch_versions.mix(VCF2MAF.out.versions)
+
+    // channel: [ meta, somatic_maf ]
+    ch_vcf2maf_out = VCF2MAF.out.maf
 
 
 
@@ -425,7 +454,6 @@ workflow SASH {
 
     // channel: [ meta, purple_baf_circos_plot ]
     ch_purple_baf_plot_out = WorkflowSash.restoreMeta(BOLT_OTHER_PURPLE_BAF_PLOT.out.plot, ch_inputs)
-
 
 
 
