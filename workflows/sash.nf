@@ -574,7 +574,7 @@ workflow SASH {
 
 
     //
-    // Annotate post processed strucutral variant events
+    // Annotate post processed structural variant events
     //
 
     LINX_ANNOTATION(
