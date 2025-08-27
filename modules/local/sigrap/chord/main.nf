@@ -31,7 +31,6 @@ process SIGRAP_CHORD {
 
     stub:
     """
-    mkdir -p output/
     touch chord.json.gz
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
