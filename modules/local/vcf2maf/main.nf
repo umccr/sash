@@ -18,14 +18,13 @@ process VCF2MAF {
 
     script:
     def args = task.ext.args ?: ''
-    def uncompressed_vcf = "${meta.id}-temp.vcf"
 
     """
-    gunzip -c ${vcf} > ${uncompressed_vcf}
+    gunzip -c ${vcf} > ${meta.id}-temp.vcf
 
     vcf2maf.pl \\
         --inhibit-vep \\
-        --input-vcf ${uncompressed_vcf} \\
+        --input-vcf ${meta.id}-temp.vcf \\
         --output-maf ${meta.id}.maf \\
         --ref-fasta ${genome_fasta} \\
         --tumor-id ${meta.tumor_id} \\
