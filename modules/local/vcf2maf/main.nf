@@ -2,7 +2,7 @@ process VCF2MAF {
     tag "${meta.id}"
     label 'process_medium'
 
-    container 'docker.io/qclayssen/vcf2maf:debian_v1.6.22'
+    container 'quay.io/biocontainers/vcf2maf:1.6.22--hdfd78af_0'
 
     input:
     tuple val(meta), path(vcf)
@@ -23,7 +23,7 @@ process VCF2MAF {
     """
     gunzip -c ${vcf} > ${uncompressed_vcf}
 
-    vcf2maf \\
+    vcf2maf.pl \\
         --inhibit-vep \\
         --input-vcf ${uncompressed_vcf} \\
         --output-maf ${meta.id}.maf \\
