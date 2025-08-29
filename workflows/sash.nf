@@ -204,8 +204,7 @@ workflow SASH {
 
     VCF2MAF(
         ch_vcf2maf_inputs,
-        genome.fasta,
-        genome.build
+        genome.fasta
     )
 
     ch_versions = ch_versions.mix(VCF2MAF.out.versions)

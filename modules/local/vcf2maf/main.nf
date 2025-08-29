@@ -7,7 +7,6 @@ process VCF2MAF {
     input:
     tuple val(meta), path(vcf)
     path genome_fasta
-    val genome_build
 
 
     output:
@@ -31,7 +30,7 @@ process VCF2MAF {
         --ref-fasta ${genome_fasta} \\
         --tumor-id ${meta.tumor_id} \\
         --normal-id ${meta.normal_id} \\
-        --ncbi-build ${genome_build} \\
+        --ncbi-build "GRCh38" \\
         ${args}
 
 
