@@ -44,9 +44,7 @@ process VCF2MAF {
     """
     touch ${prefix}.maf
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        vcf2maf: 1.6.22
+    echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     END_VERSIONS
     """
 }
