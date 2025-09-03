@@ -70,8 +70,8 @@ workflow PREPARE_INPUT {
             ]
 
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def vcf = "${base}/esvee/depth_annotation/${meta.tumor_id}.esvee.ref_depth.vcf.gz"
-            def dir = "${base}/esvee/prep/"
+            def vcf = "${base}/esvee/${meta.tumor_id}.esvee.ref_depth.vcf.gz"
+            def dir = "${base}/esvee/"
             return [meta_esvee, vcf, dir]
         }
 
