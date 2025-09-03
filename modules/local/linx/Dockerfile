@@ -1,4 +1,4 @@
-FROM mambaorg/micromamba:1.5.7 as build
+FROM mambaorg/micromamba:1.5.8 as build
 
 USER root
 
@@ -7,7 +7,7 @@ RUN \
     zlib && \
   micromamba clean --all --yes
 
-FROM quay.io/biocontainers/hmftools-linx:2.0.2--hdfd78af_0
+FROM quay.io/biocontainers/hmftools-linx:2.1.0--hdfd78af_0
 
 COPY --from=build /env/ /env/
 
