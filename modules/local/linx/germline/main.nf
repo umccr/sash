@@ -2,7 +2,7 @@ process LINX_GERMLINE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/umccr/linx:2.0.2'
+    container 'ghcr.io/umccr/linx:2.1'
 
     input:
     tuple val(meta), path(sv_vcf)

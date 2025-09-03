@@ -2,7 +2,7 @@ process ESVEE_CALL {
     tag "${meta.id}"
     label 'process_high'
 
-    container 'ghcr.io/umccr/esvee:1.0.3'
+    container 'ghcr.io/umccr/esvee:1.1.2'
 
 
     input:

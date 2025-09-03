@@ -2,7 +2,7 @@ process LINX_VISUALISER {
     tag "${meta.id}"
     label 'process_medium'
 
-    container 'ghcr.io/umccr/linx:2.0.2'
+    container 'ghcr.io/umccr/linx:2.1'
 
     input:
     tuple val(meta), path(linx_annotation_dir)
