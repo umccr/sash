@@ -13,6 +13,7 @@ process PAVE_SOMATIC {
     path segment_mappability
     path driver_gene_panel
     path ensembl_data_resources
+    path gnomad_resource
 
     output:
     tuple val(meta), path("*.vcf.gz")    , emit: vcf
@@ -25,29 +26,38 @@ process PAVE_SOMATIC {
     script:
     def args = task.ext.args ?: ''
 
+    def xmx_mod = task.ext.xmx_mod ?: 0.75
+
+    def log_level_arg = task.ext.log_level ? "-log_level ${task.ext.log_level}" : ''
+
     """
     pave \\
-        -Xmx${Math.round(task.memory.bytes * 0.95)} \\
+        -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
+        ${args} \\
         -sample ${meta.sample_id} \\
-        -vcf_file ${vcf} \\
+        -input_vcf ${vcf} \\
+        -output_vcf ${meta.sample_id}.pave.somatic.vcf.gz \\
         -ref_genome ${genome_fasta} \\
         -ref_genome_version ${genome_ver} \\
+        -gnomad_freq_dir ${gnomad_resource} \\
         -clinvar_vcf ${clinvar_annotations} \\
         -driver_gene_panel ${driver_gene_panel} \\
+        -mappability_bed ${segment_mappability} \\
         -ensembl_data_dir ${ensembl_data_resources} \\
         -read_pass_only \\
         -threads ${task.cpus} \\
+        ${log_level_arg} \\
         -output_dir ./
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        pave: \$(pave -version | sed 's/^.* //')
+        pave: \$(pave -version | sed -n '/^Pave version / { s/^.* //p }')
     END_VERSIONS
     """
 
     stub:
     """
-    touch ${meta.sample_id}.sage.pave_somatic.vcf.gz{,.tbi}
+    touch ${meta.sample_id}.pave.somatic.vcf.gz{,.tbi}
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
