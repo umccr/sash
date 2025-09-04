@@ -2,7 +2,7 @@ process PAVE_SOMATIC {
     tag "${meta.id}"
     label 'process_medium'
 
-    container 'ghcr.io/umccr/pave:1.8'
+    container 'docker.io/qclayssen/pave:1.8-bcftools'
 
     input:
     tuple val(meta), path(vcf), path(tbi)
