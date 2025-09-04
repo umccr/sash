@@ -2,7 +2,7 @@ process BOLT_SMLV_SOMATIC_FILTER {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/umccr/bolt:0.2.14'
+    container 'ghcr.io/umccr/bolt:0.2.15-dev-mnv-1'
 
     input:
     tuple val(meta), path(smlv_vcf)
