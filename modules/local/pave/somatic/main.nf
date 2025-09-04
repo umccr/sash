@@ -31,11 +31,14 @@ process PAVE_SOMATIC {
     def log_level_arg = task.ext.log_level ? "-log_level ${task.ext.log_level}" : ''
 
     """
+    bcftools view -e 'INFO/MNVTAG!="."' ${vcf} -o ${meta.sample_id}.mnv_filtred.vcf.gz
+    bcftools index -t ${meta.sample_id}.mnv_filtred.vcf.gz
+
     pave \\
         -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
         ${args} \\
         -sample ${meta.sample_id} \\
-        -input_vcf ${vcf} \\
+        -input_vcf ${meta.sample_id}.mnv_filtred.vcf.gz \\
         -output_vcf ${meta.sample_id}.pave.somatic.vcf.gz \\
         -ref_genome ${genome_fasta} \\
         -ref_genome_version ${genome_ver} \\
