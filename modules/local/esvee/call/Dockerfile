@@ -7,7 +7,7 @@ RUN \
     zlib && \
   micromamba clean --all --yes
 
-FROM quay.io/biocontainers/hmftools-esvee:1.1.0--hdfd78af_0
+FROM quay.io/biocontainers/hmftools-esvee:1.1.2--hdfd78af_0
 
 COPY --from=build /env/ /env/
 
