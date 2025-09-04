@@ -37,7 +37,7 @@ process ESVEE_CALL {
     esvee com.hartwig.hmftools.esvee.caller.CallerApplication \\
         -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
         ${args} \\
-        -sample ${meta.tumor_id} \\
+        -tumor ${meta.tumor_id} \\
         ${reference_arg} \\
         -input_vcf ${ref_depth_vcf} \\
         -esvee_prep_dir ${prep_dir}/ \\
