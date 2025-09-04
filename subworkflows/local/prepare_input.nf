@@ -79,7 +79,7 @@ workflow PREPARE_INPUT {
         // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
         ch_sage_somatic = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def vcf = "${base}/sage/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
+            def vcf = "${base}/sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
             return [meta, vcf, "${vcf}.tbi"]
         }
 
