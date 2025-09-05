@@ -52,6 +52,7 @@ process PAVE_SOMATIC {
         ${log_level_arg} \\
         -output_dir ./
 
+    rm ${meta.sample_id}.mnv_filtred.vcf.gz{,.tbi}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         pave: \$(pave -version | sed -n '/^Pave version / { s/^.* //p }')
