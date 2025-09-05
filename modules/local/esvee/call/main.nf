@@ -39,7 +39,7 @@ process ESVEE_CALL {
         ${args} \\
         -sample ${meta.tumor_id} \\
         ${reference_arg} \\
-        -input_vcf ${ref_depth_vcf} \\
+        --tumor ${ref_depth_vcf} \\
         -esvee_prep_dir ${prep_dir}/ \\
         -ref_genome_version ${genome_ver} \\
         -known_hotspot_file ${known_fusions} \\
