@@ -9,7 +9,7 @@
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It must be a CSV file with a header row containing the following columns: `id,subject_name,sample_name,filetype,filepath`.
 
 ```bash
 --input '[path to samplesheet file]'
@@ -17,27 +17,32 @@ You will need to create a samplesheet with information about the samples you wou
 
 ### Full samplesheet
 
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
+Provide one row per available input directory for a given analysis `id`. All rows sharing the same `id` must have the same `subject_name`. The `filetype` column must be one of:
 
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
+- `dragen_germline_dir`: directory containing DRAGEN germline outputs (normal sample)
+- `dragen_somatic_dir`: directory containing DRAGEN somatic tumor/normal outputs (tumor sample)
+- `oncoanalyser_dir`: directory containing HMFtools/Oncoanalyser outputs (e.g., Purple, Linx)
+
+Example:
 
 ```csv
 id,subject_name,sample_name,filetype,filepath
 subject_a.example,subject_a,sample_germline,dragen_germline_dir,/path/to/dragen_germline/
-subject_a.example,subject_a,sample_germline,dragen_germline_dir,/path/to/dragen_germline/
 subject_a.example,subject_a,sample_somatic,dragen_somatic_dir,/path/to/dragen_somatic/
-subject_a.example,subject_a,sample_somatic,dragen_somatic_dir,/path/to/dragen_somatic/
-subject_a.example,subject_a,sample_somatic,oncoanalyser_dir,/path/to/oncoanalyser/
 subject_a.example,subject_a,sample_somatic,oncoanalyser_dir,/path/to/oncoanalyser/
 ```
 
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+Column descriptions:
 
-An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+| Column          | Description |
+| --------------- | ----------- |
+| `id`            | Analysis identifier used to group multiple rows belonging to the same subject/run. |
+| `subject_name`  | Subject identifier. Must be identical across all rows for a given `id`. |
+| `sample_name`   | Sample identifier. Used to set `normal_id` for `dragen_germline_dir` and `tumor_id` for `dragen_somatic_dir`. |
+| `filetype`      | One of `dragen_germline_dir`, `dragen_somatic_dir`, `oncoanalyser_dir`. |
+| `filepath`      | Absolute or relative path to the corresponding directory. |
+
+An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline and matches the format above.
 
 ## Running the pipeline
 

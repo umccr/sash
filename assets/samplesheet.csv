@@ -1,7 +1,4 @@
 id,subject_name,sample_name,filetype,filepath
 subject_a.example,subject_a,sample_germline,dragen_germline_dir,/path/to/dragen_germline/
-subject_a.example,subject_a,sample_germline,dragen_germline_dir,/path/to/dragen_germline/
 subject_a.example,subject_a,sample_somatic,dragen_somatic_dir,/path/to/dragen_somatic/
-subject_a.example,subject_a,sample_somatic,dragen_somatic_dir,/path/to/dragen_somatic/
-subject_a.example,subject_a,sample_somatic,oncoanalyser_dir,/path/to/oncoanalyser/
 subject_a.example,subject_a,sample_somatic,oncoanalyser_dir,/path/to/oncoanalyser/

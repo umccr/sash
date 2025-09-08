@@ -62,18 +62,16 @@ This document outlines the key results and files produced by the UMCCR SASH (pos
 ├── purple/
 ├── smlv_germline/
 │ └── prepare/
-| └── report/
-├── smlv_somatic/
 │ └── report/
-│ └── annotate/
-│ └── filter/
+├── smlv_somatic/
+│ ├── report/
+│ ├── annotate/
+│ ├── filter/
 │ └── rescue/
 └── sv_somatic/
-   └── annotate/
+   ├── annotate/
    └── prioritise/
 ```
-
-i
 ## Summary
 
 The **Sash Workflow** comprises three primary pipelines: **Somatic Small Variants**, **Somatic Structural Variants**, and **Germline Variants**. These pipelines utilize **Bolt**, a Python package designed for modular processing, and leverage outputs from the **DRAGEN Variant Caller** alongside **HMFtools in Oncoanalyser**. Each pipeline is tailored to a specific type of genomic variant, incorporating filtering, annotation, and HTML reports for research and curation.
