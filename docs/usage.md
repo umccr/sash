@@ -1,15 +1,18 @@
-# TODO
 # umccr/sash: Usage
 
 > _Documentation of pipeline parameters is generated automatically from the pipeline schema and can no longer be found in markdown files._
 
 ## Introduction
 
-<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
+SASH is UMCCR’s post-processing pipeline for tumor/normal WGS analyses. It consumes DRAGEN outputs and optional nf-core/oncoanalyser (WiGiTS) results to perform small-variant rescue, annotation, filtering, structural variant integration, CNV calling (PURPLE), and reporting (PCGR/CPSR, LINX, MultiQC, cancer report).
+
+- Requires Nextflow >= 22.10.6 and a container engine (Docker/Singularity/Apptainer/Podman).
+- Uses GRCh38 reference data defined in `conf/refdata.config` accessed via `--ref_data_path`.
+- Inputs are provided via a CSV samplesheet; no FASTQ inputs are expected by SASH.
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It must be a CSV file with a header row containing the following columns: `id,subject_name,sample_name,filetype,filepath`.
+Create a CSV samplesheet describing your DRAGEN and Oncoanalyser input directories. Pass it with `--input`. It must have a header row with columns: `id,subject_name,sample_name,filetype,filepath`.
 
 ```bash
 --input '[path to samplesheet file]'
@@ -17,7 +20,7 @@ You will need to create a samplesheet with information about the samples you wou
 
 ### Full samplesheet
 
-Provide one row per available input directory for a given analysis `id`. All rows sharing the same `id` must have the same `subject_name`. The `filetype` column must be one of:
+Provide one row per available input directory for a given analysis `id`. Rows sharing the same `id` must have the same `subject_name`. The `filetype` must be one of:
 
 - `dragen_germline_dir`: directory containing DRAGEN germline outputs (normal sample)
 - `dragen_somatic_dir`: directory containing DRAGEN somatic tumor/normal outputs (tumor sample)
@@ -44,17 +47,38 @@ Column descriptions:
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline and matches the format above.
 
+### Required directory contents
+
+SASH expects specific files inside each directory referenced in the samplesheet. Paths below are relative to each directory path you provide in `filepath`.
+
+- `dragen_somatic_dir`
+  - `${tumor_id}.hard-filtered.vcf.gz` and index `${tumor_id}.hard-filtered.vcf.gz.tbi`
+  - `${tumor_id}.hrdscore.csv`
+- `dragen_germline_dir`
+  - `${normal_id}.hard-filtered.vcf.gz`
+- `oncoanalyser_dir` (from nf-core/oncoanalyser)
+  - `amber/` and `cobalt/` directories
+  - `gridss/${tumor_id}.gridss.vcf.gz`
+  - `sage/somatic/${tumor_id}.sage.somatic.vcf.gz` (+ `.tbi`)
+  - `virusbreakend/` directory
+
+Note: SASH runs PURPLE itself; precomputed PURPLE outputs are not required as inputs.
+
 ## Running the pipeline
 
-The typical command for running the pipeline is as follows:
+Quickstart command:
 
 ```bash
-nextflow run umccr/sash --input samplesheet.csv --outdir <OUTDIR> --genome GRCh37 -profile docker
+nextflow run umccr/sash \
+  --input samplesheet.csv \
+  --ref_data_path /path/to/reference_data_root \
+  --outdir results/ \
+  -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
 
-Note that the pipeline will create the following files in your working directory:
+This creates the following in your working directory:
 
 ```bash
 work                # Directory containing the nextflow working files
@@ -63,9 +87,7 @@ work                # Directory containing the nextflow working files
 # Other nextflow hidden files, eg. history of pipeline runs and old logs.
 ```
 
-If you wish to repeatedly use the same parameters for multiple runs, rather than specifying each flag in the command, you can specify these in a params file.
-
-Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`.
+If you wish to reuse parameters across runs, specify them in a `yaml` or `json` file via `-params-file <file>`.
 
 > ⚠️ Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
 > The above pipeline run specified with a params file in yaml format:
@@ -77,14 +99,24 @@ nextflow run umccr/sash -profile docker -params-file params.yaml
 with `params.yaml` containing:
 
 ```yaml
-input: './samplesheet.csv'
-outdir: './results/'
-genome: 'GRCh37'
-input: 'data'
+input: 'samplesheet.csv'
+ref_data_path: '/path/to/reference_data_root'
+outdir: 'results/'
 <...>
 ```
 
 You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
+
+### Reference data
+
+SASH reads all required resources from a single base directory passed via `--ref_data_path`. The internal paths and versions are defined in `conf/refdata.config` and include:
+
+- Genome FASTA/FAI/DICT: `genomes/GRCh38_umccr/...`
+- HMF reference data (WiGiTS): `hmf_reference_data/hmftools/<version>/...`
+- PCGR bundle: `databases/pcgr/v<version>/`
+- UMCCR resources: panels, known fusions, PoNs, config files
+
+Organise your reference data root to match these relative paths, or provide a site config that overrides them. See `subworkflows/local/prepare_reference.nf` and `conf/refdata.config` for details.
 
 ### Updating the pipeline
 
@@ -98,7 +130,7 @@ nextflow pull umccr/sash
 
 It is a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-First, go to the [umccr/sash releases page](https://github.com/umccr/sash/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
+First, go to the [umccr/sash releases page](https://github.com/umccr/sash/releases) and find the latest pipeline version (e.g. `0.5.0`). Then specify this when running with `-r` (single hyphen), for example `-r 0.5.0`.
 
 This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For example, at the bottom of the MultiQC reports.
 
@@ -168,6 +200,10 @@ To use a different container from the default container or conda environment spe
 ### Custom Tool Arguments
 
 A pipeline might not always support every possible argument or option of a particular tool used in pipeline. Fortunately, nf-core pipelines provide some freedom to users to insert additional parameters that the pipeline does not include by default.
+
+## Outputs
+
+See detailed descriptions in `docs/output.md`. Top-level results include PCGR/CPSR HTML reports, cancer report, LINX/PURPLE artefacts, and a MultiQC summary.
 
 ## Running in the background
 
