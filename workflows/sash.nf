@@ -178,7 +178,6 @@ workflow SASH {
         hmf_data.segment_mappability,
         umccr_data.driver_gene_panel,
         umccr_data.ensembl_data_resources,
-        hmf_data.gnomad_resource,
     )
 
     // channel: [ meta, pave_somatic_vcf ]

@@ -2,7 +2,7 @@ process LINX_SOMATIC {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'quay.io/biocontainers/hmftools-linx:2.1--hdfd78af_0'
+    container 'ghcr.io/umccr/linx:2.0'
 
     input:
     tuple val(meta), path(purple_dir)

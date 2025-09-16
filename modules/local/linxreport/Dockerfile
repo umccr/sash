@@ -7,7 +7,7 @@ RUN \
     zlib && \
   micromamba clean --all --yes
 
-FROM quay.io/biocontainers/hmftools-pave:1.7--hdfd78af_0
+FROM quay.io/biocontainers/r-linxreport:1.1.0--r44hdfd78af_0
 
 COPY --from=build /env/ /env/
 

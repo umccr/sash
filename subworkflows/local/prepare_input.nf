@@ -70,8 +70,8 @@ workflow PREPARE_INPUT {
             ]
 
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def vcf = "${base}/esvee/${meta.tumor_id}.esvee.ref_depth.vcf.gz"
-            def dir = "${base}/esvee/"
+            def vcf = "${base}/esvee/depth_annotation/${meta.tumor_id}.esvee.ref_depth.vcf.gz"
+            def dir = "${base}/esvee/prep/"
             return [meta_esvee, vcf, dir]
         }
 
@@ -79,7 +79,7 @@ workflow PREPARE_INPUT {
         // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
         ch_sage_somatic = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def vcf = "${base}/sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
+            def vcf = "${base}/sage/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
             return [meta, vcf, "${vcf}.tbi"]
         }
 
