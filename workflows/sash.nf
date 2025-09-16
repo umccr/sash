@@ -82,7 +82,7 @@ workflow SASH {
     //
 
     PREPARE_INPUT(
-        file(params.input)
+        file(params.input),
     )
 
     ch_inputs              = PREPARE_INPUT.out.metas             // channel: [ meta ]
