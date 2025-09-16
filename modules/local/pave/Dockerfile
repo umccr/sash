@@ -9,7 +9,7 @@ RUN \
 
 FROM quay.io/biocontainers/hmftools-pave:1.8--hdfd78af_0
 
-COPY --from=quay.io/biocontainers/bcftools:1.19--h8b25389_0 /usr/local/ /usr/local/
+COPY --from=quay.io/biocontainers/bcftools:1.22--h3a4d415_1 /usr/local/ /usr/local/
 
 COPY --from=build /env/ /env/
 
