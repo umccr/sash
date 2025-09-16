@@ -11,9 +11,9 @@ functionality.
 
 ## Table of contents
 
-* [Summary](#summary)
-* [Requirements](#requirements)
-* [Usage](#usage)
+- [Summary](#summary)
+- [Requirements](#requirements)
+- [Usage](#usage)
 
 ## Summary
 
