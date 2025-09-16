@@ -31,7 +31,7 @@ process PAVE_SOMATIC {
     def log_level_arg = task.ext.log_level ? "-log_level ${task.ext.log_level}" : ''
 
     """
-    bcftools view -e 'INFO/MNVTAG!="."' ${vcf} -o ${meta.sample_id}.mnv_filtred.vcf.gz
+    bcftools view --exclude 'INFO/MNVTAG!="."' --write-index=tbi --output ${meta.sample_id}.mnv_filtred.vcf.gz  ${vcf}
     bcftools index -t ${meta.sample_id}.mnv_filtred.vcf.gz
 
     pave \\
