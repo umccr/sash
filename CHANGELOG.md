@@ -107,9 +107,9 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### Dependencies
 
-| Tool | Old | New |
-|------|-----|-----|
-| Linx | 1.25 | 2.0 |
-| Purple | 4.0.1 | 4.1.0 |
-| Bolt | — | umccr/bolt#6 |
-| GPGR | — | umccr/gpgr#88 |
+| Tool   | Old   | New           |
+| ------ | ----- | ------------- |
+| Linx   | 1.25  | 2.0           |
+| Purple | 4.0.1 | 4.1.0         |
+| Bolt   | —     | umccr/bolt#6  |
+| GPGR   | —     | umccr/gpgr#88 |
