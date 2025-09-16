@@ -28,8 +28,6 @@ process PAVE_SOMATIC {
 
     def xmx_mod = task.ext.xmx_mod ?: 0.75
 
-    def log_level_arg = task.ext.log_level ? "-log_level ${task.ext.log_level}" : ''
-
     """
     bcftools view --exclude 'INFO/MNVTAG!="."' --write-index=tbi --output ${meta.sample_id}.mnv_filtred.vcf.gz ${vcf}
 
@@ -48,7 +46,6 @@ process PAVE_SOMATIC {
         -ensembl_data_dir ${ensembl_data_resources} \\
         -write_pass_only \\
         -threads ${task.cpus} \\
-        ${log_level_arg} \\
         -output_dir ./
 
     rm ${meta.sample_id}.mnv_filtred.vcf.gz{,.tbi}
