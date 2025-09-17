@@ -2,7 +2,7 @@ process ESVEE_CALL {
     tag "${meta.id}"
     label 'process_high'
 
-    container 'ghcr.io/umccr/esvee:1.0.3'
+    container 'quay.io/biocontainers/hmftools-esvee:1.1.2--hdfd78af_0'
 
 
     input:
@@ -37,7 +37,7 @@ process ESVEE_CALL {
     esvee com.hartwig.hmftools.esvee.caller.CallerApplication \\
         -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
         ${args} \\
-        -sample ${meta.tumor_id} \\
+        -tumor ${meta.tumor_id} \\
         ${reference_arg} \\
         -input_vcf ${ref_depth_vcf} \\
         -esvee_prep_dir ${prep_dir}/ \\

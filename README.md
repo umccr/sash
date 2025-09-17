@@ -28,6 +28,7 @@ The general processes `sash` runs include:
 - PURPLE for TMB, MSI, CNV calling, and purity / ploidy estimation
 - HRDetect and CHORD for HRD inference
 - MutationalPatterns to fit mutational signatures
+- PAVE for somatic variant annotation with MNV filtering (see [discussion](https://github.com/umccr/sash/issues/19))
 
 ## Requirements
 

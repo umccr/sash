@@ -182,6 +182,7 @@ workflow SASH {
         hmf_data.segment_mappability,
         umccr_data.driver_gene_panel,
         umccr_data.ensembl_data_resources,
+        hmf_data.gnomad_resource,
     )
 
     ch_versions = ch_versions.mix(PAVE_SOMATIC.out.versions)
