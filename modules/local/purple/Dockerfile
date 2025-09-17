@@ -1,4 +1,4 @@
-FROM mambaorg/micromamba:1.5.8 as build
+FROM mambaorg/micromamba:1.5.8 AS build
 
 USER root
 
@@ -9,7 +9,7 @@ RUN \
 
 FROM quay.io/biocontainers/hmftools-purple:4.2--hdfd78af_0
 
-# NOTE(SW): copy over compatibile build of BCFtools
+# NOTE(SW): copy over compatible build of BCFtools
 COPY --from=quay.io/biocontainers/bcftools:1.19--h8b25389_0 /usr/local/ /usr/local/
 
 COPY --from=build /env/ /env/
