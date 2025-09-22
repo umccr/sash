@@ -19,6 +19,8 @@ process BOLT_OTHER_CANCER_REPORT {
 
     script:
 
+    def dragen_hrd_arg = dragen_hrd ? "--dragen_hrd_fp ${dragen_hrd}" : ''
+
     """
     # NOTE(SW): gpgr requires aboslute paths
 
@@ -42,7 +44,7 @@ process BOLT_OTHER_CANCER_REPORT {
         --purple_dir \$(pwd)/${purple_dir} \\
         --virusbreakend_dir \$(pwd)/${virusbreakend_dir} \\
         \\
-        --dragen_hrd_fp \$(pwd)/${dragen_hrd} \\
+        ${dragen_hrd_arg} \\
         \\
         --cancer_genes_fp \$(pwd)/${somatic_driver_panel} \\
         --oncokb_genes_fp \$(pwd)/${oncokb_genes} \\
