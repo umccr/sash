@@ -2,7 +2,7 @@ process BOLT_OTHER_PURPLE_BAF_PLOT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/umccr/bolt:0.2.15-circos'
+    container 'ghcr.io/umccr/bolt:0.2.16-circos'
 
     input:
     tuple val(meta), path(purple_dir)

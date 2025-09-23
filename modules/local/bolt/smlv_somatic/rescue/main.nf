@@ -2,7 +2,7 @@ process BOLT_SMLV_SOMATIC_RESCUE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/umccr/bolt:0.2.15'
+    container 'ghcr.io/umccr/bolt:0.2.16'
 
     input:
     tuple val(meta), path(smlv_vcf), path(smlv_tbi), path(sage_smlv_vcf), path(sage_smlv_tbi)
