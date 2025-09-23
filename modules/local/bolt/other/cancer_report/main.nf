@@ -19,7 +19,7 @@ process BOLT_OTHER_CANCER_REPORT {
 
     script:
 
-    def dragen_hrd_arg = dragen_hrd ? "--dragen_hrd_fp ${dragen_hrd}" : ''
+    def dragen_hrd_arg = dragen_hrd ? "--dragen_hrd_fp \$(pwd)/${dragen_hrd}" : ''
 
     """
     # NOTE(SW): gpgr requires aboslute paths
