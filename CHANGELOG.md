@@ -15,6 +15,19 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### `Deprecated`
 
+## [0.6.2] - 2025-10-1
+
+### Changed
+
+- Dragen HRD file facultatif
+
+### Dependencies
+
+| Tool | Old | New |
+|------|-----|-----|
+| bolt | 0.2.15 | 0.2.16 |
+| gpgr | 2.2.0 | 2.2.1 |
+
 ## [0.6.1] - 2025-09-16
 
 ### Added
