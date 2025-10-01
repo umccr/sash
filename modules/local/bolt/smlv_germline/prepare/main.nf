@@ -2,7 +2,7 @@ process BOLT_SMLV_GERMLINE_PREPARE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/umccr/bolt:0.2.16'
+    container 'ghcr.io/umccr/bolt:0.2.17'
 
     input:
     tuple val(meta), path(smlv_vcf)
