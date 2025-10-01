@@ -25,7 +25,7 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 | Tool | Old | New |
 |------|-----|-----|
-| bolt | 0.2.15 | 0.2.16 |
+| bolt | 0.2.15 | 0.2.17 |
 | gpgr | 2.2.0 | 2.2.1 |
 
 ## [0.6.1] - 2025-09-16
