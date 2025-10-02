@@ -4,11 +4,32 @@
 
 ## Introduction
 
-SASH is UMCCR’s post-processing pipeline for tumor/normal WGS analyses. It consumes DRAGEN outputs and optional nf-core/oncoanalyser (WiGiTS) results to perform small-variant rescue, annotation, filtering, structural variant integration, CNV calling (PURPLE), and reporting (PCGR/CPSR, LINX, MultiQC, cancer report).
+`sash` is the UMCCR post-processing WGS workflow. The workflow takes DRAGEN small variant calls and oncoanalyser results as input to perform annotation, prioritisation, rescue and filtering, and reporting for the WGS variant data. Additionally, `sash` runs several sensors for biomarker assessment and genomic characterisation including HRD status, mutational signatures, purity/ploidy, MSI, and TMB.
+
+The general processes `sash` runs include:
+
+- `gpgr` for generating the summary Cancer Report
+- `PCGR` to report processed small somatic variants (annotated, rescued, filtered, prioritised)
+- `CPSR` to report processed small germline variants (filtered, annotated, prioritised)
+- `linxreport` to collate SV annotations and plots from LINX
+- `MultiQC` for reporting various WGS statistics / metrics for QC
+- `SAGE` variant calling to supplement DRAGEN small somatic variants
+- `PURPLE` for TMB, MSI, CNV calling, and purity / ploidy estimation
+- `HRDetect` and `CHORD` for HRD inference
+- `MutationalPatterns` to fit mutational signatures
+- `PAVE` for somatic variant annotation with MNV filtering
+
+While the `sash` workflow utilises a range of tools and software, it is most closely coupled with [bolt](https://github.com/scwatts/bolt), a Python package that implements the UMCCR post-processing logic and supporting functionality.
 
 - Requires Nextflow >= 22.10.6 and a container engine (Docker/Singularity/Apptainer/Podman).
 - Uses GRCh38 reference data defined in `conf/refdata.config` accessed via `--ref_data_path`.
 - Inputs are provided via a CSV samplesheet; no FASTQ inputs are expected by SASH.
+
+## Requirements
+
+- Java
+- Nextflow ≥22.10.6
+- A container engine, such as Docker, Singularity, Apptainer, or Podman
 
 ## Samplesheet input
 
