@@ -2,7 +2,7 @@ process LINX_GERMLINE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/scwatts/hmftools-linx:1.25--0'
+    container 'quay.io/biocontainers/hmftools-linx:2.1--hdfd78af_0'
 
     input:
     tuple val(meta), path(sv_vcf)
@@ -20,9 +20,11 @@ process LINX_GERMLINE {
     script:
     def args = task.ext.args ?: ''
 
+    def xmx_mod = task.ext.xmx_mod ?: 0.75
+
     """
     linx \\
-        -Xmx${Math.round(task.memory.bytes * 0.95)} \\
+        -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
         ${args} \\
         -sample ${meta.sample_id} \\
         -sv_vcf ${sv_vcf} \\
@@ -34,7 +36,7 @@ process LINX_GERMLINE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        linx: \$(linx -version | sed 's/^.* //')
+        linx: \$(linx -version | sed -n '/^Linx version / { s/^.* //p }')
     END_VERSIONS
     """
 
@@ -42,6 +44,7 @@ process LINX_GERMLINE {
     """
     mkdir linx_germline/
     touch linx_germline/placeholder
+
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

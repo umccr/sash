@@ -12,9 +12,8 @@ workflow PURPLE_CALLING {
         ch_cobalt                    // channel: [mandatory] [ meta, cobalt_dir ]
         ch_smlv_somatic              // channel: [optional]  [ meta, pave_vcf ]
         ch_smlv_germline             // channel: [optional]  [ meta, pave_vcf ]
-        ch_sv_somatic                // channel: [optional]  [ meta, gripss_vcf, gripss_tbi ]
-        ch_sv_germline               // channel: [optional]  [ meta, gripss_vcf, gripss_tbi ]
-        ch_sv_somatic_unfiltered     // channel: [optional]  [ meta, gripss_vcf, gripss_tbi ]
+        ch_sv_somatic                // channel: [optional]  [ meta, esvee_vcf, esvee_tbi ]
+        ch_sv_germline               // channel: [optional]  [ meta, esvee_vcf, esvee_tbi ]
 
         // Reference data
         genome_fasta                 // channel: [mandatory] /path/to/genome_fasta
@@ -34,14 +33,13 @@ workflow PURPLE_CALLING {
         ch_versions = Channel.empty()
 
         // Collect inputs
-        // channel: [ meta, amber_dir, cobalt_dir, sv_somatic_vcf, sv_somatic_tbi, sv_somatic_unfiltered_vcf, sv_somatic_unfiltered_tbi, sv_germline_vcf, sv_germline_tbi, smlv_somatic_vcf, smlv_germline_vcf ]
+        // channel: [ meta, amber_dir, cobalt_dir, sv_somatic_vcf, sv_somatic_tbi, sv_germline_vcf, sv_germline_tbi, smlv_somatic_vcf, smlv_germline_vcf ]
         ch_purple_inputs_source = WorkflowSash.groupByMeta(
             // Required inputs
             ch_amber,
             ch_cobalt,
             // Optional inputs
             ch_sv_somatic,
-            ch_sv_somatic_unfiltered,
             ch_sv_germline,
             ch_smlv_somatic,
             ch_smlv_germline,
@@ -49,7 +47,7 @@ workflow PURPLE_CALLING {
         )
 
         // Create process-specific meta
-        // channel: [ meta_purple, amber_dir, cobalt_dir, sv_somatic_vcf, sv_somatic_tbi, sv_somatic_unfiltered_vcf, sv_somatic_unfilt_vcf, sv_germline_tbi, smlv_somatic_vcf, smlv_germline_vcf ]
+        // channel: [ meta_purple, amber_dir, cobalt_dir, sv_somatic_vcf, sv_somatic_tbi, sv_germline_tbi, smlv_somatic_vcf, smlv_germline_vcf ]
         ch_purple_inputs = ch_purple_inputs_source
             .map {
                 def meta = it[0]

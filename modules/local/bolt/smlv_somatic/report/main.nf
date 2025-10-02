@@ -2,7 +2,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/scwatts/bolt:0.2.13-pcgr'
+    container 'ghcr.io/umccr/bolt:0.2.17-pcgr'
 
     input:
     tuple val(meta), path(smlv_vcf), path(smlv_filters_vcf), path(smlv_dragen_vcf), path(purple_purity)
@@ -60,6 +60,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
     stub:
     """
     mkdir -p output/pcgr/
+    touch output/pcgr/pcgr.stub
     touch output/af_tumor.txt
     touch output/af_tumor_keygenes.txt
     touch output/${meta.tumor_id}.somatic.variant_counts_type.yaml

@@ -2,8 +2,8 @@
 // LINX plotting visualises clusters structural variants
 //
 
-include { LINXREPORT as REPORT          } from '../../modules/local/linxreport/main'
-include { LINX_VISUALISER as VISUALISER } from '../../modules/local/linx/visualiser/main'
+include { LINXREPORT } from '../../modules/local/linxreport/main'
+include { LINX_VISUALISER } from '../../modules/local/linx/visualiser/main'
 
 workflow LINX_PLOTTING {
     take:
@@ -32,15 +32,15 @@ workflow LINX_PLOTTING {
                 return [meta_linx, anno_dir]
             }
 
-        VISUALISER(
+        LINX_VISUALISER(
             ch_linx_visualiser_inputs,
             genome_version,
             ensembl_data_resources,
         )
 
-        ch_versions = ch_versions.mix(VISUALISER.out.versions)
+        ch_versions = ch_versions.mix(LINX_VISUALISER.out.versions)
 
-        ch_visualiser_out = WorkflowSash.restoreMeta(VISUALISER.out.plots, ch_inputs)
+        ch_visualiser_out = WorkflowSash.restoreMeta(LINX_VISUALISER.out.plots, ch_inputs)
 
         // Create inputs and create process-specific meta
         // channel: [ meta_linxreport, linx_annotation_dir, linx_plot_dir ]
@@ -57,11 +57,11 @@ workflow LINX_PLOTTING {
                 return [meta_linxreport, anno_dir, plot_dir]
             }
 
-        REPORT(
+        LINXREPORT(
             ch_linxreport_inputs,
         )
 
-        ch_versions = ch_versions.mix(REPORT.out.versions)
+        ch_versions = ch_versions.mix(LINXREPORT.out.versions)
 
     emit:
         plot_dir = ch_visualiser_out // channel: [ meta, plot_dir ]

@@ -1,25 +1,27 @@
-name: gripss_germline
-description: Filter and process GRIDSS germline structural variants
+name: esvee_call
+description: Call somatic SVs with ESVEE
 keywords:
+  - calling
   - sv
-  - filtering
-  - germline
 tools:
-  - gripss:
-      description: Apply filtering and post-processing to GRIDSS structural variants.
-      homepage: https://github.com/hartwigmedical/hmftools/tree/master/gripss
-      documentation: https://github.com/hartwigmedical/hmftools/tree/master/gripss
-      licence: ["GPL v3"]
+  - esvee:
+      description: Structural variant (SV) calling
+      homepage: https://github.com/hartwigmedical/hmftools/tree/master/esvee
+      documentation: https://github.com/hartwigmedical/hmftools/tree/master/esvee
+      licence: ["GPL >=3"]
 input:
   - meta:
       type: map
       description: |
         Groovy Map containing sample information
-        e.g. [id: 'sample_id', normal_id: 'normal_name']
-  - gridss_vcf:
+        e.g. [id: 'sample_id']
+  - ref_depth_vcf:
       type: file
-      description: VCF file
+      description: ESVEE depth annotated VCF file
       pattern: "*.{vcf.gz}"
+  - prep_dir:
+      type: directory
+      description: ESVEE prep output directory
   - genome_fasta:
       type: file
       description: Reference genome assembly FASTA file
@@ -27,11 +29,7 @@ input:
   - genome_ver:
       type: string
       description: Reference genome version
-  - genome_fai:
-      type: file
-      description: Reference genome assembly fai file
-      pattern: "*.{fai}"
-  - pon_breakends:
+  - pon_breakend:
       type: file
       description: GRIDSS breakend PON file
       pattern: "*.{bed.gz}"
@@ -51,14 +49,21 @@ output:
       type: map
       description: |
         Groovy Map containing sample information
-        e.g. [id: 'sample_id', normal_id: 'normal_name']
-  - vcf:
+        e.g. [id: 'sample_id']
+  - caller_dir:
+      type: directory
+      description: ESVEE call output directory
+  - unfiltered_vcf:
       type: list
-      description: Filtered VCF file and index file
+      description: Unfiltered VCF file
       pattern: "*.{vcf.gz,vcf.gz.tbi}"
-  - vcf_unfiltered:
+  - somatic_vcf:
       type: list
-      description: Unfiltered VCF file and index file
+      description: Somatic VCF file
+      pattern: "*.{vcf.gz,vcf.gz.tbi}"
+  - germline_vcf:
+      type: list
+      description: Germline VCF file (optional)
       pattern: "*.{vcf.gz,vcf.gz.tbi}"
   - versions:
       type: file

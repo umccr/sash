@@ -2,7 +2,7 @@ process BOLT_OTHER_MULTIQC_REPORT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/scwatts/bolt:0.2.13-multiqc'
+    container 'ghcr.io/umccr/bolt:0.2.17-multiqc'
 
     input:
     tuple val(meta), path(input_files)
@@ -35,6 +35,7 @@ process BOLT_OTHER_MULTIQC_REPORT {
     stub:
     """
     mkdir -p multiqc_report/multiqc_data/
+    touch multiqc_report/multiqc_data/multiqc.stub
     touch ${meta.tumor_id}.multiqc.html
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
