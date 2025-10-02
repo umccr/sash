@@ -1,53 +1,34 @@
 # umccr/sash: Usage
 
-> _Documentation of pipeline parameters is generated automatically from the pipeline schema and can no longer be found in markdown files._
+> Parameter documentation is generated automatically from `nextflow_schema.json`. Run `nextflow run umccr/sash --help`
+> or use [nf-core/launch](https://nf-co.re/launch) for an interactive form.
 
 ## Introduction
 
-`sash` is the UMCCR post-processing WGS workflow. The workflow takes DRAGEN small variant calls and oncoanalyser results as input to perform annotation, prioritisation, rescue and filtering, and reporting for the WGS variant data. Additionally, `sash` runs several sensors for biomarker assessment and genomic characterisation including HRD status, mutational signatures, purity/ploidy, MSI, and TMB.
+umccr/sash is UMCCR’s post-processing pipeline for tumour/normal WGS analyses. It consumes DRAGEN secondary-analysis
+outputs together with nf-core/oncoanalyser WiGiTS artefacts to perform small-variant rescue, annotation, filtering,
+structural variant integration, PURPLE CNV calling, and reporting (PCGR, CPSR, GPGR cancer report, LINX, MultiQC).
 
-The general processes `sash` runs include:
-
-- `gpgr` for generating the summary Cancer Report
-- `PCGR` to report processed small somatic variants (annotated, rescued, filtered, prioritised)
-- `CPSR` to report processed small germline variants (filtered, annotated, prioritised)
-- `linxreport` to collate SV annotations and plots from LINX
-- `MultiQC` for reporting various WGS statistics / metrics for QC
-- `SAGE` variant calling to supplement DRAGEN small somatic variants
-- `PURPLE` for TMB, MSI, CNV calling, and purity / ploidy estimation
-- `HRDetect` and `CHORD` for HRD inference
-- `MutationalPatterns` to fit mutational signatures
-- `PAVE` for somatic variant annotation with MNV filtering
-
-While the `sash` workflow utilises a range of tools and software, it is most closely coupled with [bolt](https://github.com/scwatts/bolt), a Python package that implements the UMCCR post-processing logic and supporting functionality.
-
-- Requires Nextflow >= 22.10.6 and a container engine (Docker/Singularity/Apptainer/Podman).
-- Uses GRCh38 reference data defined in `conf/refdata.config` accessed via `--ref_data_path`.
-- Inputs are provided via a CSV samplesheet; no FASTQ inputs are expected by SASH.
-
-## Requirements
-
-- Java
-- Nextflow ≥22.10.6
-- A container engine, such as Docker, Singularity, Apptainer, or Podman
+- Requires Nextflow ≥ 22.10.6 and a container engine (Docker/Singularity/Apptainer/Podman/Conda).
+- Uses GRCh38 reference data resolved from `--ref_data_path` (see [Reference data](#reference-data)).
+- Expects inputs via a CSV samplesheet describing DRAGEN and Oncoanalyser directories; no FASTQ inputs are needed.
 
 ## Samplesheet input
 
-Create a CSV samplesheet describing your DRAGEN and Oncoanalyser input directories. Pass it with `--input`. It must have a header row with columns: `id,subject_name,sample_name,filetype,filepath`.
+Pass a CSV with `--input`. Each row represents one directory staged by upstream pipelines for a given analysis `id`.
+Rows sharing the same `id` are grouped into a single tumour/normal run.
 
-```bash
---input '[path to samplesheet file]'
-```
+### Column definitions
 
-### Full samplesheet
+| Column         | Description |
+| -------------- | ----------- |
+| `id`           | Unique analysis identifier grouping rows belonging to the same tumour/normal pair. |
+| `subject_name` | Subject identifier; must be identical for all rows with the same `id`. |
+| `sample_name`  | DRAGEN sample label. Used to derive tumour (`dragen_somatic_dir`) and normal (`dragen_germline_dir`) identifiers. |
+| `filetype`     | One of the supported directory types below. |
+| `filepath`     | Absolute or relative path to the directory containing the expected files. |
 
-Provide one row per available input directory for a given analysis `id`. Rows sharing the same `id` must have the same `subject_name`. The `filetype` must be one of:
-
-- `dragen_germline_dir`: directory containing DRAGEN germline outputs (normal sample)
-- `dragen_somatic_dir`: directory containing DRAGEN somatic tumor/normal outputs (tumor sample)
-- `oncoanalyser_dir`: directory containing HMFtools/Oncoanalyser outputs (e.g., Purple, Linx)
-
-Example:
+Example row set:
 
 ```csv
 id,subject_name,sample_name,filetype,filepath
@@ -56,34 +37,25 @@ subject_a.example,subject_a,sample_somatic,dragen_somatic_dir,/path/to/dragen_so
 subject_a.example,subject_a,sample_somatic,oncoanalyser_dir,/path/to/oncoanalyser/
 ```
 
-Column descriptions:
-
-| Column          | Description |
-| --------------- | ----------- |
-| `id`            | Analysis identifier used to group multiple rows belonging to the same subject/run. |
-| `subject_name`  | Subject identifier. Must be identical across all rows for a given `id`. |
-| `sample_name`   | Sample identifier. Used to set `normal_id` for `dragen_germline_dir` and `tumor_id` for `dragen_somatic_dir`. |
-| `filetype`      | One of `dragen_germline_dir`, `dragen_somatic_dir`, `oncoanalyser_dir`. |
-| `filepath`      | Absolute or relative path to the corresponding directory. |
-
-An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline and matches the format above.
+An example sheet is included at `assets/samplesheet.csv`.
 
 ### Required directory contents
 
-SASH expects specific files inside each directory referenced in the samplesheet. Paths below are relative to each directory path you provide in `filepath`.
+Paths below are relative to the value of `filepath` for each row. The pipeline targets nf-core/oncoanalyser ≥ 2.2.0
+exports.
 
 - `dragen_somatic_dir`
-  - `${tumor_id}.hard-filtered.vcf.gz` and index `${tumor_id}.hard-filtered.vcf.gz.tbi`
-  - `${tumor_id}.hrdscore.csv`
+  - `<tumor_id>.hard-filtered.vcf.gz` and `<tumor_id>.hard-filtered.vcf.gz.tbi`
+  - Optional: `<tumor_id>.hrdscore.csv` (ingested into the cancer report when present)
 - `dragen_germline_dir`
-  - `${normal_id}.hard-filtered.vcf.gz`
-- `oncoanalyser_dir` (from nf-core/oncoanalyser)
-  - `amber/` and `cobalt/` directories
-  - `gridss/${tumor_id}.gridss.vcf.gz`
-  - `sage/somatic/${tumor_id}.sage.somatic.vcf.gz` (+ `.tbi`)
+  - `<normal_id>.hard-filtered.vcf.gz`
+- `oncoanalyser_dir`
+  - `amber/` and `cobalt/` directories (coverage inputs for PURPLE)
+  - `sage_calling/somatic/<tumor_id>.sage.somatic.vcf.gz` (+ `.tbi`)
+  - `esvee/<tumor_id>.esvee.ref_depth.vcf.gz` and accompanying directory (used to seed eSVee calling)
   - `virusbreakend/` directory
 
-Note: SASH runs PURPLE itself; precomputed PURPLE outputs are not required as inputs.
+> SASH runs PURPLE internally; precomputed PURPLE outputs are not required as inputs.
 
 ## Running the pipeline
 
@@ -97,149 +69,108 @@ nextflow run umccr/sash \
   -profile docker
 ```
 
-This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
+This launches the pipeline with the `docker` configuration profile. The following appear in the working directory:
 
-This creates the following in your working directory:
-
-```bash
-work                # Directory containing the nextflow working files
-<OUTDIR>            # Finished results in specified location (defined with --outdir)
-.nextflow_log       # Log file from Nextflow
-# Other nextflow hidden files, eg. history of pipeline runs and old logs.
+```
+work/           # Nextflow working files
+results/        # Pipeline outputs (as specified by --outdir)
+.nextflow_log   # Nextflow run log
 ```
 
-If you wish to reuse parameters across runs, specify them in a `yaml` or `json` file via `-params-file <file>`.
+### Parameter files and profiles
 
-> ⚠️ Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
-> The above pipeline run specified with a params file in yaml format:
+Reuse parameter sets via `-params-file params.yaml`:
 
 ```bash
 nextflow run umccr/sash -profile docker -params-file params.yaml
 ```
 
-with `params.yaml` containing:
-
 ```yaml
 input: 'samplesheet.csv'
-ref_data_path: '/path/to/reference_data_root'
+ref_data_path: '/data/refdata'
 outdir: 'results/'
-<...>
 ```
 
-You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
+> ⚠️ Avoid using `-c` to pass pipeline parameters. `-c` should only point to Nextflow config files for resource tuning,
+> executor settings or module overrides (see below).
 
-### Reference data
+You can generate YAML/JSON parameter files through [nf-core/launch](https://nf-co.re/launch) or Nextflow Tower.
 
-SASH reads all required resources from a single base directory passed via `--ref_data_path`. The internal paths and versions are defined in `conf/refdata.config` and include:
+## Reference data
 
-- Genome FASTA/FAI/DICT: `genomes/GRCh38_umccr/...`
-- HMF reference data (WiGiTS): `hmf_reference_data/hmftools/<version>/...`
-- PCGR bundle: `databases/pcgr/v<version>/`
-- UMCCR resources: panels, known fusions, PoNs, config files
+All resources are resolved relative to `--ref_data_path` using `conf/refdata.config`. Confirm the directory contains the
+expected subpaths (versions may change between releases):
 
-Organise your reference data root to match these relative paths, or provide a site config that overrides them. See `subworkflows/local/prepare_reference.nf` and `conf/refdata.config` for details.
+- `genomes/GRCh38_umccr/` – GRCh38 FASTA, FAI and dict files plus sequence metadata.
+- `hmf_reference_data/` – WiGiTS bundle with PURPLE GC profiles, eSVee panel-of-normals, SAGE hotspot resources, LINX
+  transcripts and driver catalogues.
+- `databases/pcgr/` – PCGR/CPSR annotation bundle.
+- `umccr/` – bolt configuration files, driver panels, MultiQC templates, GPGR assets.
+- `misc/` – panel-of-normals, APPRIS annotations, snpEff cache and other supporting data.
 
-### Updating the pipeline
+Refer to `docs/details.md` for a deeper breakdown of required artefacts.
 
-When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
-
-```bash
-nextflow pull umccr/sash
-```
-
-### Reproducibility
-
-It is a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
-
-First, go to the [umccr/sash releases page](https://github.com/umccr/sash/releases) and find the latest pipeline version (e.g. `0.5.0`). Then specify this when running with `-r` (single hyphen), for example `-r 0.5.0`.
-
-This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For example, at the bottom of the MultiQC reports.
-
-To further assist in reproducbility, you can use share and re-use [parameter files](#running-the-pipeline) to repeat pipeline runs with the same settings without having to write out a command with every single parameter.
-
-> 💡 If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
-
-## Core Nextflow arguments
-
-> **NB:** These options are part of Nextflow and use a _single_ hyphen (pipeline parameters use a double-hyphen).
+## Nextflow configuration
 
 ### `-profile`
 
-Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments.
-
-Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Shifter, Charliecloud, Apptainer, Conda) - see below.
-
-> We highly recommend the use of Docker or Singularity containers for full pipeline reproducibility, however when this is not possible, Conda is also supported.
-
-Note that multiple profiles can be loaded, for example: `-profile test,docker` - the order of arguments is important!
-They are loaded in sequence, so later profiles can overwrite earlier profiles.
-
-If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it can lead to different results on different machines dependent on the computer enviroment.
-
-- `test`
-  - A profile with a complete configuration for automated testing
-  - Includes links to test data so needs no other parameters
-- `docker`
-  - A generic configuration profile to be used with [Docker](https://docker.com/)
-- `singularity`
-  - A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
-- `podman`
-  - A generic configuration profile to be used with [Podman](https://podman.io/)
-- `shifter`
-  - A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
-- `charliecloud`
-  - A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
-- `apptainer`
-  - A generic configuration profile to be used with [Apptainer](https://apptainer.org/)
-- `conda`
-  - A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter, Charliecloud, or Apptainer.
+Profiles configure software packaging and cluster backends. Bundled profiles include `test`, `docker`, `singularity`,
+`podman`, `shifter`, `charliecloud`, `apptainer` and `conda`. Combine multiple profiles with commas (later entries
+override earlier ones). If no profile is supplied, Nextflow expects all software on `$PATH`, which is discouraged.
 
 ### `-resume`
 
-Specify this when restarting a pipeline. Nextflow will use cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously. For input to be considered the same, not only the names must be identical but the files' contents as well. For more info about this parameter, see [this blog post](https://www.nextflow.io/blog/2019/demystifying-nextflow-resume.html).
-
-You can also supply a run name to resume a specific run: `-resume [run-name]`. Use the `nextflow log` command to show previous run names.
+Resume cached work by adding `-resume`. Nextflow matches stages using both file names and content; keep inputs identical
+for cache hits. Supply a run name to resume a specific execution: `-resume <run-name>`. Use `nextflow log` to list
+previous runs.
 
 ### `-c`
 
-Specify the path to a specific config file (this is a core Nextflow command). See the [nf-core website documentation](https://nf-co.re/usage/configuration) for more information.
+`-c custom.config` loads additional Nextflow configuration (eg. executor queues, resource overrides, institutional
+profiles). See the [nf-core configuration docs](https://nf-co.re/docs/usage/configuration) for examples.
 
 ## Custom configuration
 
 ### Resource requests
 
-Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the compute resources that the pipeline requests. Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the steps in the pipeline, if the job exits with any of the error codes specified [here](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/base.config#L18) it will automatically be resubmitted with higher requests (2 x original, then 3 x original). If it still fails after the third attempt then the pipeline execution is stopped.
+Default resources suit typical datasets, but you can override CPUs/memory/time through custom config files. Many modules
+honour nf-core’s automatic retry logic: certain exit codes trigger resubmission at 2× and 3× the original resources
+before failing the run. Refer to the nf-core guides on
+[max resources](https://nf-co.re/docs/usage/configuration#max-resources) and
+[tuning workflow resources](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources).
 
-To change the resource requests, please see the [max resources](https://nf-co.re/docs/usage/configuration#max-resources) and [tuning workflow resources](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources) section of the nf-core website.
+### Custom containers
 
-### Custom Containers
+nf-core pipelines default to Biocontainers/Bioconda images. You can override container or conda package selections in
+config to use patched or institutional builds. See the
+[updating tool versions](https://nf-co.re/docs/usage/configuration#updating-tool-versions) section for patterns.
 
-In some cases you may wish to change which container or conda environment a step of the pipeline uses for a particular tool. By default nf-core pipelines use containers and software from the [biocontainers](https://biocontainers.pro/) or [bioconda](https://bioconda.github.io/) projects. However in some cases the pipeline specified version maybe out of date.
+### Custom tool arguments
 
-To use a different container from the default container or conda environment specified in a pipeline, please see the [updating tool versions](https://nf-co.re/docs/usage/configuration#updating-tool-versions) section of the nf-core website.
-
-### Custom Tool Arguments
-
-A pipeline might not always support every possible argument or option of a particular tool used in pipeline. Fortunately, nf-core pipelines provide some freedom to users to insert additional parameters that the pipeline does not include by default.
+If you need to provide additional tool parameters beyond those exposed by pipeline options, set `process.ext.args`
+(overrides per-module) or leverage module-specific hooks documented in nf-core. Review `conf/modules.config` for
+supported overrides in umccr/sash.
 
 ## Outputs
 
-See detailed descriptions in `docs/output.md`. Top-level results include PCGR/CPSR HTML reports, cancer report, LINX/PURPLE artefacts, and a MultiQC summary.
+See `docs/output.md` for a full description of generated artefacts (PCGR/CPSR HTML, cancer report, LINX, PURPLE, MultiQC
+and supporting statistics).
 
 ## Running in the background
 
-Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
+Nextflow supervises submitted jobs; keep the Nextflow process alive for the pipeline to finish. Options include:
 
-The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
-
-Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
-Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
+- `nextflow run ... -bg` to launch detached and log to `.nextflow.log`.
+- Using `screen`, `tmux` or similar to keep sessions alive.
+- Submitting Nextflow itself through your scheduler (eg. `sbatch`), where it will launch child jobs.
 
 ## Nextflow memory requirements
 
-In some cases, the Nextflow Java virtual machines can start to request a large amount of memory.
-We recommend adding the following line to your environment to limit this (typically in `~/.bashrc` or `~./bash_profile`):
+The Nextflow JVM can request substantial RAM on large runs. Set an upper bound via environment variables, typically in
+`~/.bashrc` or `~/.bash_profile`:
 
 ```bash
-NXF_OPTS='-Xms1g -Xmx4g'
+export NXF_OPTS='-Xms1g -Xmx4g'
 ```
+
+Adjust limits to suit your environment.
