@@ -2,7 +2,7 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/umccr/bolt:0.2.17-pcgr'
+    container 'ghcr.io/umccr/bolt:0.3.0-pcgr-v2.2.5-3-pcgr'
 
     input:
     tuple val(meta), path(smlv_vcf)
@@ -10,6 +10,7 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
     path annotations_dir
     path pon_dir
     path pcgr_data_dir
+    path vep_dir
 
     output:
     tuple val(meta), path("output/${meta.tumor_id}.annotations.vcf.gz"), emit: vcf
@@ -30,6 +31,7 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
         --annotations_dir ${annotations_dir} \\
         --pon_dir ${pon_dir} \\
         --pcgr_data_dir ${pcgr_data_dir} \\
+        --vep_dir ${vep_dir} \\
         --pcgr_conda pcgr \\
         --pcgrr_conda pcgrr \\
         --threads ${task.cpus} \\
