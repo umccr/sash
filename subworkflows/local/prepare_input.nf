@@ -1,5 +1,3 @@
-import java.nio.file.NoSuchFileException
-
 workflow PREPARE_INPUT {
     take:
         ch_samplesheet
@@ -91,11 +89,11 @@ workflow PREPARE_INPUT {
             return [meta, virusbreakend_dir]
         }
 
-                // HRD: homologous recombination deficiency scores
+        // HRD: homologous recombination deficiency scores
         // channel: [ meta, hrdscore_csv ]
         ch_input_hrd = ch_metas.map { meta ->
             def hrdscore_csv = Utils.resolve_input_path(log, meta, meta.dragen_somatic_dir, "${meta.tumor_id}.hrdscore.csv", "HRD score CSV", true)
-            return [meta, hrdscore_csv ?: []]  // Convert null to empty list
+            return [meta, hrdscore_csv]
         }
 
         // DRAGEN germline variants
