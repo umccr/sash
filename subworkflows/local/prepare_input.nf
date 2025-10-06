@@ -80,36 +80,36 @@ workflow PREPARE_INPUT {
         // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
         ch_sage_somatic = ch_metas.map { meta ->
             def sage_vcf = Utils.resolve_input_path(log, meta, meta.oncoanalyser_dir, "sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz", "SAGE somatic VCF")
-            def sage_tbi = Utils.resolve_input_path(log, meta meta.oncoanalyser_dir, "sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz.tbi", "SAGE somatic TBI")
+            def sage_tbi = Utils.resolve_input_path(log, meta, meta.oncoanalyser_dir, "sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz.tbi", "SAGE somatic TBI")
             return [meta, sage_vcf, sage_tbi]
         }
 
         // VirusBreakend: viral integration detection
         // channel: [ meta, virusbreakend_dir ]
         ch_virusbreakend = ch_metas.map { meta ->
-            def virusbreakend_dir = Utils.resolve_input_path(log, meta meta.oncoanalyser_dir, "virusbreakend/", "VirusBreakend directory")
+            def virusbreakend_dir = Utils.resolve_input_path(log, meta, meta.oncoanalyser_dir, "virusbreakend/", "VirusBreakend directory")
             return [meta, virusbreakend_dir]
         }
 
                 // HRD: homologous recombination deficiency scores
         // channel: [ meta, hrdscore_csv ]
         ch_input_hrd = ch_metas.map { meta ->
-            def hrdscore_csv = Utils.resolve_input_path(log, meta meta.dragen_somatic_dir, "${meta.tumor_id}.hrdscore.csv", "HRD score CSV", true)
+            def hrdscore_csv = Utils.resolve_input_path(log, meta, meta.dragen_somatic_dir, "${meta.tumor_id}.hrdscore.csv", "HRD score CSV", true)
             return [meta, hrdscore_csv ?: []]  // Convert null to empty list
         }
 
         // DRAGEN germline variants
         // channel: [ meta, dragen_germline_vcf ]
         ch_input_vcf_germline = ch_metas.map { meta ->
-            def dragen_germline_vcf = Utils.resolve_input_path(log, meta meta.dragen_germline_dir, "${meta.normal_id}.hard-filtered.vcf.gz", "DRAGEN germline VCF")
+            def dragen_germline_vcf = Utils.resolve_input_path(log, meta, meta.dragen_germline_dir, "${meta.normal_id}.hard-filtered.vcf.gz", "DRAGEN germline VCF")
             return [meta, dragen_germline_vcf]
         }
 
         // DRAGEN somatic variants
         // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
         ch_input_vcf_somatic = ch_metas.map { meta ->
-            def dragen_somatic_vcf = Utils.resolve_input_path(log, meta meta.dragen_somatic_dir, "${meta.tumor_id}.hard-filtered.vcf.gz", "DRAGEN somatic VCF")
-            def dragen_somatic_tbi = Utils.resolve_input_path(log, meta meta.dragen_somatic_dir, "${meta.tumor_id}.hard-filtered.vcf.gz.tbi", "DRAGEN somatic TBI")
+            def dragen_somatic_vcf = Utils.resolve_input_path(log, meta, meta.dragen_somatic_dir, "${meta.tumor_id}.hard-filtered.vcf.gz", "DRAGEN somatic VCF")
+            def dragen_somatic_tbi = Utils.resolve_input_path(log, meta, meta.dragen_somatic_dir, "${meta.tumor_id}.hard-filtered.vcf.gz.tbi", "DRAGEN somatic TBI")
             return [meta, dragen_somatic_vcf, dragen_somatic_tbi]
         }
     emit:
