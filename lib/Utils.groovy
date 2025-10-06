@@ -48,17 +48,15 @@ class Utils {
         }
     }
 
-        /**
-     * Resolve input paths with optional existence checking using idiomatic Nextflow patterns
-     * 
-     * @param log Nextflow logger
-     * @param meta Sample metadata containing id and other identifiers  
-     * @param base_dir Base directory path (can be local or S3)
-     * @param relative_path Relative path from base_dir to target file
-     * @param description Human-readable description for logging
-     * @param optional Whether the file is optional (default: false)
-     * @return Resolved path string or null for missing optional files
-     */
+
+     // Resolve input paths with optional existence checking using idiomatic Nextflow patterns
+     // @param log Nextflow logger
+     // @param meta Sample metadata
+     // @param base_dir Base directory path (can be local or S3)
+     // @param relative_path Relative path from base_dir to target
+     // @param description Human-readable description for logging
+     // @param optional Whether the file is optional (default: false)
+     // @return Resolved path string or empty list for missing optional files
     static def resolve_input_path(log, meta, base_dir, relative_path, description, boolean optional = false) {
         def resolved_path = Nextflow.file(base_dir).resolve(relative_path).toUriString()
 
