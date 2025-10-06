@@ -47,9 +47,11 @@ workflow PREPARE_INPUT {
             def base = file(base_dir)
             def resolved_path = base.resolve(relative_path)
 
-            if (resolved_path.exists()) {
+            try {
+                // This will throw an exception if the file doesn't exist (for both local and remote paths)
+                file(resolved_path, checkIfExists: true)
                 return resolved_path.toString()
-            } else {
+            } catch (Exception e) {
                 if (optional) {
                     log.warn "Optional ${description} missing for sample ${meta.id} at ${resolved_path} - pipeline will continue without this file"
                     return null
