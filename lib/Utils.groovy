@@ -59,7 +59,7 @@ class Utils {
      * @param optional Whether the file is optional (default: false)
      * @return Resolved path string or null for missing optional files
      */
-    static def resolve_input_path(log,meta, base_dir, relative_path, description, boolean optional = false) {
+    static def resolve_input_path(log, meta, base_dir, relative_path, description, boolean optional = false) {
         def resolved_path = Nextflow.file(base_dir).resolve(relative_path).toUriString()
 
         try {
@@ -68,7 +68,7 @@ class Utils {
         } catch (NoSuchFileException e) {
             if (optional) {
                 log.warn "Optional ${description} missing for sample ${meta.id} at ${resolved_path} - pipeline will continue without this file"
-                return null
+                return []
             } else {
                 log.error "${description} not found for ${meta.id}: ${resolved_path}"
                 Nextflow.exit(1)
