@@ -44,13 +44,12 @@ workflow PREPARE_INPUT {
 
         // Generic helper to resolve input paths with optional existence checking
         def resolve_input_path = { meta, base_dir, relative_path, description, optional = false ->
-            def base = file(base_dir)
-            def resolved_path = base.resolve(relative_path)
+            def resolved_path = file(base_dir).resolve(relative_path).toUriString()
 
             try {
                 // This will throw an exception if the file doesn't exist (for both local and remote paths)
                 file(resolved_path, checkIfExists: true)
-                return resolved_path.toString()
+                return resolved_path
             } catch (Exception e) {
                 if (optional) {
                     log.warn "Optional ${description} missing for sample ${meta.id} at ${resolved_path} - pipeline will continue without this file"
@@ -112,15 +111,15 @@ workflow PREPARE_INPUT {
         // CHORD: homologous recombination deficiency prediction
         // channel: [ meta, chord_prediction_tsv ]
         ch_chord = ch_metas.map { meta ->
-            def chord_tsv = resolve_input_path(meta, meta.oncoanalyser_dir, "chord/${meta.tumor_id}.chord.prediction.tsv", "CHORD prediction TSV")
-            return [meta, chord_tsv]
+            def chord_tsv = resolve_input_path(meta, meta.oncoanalyser_dir, "chord/${meta.tumor_id}.chord.prediction.tsv", "CHORD prediction TSV", true)
+            return [meta, chord_tsv ?: []]
         }
 
-        // HRD: homologous recombination deficiency scores
+                // HRD: homologous recombination deficiency scores
         // channel: [ meta, hrdscore_csv ]
         ch_input_hrd = ch_metas.map { meta ->
             def hrdscore_csv = resolve_input_path(meta, meta.dragen_somatic_dir, "${meta.tumor_id}.hrdscore.csv", "HRD score CSV", true)
-            return [meta, hrdscore_csv]
+            return [meta, hrdscore_csv ?: []]  // Convert null to empty list
         }
 
         // DRAGEN germline variants
@@ -146,6 +145,7 @@ workflow PREPARE_INPUT {
         cobalt           = ch_cobalt                  // channel: [ meta, cobalt_dir ]
         sage_somatic     = ch_sage_somatic            // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
         virusbreakend    = ch_virusbreakend           // channel: [ meta, virusbreakend_dir ]
+        chord            = ch_chord                   // channel: [ meta, chord_prediction_tsv ]
         call_inputs      = ch_call_inputs             // channel: [ meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir ]
 
         // DRAGEN channels
