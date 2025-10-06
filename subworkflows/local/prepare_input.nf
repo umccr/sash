@@ -108,13 +108,6 @@ workflow PREPARE_INPUT {
             return [meta, virusbreakend_dir]
         }
 
-        // CHORD: homologous recombination deficiency prediction
-        // channel: [ meta, chord_prediction_tsv ]
-        ch_chord = ch_metas.map { meta ->
-            def chord_tsv = resolve_input_path(meta, meta.oncoanalyser_dir, "chord/${meta.tumor_id}.chord.prediction.tsv", "CHORD prediction TSV", true)
-            return [meta, chord_tsv ?: []]
-        }
-
                 // HRD: homologous recombination deficiency scores
         // channel: [ meta, hrdscore_csv ]
         ch_input_hrd = ch_metas.map { meta ->
@@ -145,7 +138,6 @@ workflow PREPARE_INPUT {
         cobalt           = ch_cobalt                  // channel: [ meta, cobalt_dir ]
         sage_somatic     = ch_sage_somatic            // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
         virusbreakend    = ch_virusbreakend           // channel: [ meta, virusbreakend_dir ]
-        chord            = ch_chord                   // channel: [ meta, chord_prediction_tsv ]
         call_inputs      = ch_call_inputs             // channel: [ meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir ]
 
         // DRAGEN channels
