@@ -90,7 +90,7 @@ workflow PREPARE_INPUT {
                 sample_id: meta.tumor_id
             ]
 
-            def esvee_vcf = resolve_input_path(meta, meta.oncoanalyser_dir, "esvee/${meta.tumor_id}.esvee.ref_depth.vcf.gz", "eSVee VCF")
+            def esvee_vcf = resolve_input_path(meta, meta.oncoanalyser_dir, "esvee/${meta.tumor_id}.esvee.ref_depth.vcf.gz", "eSVee depth VCF")
             def esvee_dir = resolve_input_path(meta, meta.oncoanalyser_dir, "esvee/", "eSVee directory")
             return [meta_esvee, esvee_vcf, esvee_dir]
         }
