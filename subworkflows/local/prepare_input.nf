@@ -45,12 +45,12 @@ workflow PREPARE_INPUT {
         // Generic helper to resolve input paths with optional existence checking
         def resolve_input_path = { meta, base_dir, relative_path, description, optional = false ->
             def resolved_path = file(base_dir).resolve(relative_path).toUriString()
-
+            
+            // Use checkIfExists for both local and S3 paths
             try {
-                // This will throw an exception if the file doesn't exist (for both local and remote paths)
                 file(resolved_path, checkIfExists: true)
                 return resolved_path
-            } catch (Exception e) {
+            } catch (NoSuchFileException e) {
                 if (optional) {
                     log.warn "Optional ${description} missing for sample ${meta.id} at ${resolved_path} - pipeline will continue without this file"
                     return null
