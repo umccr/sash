@@ -1,0 +1,97 @@
+nextflow_workflow {
+
+    name "Test Utils.resolveInputPath function"
+    script "test_utils.nf"
+    workflow "TEST_RESOLVE_INPUT_PATH"
+    
+    tag "lib"
+    tag "utils"
+    tag "utils_resolve_input_path"
+
+    test("resolveInputPath with existing file") {
+
+        setup {
+            run("SETUP") {
+                script """
+                    // Create test directory and file
+                    mkdir -p test_data_temp
+                    echo "test content" > test_data_temp/test.txt
+                """
+            }
+        }
+
+        when {
+            workflow {
+                """
+                def meta = [id: 'sample1', tumor_id: 'tumor1']
+                input[0] = Channel.of([
+                    meta,
+                    file("\${launchDir}/test_data_temp").toString(),
+                    "test.txt",
+                    "test file",
+                    false
+                ])
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert workflow.out.results
+            
+            with(workflow.out.results) {
+                assert size() == 1
+                
+                with(get(0)) {
+                    // Check meta
+                    assert get(0).id == 'sample1'
+                    // Check result is not null and contains the file name
+                    assert get(1) != null
+                    assert get(1).contains("test.txt")
+                }
+            }
+        }
+
+        cleanup {
+            run("CLEANUP") {
+                script """
+                    rm -rf test_data_temp
+                """
+            }
+        }
+    }
+
+    test("resolveInputPath with missing optional file") {
+
+        when {
+            workflow {
+                """
+                def meta = [id: 'sample2', tumor_id: 'tumor2']
+                input[0] = Channel.of([
+                    meta,
+                    "/nonexistent/path",
+                    "missing.txt",
+                    "optional test file",
+                    true
+                ])
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert workflow.out.results
+            
+            with(workflow.out.results) {
+                assert size() == 1
+                
+                with(get(0)) {
+                    // Check meta
+                    assert get(0).id == 'sample2'
+                    // Check result is null for missing optional file
+                    assert get(1) == null
+                }
+            }
+        }
+    }
+}

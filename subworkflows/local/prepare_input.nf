@@ -1,4 +1,4 @@
-import java.nio.file.NoSuchFileException
+import Utils
 
 workflow PREPARE_INPUT {
     take:
@@ -43,39 +43,20 @@ workflow PREPARE_INPUT {
 
                 return meta
             }
-        // TODO move in utils
-        // Generic helper to resolve input paths with optional existence checking
-        def resolve_input_path = { meta, base_dir, relative_path, description, optional = false ->
-            def resolved_path = file(base_dir).resolve(relative_path).toUriString()
-
-            // Use checkIfExists for both local and S3 paths
-            try {
-                file(resolved_path, checkIfExists: true)
-                return resolved_path
-            } catch (NoSuchFileException e) {
-                if (optional) {
-                    log.warn "Optional ${description} missing for sample ${meta.id} at ${resolved_path} - pipeline will continue without this file"
-                    return null
-                } else {
-                    log.error "${description} not found for ${meta.id}: ${resolved_path}"
-                    System.exit(1)
-                }
-            }
-        }
 
         // Map oncoanalyser assets and DRAGEN outputs into channels
 
         // AMBER: copy number segmentation data
         // channel: [ meta, amber_dir ]
         ch_amber = ch_metas.map { meta ->
-            def amber_dir = resolve_input_path(meta, meta.oncoanalyser_dir, "amber/", "AMBER directory")
+            def amber_dir = Utils.resolveInputPath(meta, meta.oncoanalyser_dir, "amber/", "AMBER directory", false, log)
             return [meta, amber_dir]
         }
 
         // COBALT: read depth ratio data
         // channel: [ meta, cobalt_dir ]
         ch_cobalt = ch_metas.map { meta ->
-            def cobalt_dir = resolve_input_path(meta, meta.oncoanalyser_dir, "cobalt/", "COBALT directory")
+            def cobalt_dir = Utils.resolveInputPath(meta, meta.oncoanalyser_dir, "cobalt/", "COBALT directory", false, log)
             return [meta, cobalt_dir]
         }
 
@@ -90,45 +71,45 @@ workflow PREPARE_INPUT {
                 sample_id: meta.tumor_id
             ]
 
-            def esvee_vcf = resolve_input_path(meta, meta.oncoanalyser_dir, "esvee/${meta.tumor_id}.esvee.ref_depth.vcf.gz", "eSVee depth VCF")
-            def esvee_dir = resolve_input_path(meta, meta.oncoanalyser_dir, "esvee/", "eSVee directory")
+            def esvee_vcf = Utils.resolveInputPath(meta, meta.oncoanalyser_dir, "esvee/${meta.tumor_id}.esvee.ref_depth.vcf.gz", "eSVee depth VCF", false, log)
+            def esvee_dir = Utils.resolveInputPath(meta, meta.oncoanalyser_dir, "esvee/", "eSVee directory", false, log)
             return [meta_esvee, esvee_vcf, esvee_dir]
         }
 
         // SAGE: somatic small variant calls
         // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
         ch_sage_somatic = ch_metas.map { meta ->
-            def sage_vcf = resolve_input_path(meta, meta.oncoanalyser_dir, "sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz", "SAGE somatic VCF")
-            def sage_tbi = resolve_input_path(meta, meta.oncoanalyser_dir, "sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz.tbi", "SAGE somatic TBI")
+            def sage_vcf = Utils.resolveInputPath(meta, meta.oncoanalyser_dir, "sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz", "SAGE somatic VCF", false, log)
+            def sage_tbi = Utils.resolveInputPath(meta, meta.oncoanalyser_dir, "sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz.tbi", "SAGE somatic TBI", false, log)
             return [meta, sage_vcf, sage_tbi]
         }
 
         // VirusBreakend: viral integration detection
         // channel: [ meta, virusbreakend_dir ]
         ch_virusbreakend = ch_metas.map { meta ->
-            def virusbreakend_dir = resolve_input_path(meta, meta.oncoanalyser_dir, "virusbreakend/", "VirusBreakend directory")
+            def virusbreakend_dir = Utils.resolveInputPath(meta, meta.oncoanalyser_dir, "virusbreakend/", "VirusBreakend directory", false, log)
             return [meta, virusbreakend_dir]
         }
 
                 // HRD: homologous recombination deficiency scores
         // channel: [ meta, hrdscore_csv ]
         ch_input_hrd = ch_metas.map { meta ->
-            def hrdscore_csv = resolve_input_path(meta, meta.dragen_somatic_dir, "${meta.tumor_id}.hrdscore.csv", "HRD score CSV", true)
+            def hrdscore_csv = Utils.resolveInputPath(meta, meta.dragen_somatic_dir, "${meta.tumor_id}.hrdscore.csv", "HRD score CSV", true, log)
             return [meta, hrdscore_csv ?: []]  // Convert null to empty list
         }
 
         // DRAGEN germline variants
         // channel: [ meta, dragen_germline_vcf ]
         ch_input_vcf_germline = ch_metas.map { meta ->
-            def dragen_germline_vcf = resolve_input_path(meta, meta.dragen_germline_dir, "${meta.normal_id}.hard-filtered.vcf.gz", "DRAGEN germline VCF")
+            def dragen_germline_vcf = Utils.resolveInputPath(meta, meta.dragen_germline_dir, "${meta.normal_id}.hard-filtered.vcf.gz", "DRAGEN germline VCF", false, log)
             return [meta, dragen_germline_vcf]
         }
 
         // DRAGEN somatic variants
         // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
         ch_input_vcf_somatic = ch_metas.map { meta ->
-            def dragen_somatic_vcf = resolve_input_path(meta, meta.dragen_somatic_dir, "${meta.tumor_id}.hard-filtered.vcf.gz", "DRAGEN somatic VCF")
-            def dragen_somatic_tbi = resolve_input_path(meta, meta.dragen_somatic_dir, "${meta.tumor_id}.hard-filtered.vcf.gz.tbi", "DRAGEN somatic TBI")
+            def dragen_somatic_vcf = Utils.resolveInputPath(meta, meta.dragen_somatic_dir, "${meta.tumor_id}.hard-filtered.vcf.gz", "DRAGEN somatic VCF", false, log)
+            def dragen_somatic_tbi = Utils.resolveInputPath(meta, meta.dragen_somatic_dir, "${meta.tumor_id}.hard-filtered.vcf.gz.tbi", "DRAGEN somatic TBI", false, log)
             return [meta, dragen_somatic_vcf, dragen_somatic_tbi]
         }
     emit:

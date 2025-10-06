@@ -2,9 +2,32 @@
 // This file holds several Groovy functions that could be useful for any Nextflow pipeline
 //
 
+import nextflow.Nextflow
 import org.yaml.snakeyaml.Yaml
+import java.nio.file.NoSuchFileException
 
 class Utils {
+
+    //
+    // Resolve input paths with optional existence checking for both local and S3 paths
+    //
+    public static String resolveInputPath(Map meta, String base_dir, String relative_path, String description, Boolean optional = false, log) {
+        def resolved_path = Nextflow.file(base_dir).resolve(relative_path).toUriString()
+
+        // Use checkIfExists for both local and S3 paths
+        try {
+            Nextflow.file(resolved_path, checkIfExists: true)
+            return resolved_path
+        } catch (Exception e) {
+            if (optional) {
+                log.warn "Optional ${description} missing for sample ${meta.id} at ${resolved_path} - pipeline will continue without this file"
+                return null
+            } else {
+                log.error "${description} not found for ${meta.id}: ${resolved_path}"
+                System.exit(1)
+            }
+        }
+    }
 
     //
     // When running with -profile conda, warn if channels have not been set-up appropriately
