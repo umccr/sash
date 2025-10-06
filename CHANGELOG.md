@@ -89,7 +89,7 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 - Linx v1.25 → v2.0 (affects all Linx reports/files)
 - Purple v4.0.1 → v4.1.0
   - MSI calculation relies on SAGE-specific tags (#7)
-  - (reverted) Circos link sizes were dependent on SV size (#6)
+  - (reverted) Circos have link sizes dependent on the size of SV #6
 - Filter PoN SV in cancer report tables #8
 
 ### Removed
