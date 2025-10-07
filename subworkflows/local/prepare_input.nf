@@ -23,7 +23,7 @@ workflow PREPARE_INPUT {
                         case 'oncoanalyser_dir':
                             break;
                         default:
-                            log.error "\nERROR: got bad filetype: ${it.filetype}"
+                            log.error "got bad filetype: ${it.filetype}"
                             Nextflow.exit(1)
                     }
 
@@ -33,7 +33,7 @@ workflow PREPARE_INPUT {
                     if (! meta.containsKey('subject_id')) {
                         meta.subject_id = it.subject_name
                     } else if (meta.subject_id != it.subject_name) {
-                        log.error "\nERROR: expected ${meta.subject_id} as subject name but got ${it.subject_name}"
+                        log.error "expected ${meta.subject_id} as subject name but got ${it.subject_name}"
                         Nextflow.exit(1)
                     }
 
@@ -50,7 +50,7 @@ workflow PREPARE_INPUT {
             def base = file(meta.oncoanalyser_dir).toUriString()
             def amber_dir = "${base}/amber/"
             if (!file(amber_dir).exists()) {
-                log.error "\nERROR: missing AMBER directory for sample ${meta.id}: ${amber_dir}"
+                log.error "missing AMBER directory for sample ${meta.id}: ${amber_dir}"
                 Nextflow.exit(1)
             }
             return [meta, amber_dir]
@@ -62,7 +62,7 @@ workflow PREPARE_INPUT {
             def base = file(meta.oncoanalyser_dir).toUriString()
             def cobalt_dir = "${base}/cobalt/"
             if (!file(cobalt_dir).exists()) {
-                log.error "\nERROR: missing COBALT directory for sample ${meta.id}: ${cobalt_dir}"
+                log.error "missing COBALT directory for sample ${meta.id}: ${cobalt_dir}"
                 Nextflow.exit(1)
             }
             return [meta, cobalt_dir]
@@ -83,11 +83,11 @@ workflow PREPARE_INPUT {
             def esvee_ref_depth_vcf = "${base}/esvee/${meta.tumor_id}.esvee.ref_depth.vcf.gz"
             def esvee_prep_dir = "${base}/esvee/"
             if (!file(esvee_ref_depth_vcf).exists()) {
-                log.error "\nERROR: missing eSVee depth VCF for sample ${meta.id}: ${esvee_ref_depth_vcf}"
+                log.error "missing eSVee depth VCF for sample ${meta.id}: ${esvee_ref_depth_vcf}"
                 Nextflow.exit(1)
             }
             if (!file(esvee_prep_dir).exists()) {
-                log.error "\nERROR: missing eSVee directory for sample ${meta.id}: ${esvee_prep_dir}"
+                log.error "missing eSVee directory for sample ${meta.id}: ${esvee_prep_dir}"
                 Nextflow.exit(1)
             }
             return [meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir]
@@ -100,11 +100,11 @@ workflow PREPARE_INPUT {
             def sage_somatic_vcf = "${base}/sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
             def sage_somatic_tbi = "${sage_somatic_vcf}.tbi"
             if (!file(sage_somatic_vcf).exists()) {
-                log.error "\nERROR: missing SAGE somatic VCF for sample ${meta.id}: ${sage_somatic_vcf}"
+                log.error "missing SAGE somatic VCF for sample ${meta.id}: ${sage_somatic_vcf}"
                 Nextflow.exit(1)
             }
             if (!file(sage_somatic_tbi).exists()) {
-                log.error "\nERROR: missing SAGE somatic TBI for sample ${meta.id}: ${sage_somatic_tbi}"
+                log.error "missing SAGE somatic TBI for sample ${meta.id}: ${sage_somatic_tbi}"
                 Nextflow.exit(1)
             }
             return [meta, sage_somatic_vcf, sage_somatic_tbi]
@@ -116,7 +116,7 @@ workflow PREPARE_INPUT {
             def base = file(meta.oncoanalyser_dir).toUriString()
             def virusbreakend_dir = "${base}/virusbreakend/"
             if (!file(virusbreakend_dir).exists()) {
-                log.error "\nERROR: missing VirusBreakend directory for sample ${meta.id}: ${virusbreakend_dir}"
+                log.error "missing VirusBreakend directory for sample ${meta.id}: ${virusbreakend_dir}"
                 Nextflow.exit(1)
             }
             return [meta, virusbreakend_dir]
@@ -128,7 +128,7 @@ workflow PREPARE_INPUT {
             def base = file(meta.dragen_somatic_dir).toUriString()
             def hrdscore_csv = "${base}/${meta.tumor_id}.hrdscore.csv"
             if (!file(hrdscore_csv).exists()) {
-                log.warn "\nWARNING: ${meta.tumor_id} missing expected HRD score file: ${hrdscore_csv}"
+                log.warn "${meta.tumor_id} missing expected HRD score file: ${hrdscore_csv}"
                 return [meta, []]
             }
             return [meta, hrdscore_csv]
@@ -140,7 +140,7 @@ workflow PREPARE_INPUT {
             def base = file(meta.dragen_germline_dir).toUriString()
             def dragen_germline_vcf = "${base}/${meta.normal_id}.hard-filtered.vcf.gz"
             if (!file(dragen_germline_vcf).exists()) {
-                log.error "\nERROR: ${meta.normal_id} missing expected germline VCF file: ${dragen_germline_vcf}"
+                log.error "${meta.normal_id} missing expected germline VCF file: ${dragen_germline_vcf}"
                 Nextflow.exit(1)
             }
             return [meta, dragen_germline_vcf]
@@ -153,11 +153,11 @@ workflow PREPARE_INPUT {
             def dragen_somatic_vcf = "${base}/${meta.tumor_id}.hard-filtered.vcf.gz"
             def dragen_somatic_tbi = "${dragen_somatic_vcf}.tbi"
             if (!file(dragen_somatic_vcf).exists()) {
-                log.error "\nERROR: missing DRAGEN somatic VCF for sample ${meta.id}: ${dragen_somatic_vcf}"
+                log.error "missing DRAGEN somatic VCF for sample ${meta.id}: ${dragen_somatic_vcf}"
                 Nextflow.exit(1)
             }
             if (!file(dragen_somatic_tbi).exists()) {
-                log.error "\nERROR: missing DRAGEN somatic VCF index for sample ${meta.id}: ${dragen_somatic_tbi}"
+                log.error "missing DRAGEN somatic VCF index for sample ${meta.id}: ${dragen_somatic_tbi}"
                 Nextflow.exit(1)
             }
             return [meta, dragen_somatic_vcf, dragen_somatic_tbi]
