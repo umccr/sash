@@ -15,17 +15,11 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### `Deprecated`
 
-## [0.6.3] - 2025-10-07
-
-### Added
-
-- Validate input files in `prepare_run`: warn when optional files are missing; fail when mandatory files are missing. (see PR #29)
-
-## [0.6.2] - 2025-10-01
+## [0.6.2] - 2025-10-1
 
 ### Changed
 
-- Made Dragen HRD file optional in the cancer report
+- Dragen HRD file facultatif
 
 ### Dependencies
 
@@ -88,7 +82,7 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
   - PR (Paired-Read) → DF (Discordant Fragments)
 - Linx v1.25 → v2.0 (affects all Linx reports/files)
 - Purple v4.0.1 → v4.1.0
-  - MSI calculation relies on SAGE-specific tags (#7)
+  - MSI calculation relay on SAGE-specific tags #7
   - (reverted) Circos have link sizes dependent on the size of SV #6
 - Filter PoN SV in cancer report tables #8
 
