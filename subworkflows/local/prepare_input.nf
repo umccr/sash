@@ -1,3 +1,5 @@
+import nextflow.Nextflow
+
 workflow PREPARE_INPUT {
     take:
         ch_samplesheet
