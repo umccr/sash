@@ -124,15 +124,11 @@ workflow PREPARE_INPUT {
             return [meta, virusbreakend_dir]
         }
 
-        // HRD: homologous recombination deficiency scores
+        // HRD: homologous recombination deficiency scores (optional)
         // channel: [ meta, hrdscore_csv ]
         ch_input_hrd = ch_metas.map { meta ->
             def base = file(meta.dragen_somatic_dir).toUriString()
             def hrdscore_csv = "${base}/${meta.tumor_id}.hrdscore.csv"
-            if (!file(hrdscore_csv).exists()) {
-                log.warn "Optional HRD score file missing for sample ${meta.id} at ${hrdscore_csv} - pipeline will continue without this file"
-                return [meta, []]
-            }
             return [meta, hrdscore_csv]
         }
 

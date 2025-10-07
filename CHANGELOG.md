@@ -17,9 +17,13 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ## [0.6.3] - 2025-10-07
 
-### Added
+### Changed
 
-- Validate input files in `prepare_run`: warn when optional files are missing; fail when mandatory files are missing. (see PR #29)
+- Made Dragen HRD score file (`.hrdscore.csv`) optional - pipeline continues without it when missing
+
+### Fixed
+
+- Fixed tuple mismatch error in `BOLT_OTHER_CANCER_REPORT` when HRD score file is missing
 
 ## [0.6.2] - 2025-10-01
 

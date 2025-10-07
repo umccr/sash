@@ -5,7 +5,7 @@ process BOLT_OTHER_CANCER_REPORT {
     container 'ghcr.io/umccr/bolt:0.2.17-gpgr'
 
     input:
-    tuple val(meta), path(smlv_somatic_vcf), path(smlv_somatic_bcftools_stats), path(smlv_somatic_counts_process), path(sv_somatic_tsv), path(sv_somatic_vcf), path(cnv_somatic_tsv), path(af_global), path(af_keygenes), path(purple_baf_plot), path(purple_dir), path(virusbreakend_dir), path(dragen_hrd)
+    tuple val(meta), path(smlv_somatic_vcf), path(smlv_somatic_bcftools_stats), path(smlv_somatic_counts_process), path(sv_somatic_tsv), path(sv_somatic_vcf), path(cnv_somatic_tsv), path(af_global), path(af_keygenes), path(purple_baf_plot), path(purple_dir), path(virusbreakend_dir), path(dragen_hrd, stageAs: 'dragen_hrd/*')
     path somatic_driver_panel
     path oncokb_genes
 
@@ -19,7 +19,7 @@ process BOLT_OTHER_CANCER_REPORT {
 
     script:
 
-    def dragen_hrd_arg = dragen_hrd ? "--dragen_hrd_fp \$(pwd)/${dragen_hrd}" : ''
+    def dragen_hrd_arg = dragen_hrd.name != 'dragen_hrd' ? "--dragen_hrd_fp \$(pwd)/dragen_hrd/${dragen_hrd.name}" : ''
 
     """
     # NOTE(SW): gpgr requires aboslute paths
