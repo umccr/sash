@@ -24,7 +24,7 @@ workflow PREPARE_INPUT {
                             break;
                         default:
                             log.error "\nERROR: got bad filetype: ${it.filetype}"
-                            System.exit(1)
+                            Nextflow.exit(1)
                     }
 
                     meta[it.filetype] = it.filepath
@@ -34,7 +34,7 @@ workflow PREPARE_INPUT {
                         meta.subject_id = it.subject_name
                     } else if (meta.subject_id != it.subject_name) {
                         log.error "\nERROR: expected ${meta.subject_id} as subject name but got ${it.subject_name}"
-                        System.exit(1)
+                        Nextflow.exit(1)
                     }
 
                 }
@@ -48,14 +48,24 @@ workflow PREPARE_INPUT {
         // channel: [ meta, amber_dir ]
         ch_amber = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
-            return [meta, "${base}/amber/"]
+            def amber_dir = "${base}/amber/"
+            if (!file(amber_dir).exists()) {
+                log.error "\nERROR: missing AMBER directory for sample ${meta.id}: ${amber_dir}"
+                Nextflow.exit(1)
+            }
+            return [meta, amber_dir]
         }
 
         // COBALT: read depth ratio data
         // channel: [ meta, cobalt_dir ]
         ch_cobalt = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
-            return [meta, "${base}/cobalt/"]
+            def cobalt_dir = "${base}/cobalt/"
+            if (!file(cobalt_dir).exists()) {
+                log.error "\nERROR: missing COBALT directory for sample ${meta.id}: ${cobalt_dir}"
+                Nextflow.exit(1)
+            }
+            return [meta, cobalt_dir]
         }
 
         // eSVee: structural variant calling inputs
@@ -70,46 +80,87 @@ workflow PREPARE_INPUT {
             ]
 
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def vcf = "${base}/esvee/${meta.tumor_id}.esvee.ref_depth.vcf.gz"
-            def dir = "${base}/esvee/"
-            return [meta_esvee, vcf, dir]
+            def esvee_ref_depth_vcf = "${base}/esvee/${meta.tumor_id}.esvee.ref_depth.vcf.gz"
+            def esvee_prep_dir = "${base}/esvee/"
+            if (!file(esvee_ref_depth_vcf).exists()) {
+                log.error "\nERROR: missing eSVee depth VCF for sample ${meta.id}: ${esvee_ref_depth_vcf}"
+                Nextflow.exit(1)
+            }
+            if (!file(esvee_prep_dir).exists()) {
+                log.error "\nERROR: missing eSVee directory for sample ${meta.id}: ${esvee_prep_dir}"
+                Nextflow.exit(1)
+            }
+            return [meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir]
         }
 
         // SAGE: somatic small variant calls
         // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
         ch_sage_somatic = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def vcf = "${base}/sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
-            return [meta, vcf, "${vcf}.tbi"]
+            def sage_somatic_vcf = "${base}/sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
+            def sage_somatic_tbi = "${sage_somatic_vcf}.tbi"
+            if (!file(sage_somatic_vcf).exists()) {
+                log.error "\nERROR: missing SAGE somatic VCF for sample ${meta.id}: ${sage_somatic_vcf}"
+                Nextflow.exit(1)
+            }
+            if (!file(sage_somatic_tbi).exists()) {
+                log.error "\nERROR: missing SAGE somatic TBI for sample ${meta.id}: ${sage_somatic_tbi}"
+                Nextflow.exit(1)
+            }
+            return [meta, sage_somatic_vcf, sage_somatic_tbi]
         }
 
         // VirusBreakend: viral integration detection
         // channel: [ meta, virusbreakend_dir ]
         ch_virusbreakend = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
-            return [meta, "${base}/virusbreakend/"]
+            def virusbreakend_dir = "${base}/virusbreakend/"
+            if (!file(virusbreakend_dir).exists()) {
+                log.error "\nERROR: missing VirusBreakend directory for sample ${meta.id}: ${virusbreakend_dir}"
+                Nextflow.exit(1)
+            }
+            return [meta, virusbreakend_dir]
         }
 
         // HRD: homologous recombination deficiency scores
         // channel: [ meta, hrdscore_csv ]
         ch_input_hrd = ch_metas.map { meta ->
             def base = file(meta.dragen_somatic_dir).toUriString()
-            return [meta, "${base}/${meta.tumor_id}.hrdscore.csv"]
+            def hrdscore_csv = "${base}/${meta.tumor_id}.hrdscore.csv"
+            if (!file(hrdscore_csv).exists()) {
+                log.warn "\nWARNING: ${meta.tumor_id} missing expected HRD score file: ${hrdscore_csv}"
+                return [meta, []]
+            }
+            return [meta, hrdscore_csv]
         }
 
         // DRAGEN germline variants
         // channel: [ meta, dragen_germline_vcf ]
         ch_input_vcf_germline = ch_metas.map { meta ->
             def base = file(meta.dragen_germline_dir).toUriString()
-            return [meta, "${base}/${meta.normal_id}.hard-filtered.vcf.gz"]
+            def dragen_germline_vcf = "${base}/${meta.normal_id}.hard-filtered.vcf.gz"
+            if (!file(dragen_germline_vcf).exists()) {
+                log.error "\nERROR: ${meta.normal_id} missing expected germline VCF file: ${dragen_germline_vcf}"
+                Nextflow.exit(1)
+            }
+            return [meta, dragen_germline_vcf]
         }
 
         // DRAGEN somatic variants
         // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
         ch_input_vcf_somatic = ch_metas.map { meta ->
             def base = file(meta.dragen_somatic_dir).toUriString()
-            def vcf = "${base}/${meta.tumor_id}.hard-filtered.vcf.gz"
-            return [meta, vcf, "${vcf}.tbi"]
+            def dragen_somatic_vcf = "${base}/${meta.tumor_id}.hard-filtered.vcf.gz"
+            def dragen_somatic_tbi = "${dragen_somatic_vcf}.tbi"
+            if (!file(dragen_somatic_vcf).exists()) {
+                log.error "\nERROR: missing DRAGEN somatic VCF for sample ${meta.id}: ${dragen_somatic_vcf}"
+                Nextflow.exit(1)
+            }
+            if (!file(dragen_somatic_tbi).exists()) {
+                log.error "\nERROR: missing DRAGEN somatic VCF index for sample ${meta.id}: ${dragen_somatic_tbi}"
+                Nextflow.exit(1)
+            }
+            return [meta, dragen_somatic_vcf, dragen_somatic_tbi]
         }
     emit:
         // Sample metadata
