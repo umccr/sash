@@ -339,6 +339,7 @@ workflow SASH {
     BOLT_SMLV_SOMATIC_REPORT(
         ch_smlv_somatic_report_inputs,
         misc_data.pcgr_dir,
+        misc_data.vep_dir,
         umccr_data.somatic_panel_regions_cds,
         hmf_data.sage_highconf_regions,
         genome.fasta,
@@ -365,6 +366,7 @@ workflow SASH {
         ch_smlv_germline_report_inputs,
         umccr_data.germline_panel_genes,
         misc_data.pcgr_dir,
+        misc_data.vep_dir
     )
 
     ch_versions = ch_versions.mix(BOLT_SMLV_GERMLINE_REPORT.out.versions)
