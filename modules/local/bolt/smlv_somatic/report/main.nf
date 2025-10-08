@@ -2,7 +2,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/umccr/bolt:0.3.0-pcgr-v2.2.5-3-pcgr'
+    container 'ghcr.io/umccr/bolt:0.3.0-dev-10-pcgr'
 
     input:
     tuple val(meta), path(smlv_vcf), path(smlv_filters_vcf), path(smlv_dragen_vcf), path(purple_purity)

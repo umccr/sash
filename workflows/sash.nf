@@ -78,11 +78,6 @@ workflow SASH {
     // channel: [ versions.yml ]
     ch_versions = Channel.empty()
 
-
-
-
-    */
-
     PREPARE_INPUT(
         file(params.input),
     )
@@ -629,8 +624,6 @@ workflow SASH {
 
 
 
-
-    //
     // TASK: Aggregate software versions
     //
     softwareVersionsToYAML(ch_versions)
