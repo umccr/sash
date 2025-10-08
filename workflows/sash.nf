@@ -81,9 +81,7 @@ workflow SASH {
 
 
 
-    //
-    // Prepare inputs from samplesheet
-    //
+    */
 
     PREPARE_INPUT(
         file(params.input),
@@ -536,7 +534,7 @@ workflow SASH {
         ch_input_hrd,
         ch_sigrap_mutpat,
         ch_sigrap_hrdetect,
-        ch_chord
+        ch_chord,
         flatten_mode: 'nonrecursive',
     )
         .map {
