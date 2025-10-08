@@ -28,6 +28,7 @@ The general processes `sash` runs include:
 - PURPLE for TMB, MSI, CNV calling, and purity / ploidy estimation
 - HRDetect and CHORD for HRD inference
 - MutationalPatterns to fit mutational signatures
+- PAVE for somatic variant annotation with MNV filtering (see [discussion](https://github.com/umccr/sash/issues/19))
 
 ## Requirements
 
@@ -55,3 +56,9 @@ nextflow run scwatts/sash \
   --ref_data_path /path/to/reference_data/ \
   --outdir output/
 ```
+
+## Citations
+
+You can cite a specific version of `sash` from the Zenodo record [10.5281/zenodo.15833492](https://doi.org/10.5281/zenodo.15833492) such as:
+
+> Watts, S. C., Savelyev, V., Diakumis, P., Clayssen, Q., Mitchell, H., & Hofmann, O. (2025). umccr/sash: 0.6.0 (0.6.0). Zenodo. https://doi.org/10.5281/zenodo.15833493

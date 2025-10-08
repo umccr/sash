@@ -2,7 +2,7 @@ process BOLT_OTHER_CANCER_REPORT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/qclayssen/bolt:0.3.0-dev-gpgr'
+    container 'ghcr.io/umccr/bolt:0.2.17-gpgr'
 
     input:
     tuple val(meta), path(smlv_somatic_vcf), path(smlv_somatic_bcftools_stats), path(smlv_somatic_counts_process), path(sv_somatic_tsv), path(sv_somatic_vcf), path(cnv_somatic_tsv), path(af_global), path(af_keygenes), path(purple_baf_plot), path(purple_dir), path(virusbreakend_dir), path(dragen_hrd), path(smlv_somatic_mutpat), path(smlv_somatic_hrdetect), path(smlv_somatic_chord)
@@ -18,6 +18,8 @@ process BOLT_OTHER_CANCER_REPORT {
     task.ext.when == null || task.ext.when
 
     script:
+
+    def dragen_hrd_arg = dragen_hrd ? "--dragen_hrd_fp \$(pwd)/${dragen_hrd}" : ''
 
     """
     # NOTE(SW): gpgr requires aboslute paths
@@ -46,7 +48,7 @@ process BOLT_OTHER_CANCER_REPORT {
         --purple_dir \$(pwd)/${purple_dir} \\
         --virusbreakend_dir \$(pwd)/${virusbreakend_dir} \\
         \\
-        --dragen_hrd_fp \$(pwd)/${dragen_hrd} \\
+        ${dragen_hrd_arg} \\
         \\
         --cancer_genes_fp \$(pwd)/${somatic_driver_panel} \\
         --oncokb_genes_fp \$(pwd)/${oncokb_genes} \\
