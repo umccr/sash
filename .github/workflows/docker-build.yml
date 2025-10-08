@@ -1,0 +1,109 @@
+name: Build
+on:
+  push:
+  pull_request:
+    paths:
+      - 'modules/local/*/Dockerfile'
+      - 'modules/local/*/*/Dockerfile'
+      - '.github/workflows/docker-build.yml'
+  workflow_dispatch:
+    inputs:
+      force_build:
+        description: 'Force build all containers'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  # Use GitHub Container Registry
+  REGISTRY: 'ghcr.io/umccr'
+
+jobs:
+  docker_build:
+    name: Docker build
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[build]')
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - build_name: 'purple'
+            dockerfile_path: 'modules/local/purple'
+            tool_name: 'purple'
+          - build_name: 'linx'
+            dockerfile_path: 'modules/local/linx'
+            tool_name: 'linx'
+          - build_name: 'esvee-call'
+            dockerfile_path: 'modules/local/esvee/call'
+            tool_name: 'esvee'
+          - build_name: 'pave'
+            dockerfile_path: 'modules/local/pave'
+            tool_name: 'pave'
+          - build_name: 'linxreport'
+            dockerfile_path: 'modules/local/linxreport'
+            tool_name: 'linxreport'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract tool version from Dockerfile
+        id: version
+        run: |
+          dockerfile="${{ matrix.dockerfile_path }}/Dockerfile"
+          tool_name="${{ matrix.tool_name }}"
+          
+          # Extract version from the hmftools line in Dockerfile
+          if [[ "$tool_name" == "linxreport" ]]; then
+            # Special case for linxreport (uses r-linxreport)
+            version=$(grep "FROM.*r-linxreport:" "$dockerfile" | sed -E 's/.*r-linxreport:([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          else
+            # Standard hmftools pattern
+            version=$(grep "FROM.*hmftools-${tool_name}:" "$dockerfile" | sed -E 's/.*hmftools-'${tool_name}':([0-9]+\.[0-9]+(\.[0-9]+)?).*/\1/')
+          fi
+          
+          if [[ -z "$version" ]]; then
+            echo "Error: Could not extract version from $dockerfile"
+            exit 1
+          fi
+          
+          echo "version=${version}" >> $GITHUB_OUTPUT
+          echo "Extracted version: ${version} for tool: ${tool_name}"
+      
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ matrix.tool_name }}
+          tags: |
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.title=${{ matrix.tool_name }}
+            org.opencontainers.image.description=UMCCR SASH pipeline container for ${{ matrix.tool_name }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.vendor=UMCCR
+      
+      - name: Build and push container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.dockerfile_path }}
+          file: ${{ matrix.dockerfile_path }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
