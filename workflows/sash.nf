@@ -537,6 +537,7 @@ workflow SASH {
         ch_sigrap_mutpat,
         ch_sigrap_hrdetect,
         ch_chord
+        flatten_mode: 'nonrecursive',
     )
         .map {
             def meta = it[0]
