@@ -2,7 +2,7 @@ process SIGRAP_MUTPAT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/qclayssen/sigrap:0.2.0-dev-1'
+    container 'docker.io/qclayssen/sigrap:0.2.0-dev-5'
 
     input:
     tuple val(meta), path(smlv_somatic_vcf)
