@@ -2,7 +2,7 @@ process SIGRAP_HRDETECT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/qclayssen/sigrap:0.2.0-dev-50'
+    container 'docker.io/qclayssen/sigrap:0.2.0-dev-5'
 
     input:
     tuple val(meta), path(smlv_somatic_vcf), path(sv_somatic_vcf), path(cnv_somatic_tsv)
@@ -19,7 +19,7 @@ process SIGRAP_HRDETECT {
 
     """
     sigrap.R hrdetect \\
-        --sample ${meta.subject_id} \\
+        --sample ${meta.id} \\
         --snv ${smlv_somatic_vcf} \\
         --sv ${sv_somatic_vcf} \\
         --cnv ${cnv_somatic_tsv} \\

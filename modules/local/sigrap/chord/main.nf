@@ -2,7 +2,7 @@ process SIGRAP_CHORD {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/qclayssen/sigrap:0.2.0-dev-50'
+    container 'docker.io/qclayssen/sigrap:0.2.0-dev-5'
 
     input:
     tuple val(meta), path(chord_prediction_tsv)
@@ -19,7 +19,7 @@ process SIGRAP_CHORD {
 
     """
     sigrap.R chord \\
-        --sample ${meta.subject_id} \\
+        --sample ${meta.id} \\
         --chord ${chord_prediction_tsv} \\
         --out chord.json.gz
 

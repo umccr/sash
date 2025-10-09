@@ -19,7 +19,7 @@ process SIGRAP_MUTPAT {
 
     """
     sigrap.R mutpat \\
-        --sample ${meta.subject_id} \\
+        --sample ${meta.id} \\
         --snv ${smlv_somatic_vcf} \\
         --rainfall \\
         --strand-bias \\
