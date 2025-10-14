@@ -2,7 +2,7 @@ process SIGRAP_CHORD {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'docker.io/qclayssen/sigrap:0.2.0-dev-5'
+    container 'docker.io/qclayssen/sigrap:0.2.0-dev-6'
 
     input:
     tuple val(meta), path(chord_prediction_tsv)
