@@ -484,7 +484,7 @@ workflow SASH {
     )
 
     // channel: [ meta, hrdetect_json ]
-    ch_sigrap_hrdetect = SIGRAP_HRDETECT.out.hrdetect_json
+    ch_sigrap_hrdetect = WorkflowSash.restoreMeta(SIGRAP_HRDETECT.out.hrdetect_json, ch_inputs)
     ch_versions = ch_versions.mix(SIGRAP_HRDETECT.out.versions)
 
     // channel: [ meta_sigrap, smlv_somatic_vcf ]
@@ -502,7 +502,7 @@ workflow SASH {
     )
 
     // channel: [ meta, mutpat_output ]
-    ch_sigrap_mutpat = SIGRAP_MUTPAT.out.mutpat_output
+    ch_sigrap_mutpat = WorkflowSash.restoreMeta(SIGRAP_MUTPAT.out.mutpat_output, ch_inputs)
     ch_versions = ch_versions.mix(SIGRAP_MUTPAT.out.versions)
 
 
