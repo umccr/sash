@@ -20,7 +20,7 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def chunk_size_arg = params.pcgr_variant_chunk_size ? "--pcgr_variant_chunk_size ${params.pcgr_variant_chunk_size}" : ''
 
     """
     bolt smlv_somatic annotate \\
@@ -35,7 +35,8 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
         --pcgr_conda pcgr \\
         --pcgrr_conda pcgrr \\
         --threads ${task.cpus} \\
-        --output_dir output/
+        --output_dir output/ \\
+        ${chunk_size_arg}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
