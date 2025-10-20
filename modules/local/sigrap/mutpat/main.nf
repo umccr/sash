@@ -23,6 +23,7 @@ process SIGRAP_MUTPAT {
         --snv ${smlv_somatic_vcf} \\
         --rainfall \\
         --strand-bias \\
+        --predefined-dbs-mbs \\
         --out mutpat/
 
     cat <<-END_VERSIONS > versions.yml
