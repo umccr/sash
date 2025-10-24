@@ -624,6 +624,7 @@ workflow SASH {
 
 
 
+    //
     // TASK: Aggregate software versions
     //
     softwareVersionsToYAML(ch_versions)
