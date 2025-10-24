@@ -169,6 +169,12 @@
                     "description": "Show all params when using `--help`",
                     "hidden": true,
                     "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
+                },
+                "pcgr_variant_chunk_size": {
+                    "type": "integer",
+                    "description": "Override maximum variants per PCGR chunk for the BOLT somatic annotate step.",
+                    "help_text": "Leave unset to use the default chunk size defined by BOLT. Provide an integer to adjust PCGR chunking behaviour when needed.",
+                    "fa_icon": "fas fa-database"
                 }
             }
         }

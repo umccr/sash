@@ -2,7 +2,7 @@ process SIGRAP_MUTPAT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/umccr/sigrap:0.2.0'
+    container 'docker.io/qclayssen/sigrap:0.2.0-dev-6'
 
     input:
     tuple val(meta), path(smlv_somatic_vcf)
@@ -19,10 +19,11 @@ process SIGRAP_MUTPAT {
 
     """
     sigrap.R mutpat \\
-        --sample ${meta.subject_id} \\
+        --sample ${meta.id} \\
         --snv ${smlv_somatic_vcf} \\
         --rainfall \\
         --strand-bias \\
+        --predefined-dbs-mbs \\
         --out mutpat/
 
     cat <<-END_VERSIONS > versions.yml
