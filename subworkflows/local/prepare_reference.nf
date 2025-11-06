@@ -31,8 +31,7 @@ workflow PREPARE_REFERENCE {
                 .map { dir -> [dir.getFileName().toString(), dir] }
                 .collect()
                 .map { entries -> entries.collectEntries { name, dir -> [(name): dir] } }
-                .first()
-                ?.val
+                .val
 
             if (extracted_misc_map) {
                 ch_misc_data.putAll(extracted_misc_map)
