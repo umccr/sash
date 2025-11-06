@@ -25,17 +25,22 @@ workflow PREPARE_REFERENCE {
         //
         misc_tarball_inputs = getTarballInputs(params.miscdata_paths, params.ref_data_path)
         if (misc_tarball_inputs) {
-            DECOMP_MISC_DATA(Channel.fromList(misc_tarball_inputs))
+            ch_misc_data_inputs = Channel.fromList(misc_tarball_inputs)
+            
+            DECOMP_MISC_DATA(ch_misc_data_inputs)
 
-            extracted_misc_map = DECOMP_MISC_DATA.out.extracted_dir
-                .map { dir -> [dir.getFileName().toString(), dir] }
+            ch_misc_data_extracted = DECOMP_MISC_DATA.out.extracted_dir
                 .collect()
-                .map { entries -> entries.collectEntries { name, dir -> [(name): dir] } }
-                .val
-
-            if (extracted_misc_map) {
-                ch_misc_data.putAll(extracted_misc_map)
-            }
+                .map { dir_list ->
+                    // Convert list of directories to a map of [name: dir]
+                    def extracted_map = dir_list.collectEntries { dir ->
+                        [(dir.getFileName().toString()): dir]
+                    }
+                    // Merge extracted data with existing misc_data map
+                    return createDataMap(params.miscdata_paths, params.ref_data_path) + extracted_map
+                }
+            
+            ch_misc_data = ch_misc_data_extracted
         }
 
         //
