@@ -2,6 +2,8 @@
 // Prepare reference data as required
 //
 
+include { CUSTOM_EXTRACTTARBALL as DECOMP_MISC_DATA } from '../../modules/local/custom/extract_tarball/main'
+
 workflow PREPARE_REFERENCE {
     take:
 
@@ -17,6 +19,25 @@ workflow PREPARE_REFERENCE {
         ch_hmf_data = createDataMap(params.hmfdata_paths, params.ref_data_path)
         ch_umccr_data = createDataMap(params.umccrdata_paths, umccr_reference_data_path)
         ch_misc_data = createDataMap(params.miscdata_paths, params.ref_data_path)
+
+        //
+        // Extract tarball resources (e.g. PCGR data, VEP cache) when provided as .tar.gz/.tgz
+        //
+        misc_tarball_inputs = getTarballInputs(params.miscdata_paths, params.ref_data_path)
+        if (misc_tarball_inputs) {
+            DECOMP_MISC_DATA(Channel.fromList(misc_tarball_inputs))
+
+            extracted_misc_map = DECOMP_MISC_DATA.out.extracted_dir
+                .map { dir -> [dir.getFileName().toString(), dir] }
+                .collect()
+                .map { entries -> entries.collectEntries { name, dir -> [(name): dir] } }
+                .first()
+                ?.val
+
+            if (extracted_misc_map) {
+                ch_misc_data.putAll(extracted_misc_map)
+            }
+        }
 
         //
         // Prepare genome paths and info
@@ -42,6 +63,21 @@ def createDataMap(entries, ref_data_base_path) {
         .collectEntries { name, path ->
             def ref_data_file = joinPath(ref_data_base_path, path)
             return [name, ref_data_file]
+        }
+}
+
+def getTarballInputs(entries, ref_data_base_path) {
+    return entries
+        .findAll { name, relpath ->
+            if (!relpath) {
+                return false
+            }
+            def rel = relpath.toString()
+            return rel.endsWith('.tar.gz') || rel.endsWith('.tgz')
+        }
+        .collect { name, relpath ->
+            def tarball = joinPath(ref_data_base_path, relpath)
+            return [[id: name], tarball]
         }
 }
 
