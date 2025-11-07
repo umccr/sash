@@ -32,9 +32,12 @@ workflow PREPARE_REFERENCE {
             ch_misc_data_extracted = DECOMP_MISC_DATA.out.extracted_dir
                 .collect()
                 .map { dir_list ->
-                    // Convert list of directories to a map of [name: dir]
+                    // Convert list of directories to a map
+                    // For vep_dir extraction (which becomes 'homo_sapiens' dir), map back to 'vep_dir' key
                     def extracted_map = dir_list.collectEntries { dir ->
-                        [(dir.getFileName().toString()): dir]
+                        def dirname = dir.getFileName().toString()
+                        def key = dirname == 'homo_sapiens' ? 'vep_dir' : dirname
+                        [(key): dir]
                     }
                     // Merge extracted data with existing misc_data map
                     return createDataMap(params.miscdata_paths, params.ref_data_path) + extracted_map
@@ -81,7 +84,11 @@ def getTarballInputs(entries, ref_data_base_path) {
         }
         .collect { name, relpath ->
             def tarball = joinPath(ref_data_base_path, relpath)
-            return [[id: name], tarball]
+            // For VEP cache, use 'homo_sapiens' as the directory name (parent of version dir)
+            // PCGR expects --vep_dir to point to parent containing homo_sapiens/113_GRCh38/
+            def id = name == 'vep_dir' ? 'homo_sapiens' : name
+            def meta = [id: id, strip_components: 1]
+            return [meta, tarball]
         }
 }
 
