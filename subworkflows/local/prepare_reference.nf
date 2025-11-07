@@ -81,11 +81,19 @@ def getTarballInputs(entries, ref_data_base_path) {
         }
         .collect { name, relpath ->
             def tarball = joinPath(ref_data_base_path, relpath)
-            // VEP cache needs to be extracted into a homo_sapiens subdirectory
-            // so the parent vep_dir contains homo_sapiens/113_GRCh38/
-            def meta = name == 'vep_dir' ? 
-                [id: name, strip_components: 1, subdir: 'homo_sapiens'] :
-                [id: name, strip_components: 1]
+            def meta
+            if (name == 'vep_dir') {
+                // VEP cache: strip wrapper dir, extract into homo_sapiens subdir
+                // Result: vep_dir/homo_sapiens/113_GRCh38/
+                meta = [id: name, strip_components: 1, subdir: 'homo_sapiens']
+            } else if (name == 'pcgr_dir') {
+                // PCGR bundle: don't strip, tarball contains data/ directory
+                // Result: pcgr_dir/data/grch38/
+                meta = [id: name, strip_components: 0]
+            } else {
+                // Default: strip top-level wrapper directory
+                meta = [id: name, strip_components: 1]
+            }
             return [meta, tarball]
         }
 }
