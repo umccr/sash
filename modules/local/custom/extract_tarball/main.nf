@@ -19,10 +19,11 @@ process CUSTOM_EXTRACTTARBALL {
     script:
     def args = task.ext.args ?: ''
     def strip = meta.strip_components != null ? meta.strip_components : 1
+    def target = meta.subdir ? "${meta.id}/${meta.subdir}" : "${meta.id}"
 
     """
-    mkdir -p ${meta.id}/
-    tar ${args} -xzvf ${tarball} --strip-components ${strip} -C ${meta.id}/
+    mkdir -p ${target}
+    tar ${args} -xzvf ${tarball} --strip-components ${strip} -C ${target}/
     """
 
     stub:
