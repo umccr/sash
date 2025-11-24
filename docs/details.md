@@ -64,8 +64,8 @@ UMCCR-developed R package for generating cancer genomics reports.
 ### [Linx](https://github.com/hartwigmedical/hmftools/tree/master/linx)
 Tool for structural variant annotation and visualization to classify complex rearrangements.
 
-### [GRIDSS/GRIPSS](https://github.com/PapenfussLab/gridss)
-Structural variant caller (GRIDSS) and accompanying filtering tool (GRIPSS) for high-confidence SV detection.
+### [ESVEE](https://github.com/hartwigmedical/hmftools/tree/master/esvee)
+Esvee is a structural variant caller optimised for short read sequencing that identifies somatic and germline somatic rearrangements.
 
 ### [VIRUSBreakend](https://github.com/PapenfussLab/gridss/blob/master/VIRUSBreakend_Readme.md)
 Tool for detecting viral integration events in human genome sequencing data.

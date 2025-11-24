@@ -108,7 +108,7 @@ expected subpaths (versions may change between releases):
 - `umccr/` – bolt configuration files, driver panels, MultiQC templates, GPGR assets.
 - `misc/` – panel-of-normals, APPRIS annotations, snpEff cache and other supporting data.
 
-Refer to `docs/details.md` for a deeper breakdown of required artefacts.
+Refer to [details.md](details.md) for a deeper breakdown of required artefacts.
 
 ## Nextflow configuration
 
@@ -153,7 +153,7 @@ supported overrides in umccr/sash.
 
 ## Outputs
 
-See `docs/output.md` for a full description of generated artefacts (PCGR/CPSR HTML, cancer report, LINX, PURPLE, MultiQC
+See [output.md](output.md) for a full description of generated artefacts (PCGR/CPSR HTML, cancer report, LINX, PURPLE, MultiQC
 and supporting statistics).
 
 ## Running in the background
