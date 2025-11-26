@@ -54,6 +54,7 @@ exports.
   - `sage_calling/somatic/<tumor_id>.sage.somatic.vcf.gz` (+ `.tbi`)
   - `esvee/<tumor_id>.esvee.ref_depth.vcf.gz` and accompanying directory (used to seed eSVee calling)
   - `virusbreakend/` directory
+  - Optional: `chord/<tumor_id>.chord.prediction.tsv` (HRD predictions surfaced in the cancer report)
 
 > SASH runs PURPLE internally; precomputed PURPLE outputs are not required as inputs.
 
@@ -104,9 +105,11 @@ expected subpaths (versions may change between releases):
 - `genomes/GRCh38_umccr/` – GRCh38 FASTA, FAI and dict files plus sequence metadata.
 - `hmf_reference_data/` – WiGiTS bundle with PURPLE GC profiles, eSVee panel-of-normals, SAGE hotspot resources, LINX
   transcripts and driver catalogues.
-- `databases/pcgr/` – PCGR/CPSR annotation bundle.
+- `databases/pcgr/` – PCGR/CPSR bundle as `pcgr_ref_data.<version>.grch38.tgz` plus GRCh38 VEP cache `homo_sapiens_vep_113_GRCh38.tar.gz` (both auto-extracted by the pipeline).
 - `umccr/` – bolt configuration files, driver panels, MultiQC templates, GPGR assets.
 - `misc/` – panel-of-normals, APPRIS annotations, snpEff cache and other supporting data.
+
+Compressed PCGR/VEP archives can be left in place; the `PREPARE_REFERENCE` stage extracts them into the run work directory before use.
 
 Refer to [details.md](details.md) for a deeper breakdown of required artefacts.
 
@@ -149,7 +152,8 @@ config to use patched or institutional builds. See the
 
 If you need to provide additional tool parameters beyond those exposed by pipeline options, set `process.ext.args`
 (overrides per-module) or leverage module-specific hooks documented in nf-core. Review `conf/modules.config` for
-supported overrides in umccr/sash.
+supported overrides in umccr/sash. PCGR chunk sizing can also be overridden globally via `--pcgr_variant_chunk_size`
+if PCGR struggles with exceptionally large VCFs.
 
 ## Outputs
 

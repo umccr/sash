@@ -19,6 +19,7 @@ This document outlines the key results and files produced by the UMCCR SASH (pos
       - [BOLT\_SMLV\_SOMATIC\_ANNOTATE](#bolt_smlv_somatic_annotate)
       - [BOLT\_SMLV\_SOMATIC\_FILTER](#bolt_smlv_somatic_filter)
       - [SOMATIC\_SNV\_REPORTS](#somatic_snv_reports)
+      - [VCF2MAF](#vcf2maf)
     - [Somatic Structural Variants](#somatic-structural-variants)
       - [General](#general-1)
       - [Summary](#summary-2)
@@ -148,11 +149,22 @@ The `BOLT_SMLV_SOMATIC_FILTER` process filters somatic variants using the BOLT t
 
 The reporting process generates statistical summaries and specialized reports for somatic SNVs, including PCGR HTML reports for clinical interpretation.
 
+#### VCF2MAF
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `vcf2maf/<tumor_id>.maf`: MAF derived from the filtered somatic VCF.
+
+</details>
+
+`vcf2maf` (v1.6.22) converts the filtered somatic VCF into MAF format for downstream consumers that do not accept VCF.
+
 ### Somatic Structural Variants
 
 #### General
 
-The **Somatic Structural Variants** workflow identifies and analyzes large genomic rearrangements such as deletions, duplications, inversions, and translocations. It processes outputs from GRIDSS, PURPLE, and LINX to provide comprehensive SV analysis.
+The **Somatic Structural Variants** workflow identifies and analyzes large genomic rearrangements such as deletions, duplications, inversions, and translocations. It rebuilds SVs with eSVee using the oncoanalyser WiGiTS export, layers PURPLE CNV/purity estimates, and then annotates/prioritises events for GPGR/LINX reporting.
 
 #### Summary
 
@@ -324,14 +336,14 @@ PURPLE reports provide copy number analysis, tumor purity estimation, and whole 
 
 - `<tumor_id>.pcgr.html`: PCGR HTML report.
 - `smlv_somatic/report/pcgr/`
-  - `<tumor_id>.pcgr_acmg.grch38.flexdb.html`: Flexible database PCGR report.
-  - `<tumor_id>.pcgr_acmg.grch38.json.gz`: Structured PCGR data in JSON format.
-  - `<tumor_id>.pcgr_acmg.grch38.mp_input.vcf.gz`: Input VCF for mutational pattern analysis.
-  - `<tumor_id>.pcgr_acmg.grch38.mutational_signatures.tsv`: Mutational signature analysis.
-  - `<tumor_id>.pcgr_acmg.grch38.pass.tsv.gz`: Filtered variants in tabular format.
-  - `<tumor_id>.pcgr_acmg.grch38.pass.vcf.gz`: Filtered variants in VCF format.
-  - `<tumor_id>.pcgr_acmg.grch38.snvs_indels.tiers.tsv`: Tiered variants by clinical significance.
-  - `<tumor_id>.pcgr_acmg.grch38.vcf.gz`: All variants in VCF format.
+  - `<tumor_id>.pcgr.grch38.flexdb.html`: Flexible database PCGR report.
+  - `<tumor_id>.pcgr.grch38.json.gz`: Structured PCGR data in JSON format.
+  - `<tumor_id>.pcgr.grch38.mp_input.vcf.gz`: Input VCF for mutational pattern analysis.
+  - `<tumor_id>.pcgr.grch38.mutational_signatures.tsv`: Mutational signature analysis.
+  - `<tumor_id>.pcgr.grch38.pass.tsv.gz`: Filtered variants in tabular format.
+  - `<tumor_id>.pcgr.grch38.pass.vcf.gz`: Filtered variants in VCF format.
+  - `<tumor_id>.pcgr.grch38.snvs_indels.tiers.tsv`: Tiered variants by clinical significance.
+  - `<tumor_id>.pcgr.grch38.vcf.gz`: All variants in VCF format.
   - `<tumor_id>.pcgr_config.rds`: PCGR configuration.
 
 </details>
@@ -343,16 +355,13 @@ PCGR (Personal Cancer Genome Reporter) reports provide clinical interpretation o
 <details markdown="1">
 <summary>Output files</summary>
 
-- `cancer_report/cancer_report_tables/sigs/`
-  - `<normal_id>_<tumor_id>-dbs.tsv.gz`: Double base substitution signature analysis.
-  - `<normal_id>_<tumor_id>-indel.tsv.gz`: Indel signature analysis.
-  - `<normal_id>_<tumor_id>-snv_2015.tsv.gz`: SNV signature analysis using 2015 signatures.
-  - `<normal_id>_<tumor_id>-snv_2020.tsv.gz`: SNV signature analysis using 2020 signatures.
-- `cancer_report/cancer_report_tables/json/sigs/`: JSON-formatted signature data.
+- `sigrap/mutpat/`: SBS/DBS/indel signature TSVs and plots from Sigrap’s MutationalPatterns wrapper.
+- `sigrap/hrdetect/hrdetect.json.gz`: HRDetect JSON summarising HRD probability from SNV/SV/CNV features.
+- Cancer report tables fold these results under `cancer_report/cancer_report_tables/sigs/`.
 
 </details>
 
-SIGRAP reports provide mutational signature analysis, identifying patterns associated with specific mutational processes or exposures. The pipeline analyzes single base substitutions (SBS), double base substitutions (DBS), and indel signatures using both the 2015 and 2020 reference signature sets.
+SIGRAP reports provide mutational signature analysis, identifying patterns associated with specific mutational processes or exposures, and HRD probability via HRDetect. Outputs are published separately and embedded into the cancer report; CHORD predictions from oncoanalyser are ingested alongside HRDetect.
 
 #### CPSR Reports
 
