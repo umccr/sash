@@ -1,6 +1,6 @@
 process SIGRAP_MUTPAT {
     tag "${meta.id}"
-    label 'process_low'
+    label 'process_low', 'error_retry', 'process_long'
 
     container 'docker.io/qclayssen/sigrap:0.2.0-dev-7'
 
