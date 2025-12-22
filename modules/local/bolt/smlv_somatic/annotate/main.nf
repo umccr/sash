@@ -1,6 +1,6 @@
 process BOLT_SMLV_SOMATIC_ANNOTATE {
     tag "${meta.id}"
-    label 'process_low', 'error_retry', 'process_long'
+    label 'process_medium_memory', 'process_long'
 
     container 'ghcr.io/umccr/bolt::0.3.0-dev-27-pcgr'
 

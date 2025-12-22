@@ -1,6 +1,6 @@
 process BOLT_OTHER_CANCER_REPORT {
     tag "${meta.id}"
-    label 'process_low', 'error_retry', 'process_long'
+    label 'process_medium_memory', 'process_long'
 
     container 'docker.io/qclayssen/bolt:0.3.0-dev-14-gpgr'
 
