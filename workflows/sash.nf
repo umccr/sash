@@ -448,6 +448,7 @@ workflow SASH {
         PURPLE_CALLING.out.purple_dir,
         ch_virusbreakend,
         ch_input_hrd,
+        flatten_mode: 'nonrecursive',
     )
         .map {
             def meta = it[0]

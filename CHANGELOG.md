@@ -15,34 +15,18 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### `Deprecated`
 
-## [0.7.0] - Unreleased
+## [0.6.3] - 2025-12-23
 
 ### Added
 
-- Reference-data preparation step that maps and auto-extracts bundled resources (PCGR/VEP tarballs) from `--ref_data_path`. (see PR #38)
-- Sigrap HRDetect and MutationalPatterns now run as standalone stages; CHORD predictions from oncoanalyser plus HRDetect/MutPat outputs are integrated into the cancer report. (see PR #36)
-- Somatic VCFs are exported as MAF files via `vcf2maf` for downstream compatibility.
-- Optional `--pcgr_variant_chunk_size` parameter to tune PCGR chunking in BOLT somatic annotation.
+- Comprehensive documentation including architecture decision records (ADR), detailed workflow descriptions, and output specifications
+- Pipeline overview diagram and quality control metrics documentation
 
 ### Changed
 
-- BOLT updated to `0.3.0-dev-20` (and GPGR report image to `0.3.0-dev-14`), including PCGR HTML renamed to `<sample>.pcgr.grch38.html` and requiring an explicit VEP cache path.
-- PCGR reference bundle refreshed to `20250314` and resolved from tarballs alongside the GRCh38 VEP cache.
-- DRAGEN input directories are handled as file objects to better support staged/symlinked inputs. (see PR #12)
-
-### Dependencies
-
-| Tool | Old | New |
-|------|-----|-----|
-| bolt | 0.2.17 | 0.3.0-dev-20 |
-| pcgr data | 20220203 | 20250314 |
-| sigrap | — | 0.2.0-dev-7 |
-
-## [0.6.3] - 2025-10-07
-
-### Added
-
-- Validate input files in `prepare_run`: warn when optional files are missing; fail when mandatory files are missing. (see PR #29)
+- Enhanced usage documentation with clearer instructions
+- Improved output.md with detailed descriptions of all pipeline outputs
+- Updated README with better project structure documentation
 
 ## [0.6.2] - 2025-10-1
 
