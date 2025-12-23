@@ -26,7 +26,7 @@ workflow PREPARE_REFERENCE {
         misc_tarball_inputs = getTarballInputs(params.miscdata_paths, params.ref_data_path)
         if (misc_tarball_inputs) {
             ch_misc_data_inputs = Channel.fromList(misc_tarball_inputs)
-            
+
             DECOMP_MISC_DATA(ch_misc_data_inputs)
 
             ch_misc_data_extracted = DECOMP_MISC_DATA.out.extracted_dir
@@ -39,7 +39,7 @@ workflow PREPARE_REFERENCE {
                     // Merge extracted data with existing misc_data map
                     return createDataMap(params.miscdata_paths, params.ref_data_path) + extracted_map
                 }
-            
+
             ch_misc_data = ch_misc_data_extracted
         }
 
