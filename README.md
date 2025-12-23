@@ -57,8 +57,19 @@ nextflow run scwatts/sash \
   --outdir output/
 ```
 
+For detailed instructions, see [docs/usage.md](docs/usage.md).
+
+## Documentation
+
+The `sash` pipeline comes with documentation in the `docs/` directory:
+
+* [Usage](docs/usage.md): Detailed instructions on how to run the pipeline.
+* [Output](docs/output.md): Description of the output files and reports.
+* [Details](docs/details.md): In-depth explanation of the pipeline steps and tools.
+* [ADR](docs/adr.md): Architectural Decision Records.
+
 ## Citations
 
 You can cite a specific version of `sash` from the Zenodo record [10.5281/zenodo.15833492](https://doi.org/10.5281/zenodo.15833492) such as:
 
-> Watts, S. C., Savelyev, V., Diakumis, P., Clayssen, Q., Mitchell, H., & Hofmann, O. (2025). umccr/sash: 0.6.0 (0.6.0). Zenodo. https://doi.org/10.5281/zenodo.15833493
+> Watts, S. C., Savelyev, V., Diakumis, P., Clayssen, Q., Mitchell, H., & Hofmann, O. (2025). umccr/sash: 0.6.0 (0.6.0). Zenodo. <https://doi.org/10.5281/zenodo.15833493>

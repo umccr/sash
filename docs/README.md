@@ -1,8 +1,8 @@
-# umccr/sash: Documentation
-
-The umccr/sash documentation is split into the following pages:
-
+- [Details](details.md)
+  - In details of the pipeline steps
 - [Usage](usage.md)
   - An overview of how the pipeline works, how to run it and a description of all of the different command-line flags.
 - [Output](output.md)
   - An overview of the different results produced by the pipeline and how to interpret them.
+- [Architectural decision record (ADR)](adr.md)
+  - describes a choice the team makes about a significant aspect of the software architecture they're planning to build
