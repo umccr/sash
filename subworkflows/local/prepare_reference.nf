@@ -2,8 +2,6 @@
 // Prepare reference data as required
 //
 
-include { CUSTOM_EXTRACTTARBALL as DECOMP_MISC_DATA } from '../../modules/local/custom/extract_tarball/main'
-
 workflow PREPARE_REFERENCE {
     take:
 
@@ -19,29 +17,6 @@ workflow PREPARE_REFERENCE {
         ch_hmf_data = createDataMap(params.hmfdata_paths, params.ref_data_path)
         ch_umccr_data = createDataMap(params.umccrdata_paths, umccr_reference_data_path)
         ch_misc_data = createDataMap(params.miscdata_paths, params.ref_data_path)
-
-        //
-        // Extract tarball resources (e.g. PCGR data, VEP cache) when provided as .tar.gz/.tgz
-        //
-        misc_tarball_inputs = getTarballInputs(params.miscdata_paths, params.ref_data_path)
-        if (misc_tarball_inputs) {
-            ch_misc_data_inputs = Channel.fromList(misc_tarball_inputs)
-            
-            DECOMP_MISC_DATA(ch_misc_data_inputs)
-
-            ch_misc_data_extracted = DECOMP_MISC_DATA.out.extracted_dir
-                .collect()
-                .map { dir_list ->
-                    // Convert list of directories to a map of [name: dir]
-                    def extracted_map = dir_list.collectEntries { dir ->
-                        [(dir.getFileName().toString()): dir]
-                    }
-                    // Merge extracted data with existing misc_data map
-                    return createDataMap(params.miscdata_paths, params.ref_data_path) + extracted_map
-                }
-            
-            ch_misc_data = ch_misc_data_extracted
-        }
 
         //
         // Prepare genome paths and info
@@ -67,34 +42,6 @@ def createDataMap(entries, ref_data_base_path) {
         .collectEntries { name, path ->
             def ref_data_file = joinPath(ref_data_base_path, path)
             return [name, ref_data_file]
-        }
-}
-
-def getTarballInputs(entries, ref_data_base_path) {
-    return entries
-        .findAll { name, relpath ->
-            if (!relpath) {
-                return false
-            }
-            def rel = relpath.toString()
-            return rel.endsWith('.tar.gz') || rel.endsWith('.tgz')
-        }
-        .collect { name, relpath ->
-            def tarball = joinPath(ref_data_base_path, relpath)
-            def meta
-            if (name == 'vep_dir') {
-                // VEP cache: strip wrapper dir, extract into homo_sapiens subdir
-                // Result: vep_dir/homo_sapiens/113_GRCh38/
-                meta = [id: name, strip_components: 1, subdir: 'homo_sapiens']
-            } else if (name == 'pcgr_dir') {
-                // PCGR bundle: don't strip, tarball contains data/ directory
-                // Result: pcgr_dir/data/grch38/
-                meta = [id: name, strip_components: 0]
-            } else {
-                // Default: strip top-level wrapper directory
-                meta = [id: name, strip_components: 1]
-            }
-            return [meta, tarball]
         }
 }
 
