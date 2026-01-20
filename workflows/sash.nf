@@ -188,31 +188,6 @@ workflow SASH {
 
 
 
-    //
-    // Convert somatic VCF to MAF format
-    //
-
-    // channel: [ meta_vcf2maf, smlv_somatic_vcf ]
-    ch_vcf2maf_inputs = ch_smlv_somatic_out.map { meta, vcf ->
-        def meta_vcf2maf = [
-            key: meta.id,
-            id: meta.id,
-            tumor_id: meta.tumor_id,
-            normal_id: meta.normal_id,
-        ]
-        return [meta_vcf2maf, vcf]
-    }
-
-    VCF2MAF(
-        ch_vcf2maf_inputs,
-        genome.fasta
-    )
-
-    ch_versions = ch_versions.mix(VCF2MAF.out.versions)
-
-    // channel: [ meta, somatic_maf ]
-    ch_vcf2maf_out = VCF2MAF.out.maf
-
 
 
 
@@ -379,6 +354,21 @@ workflow SASH {
     ch_smlv_germline_report_stats_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_REPORT.out.bcftools_stats, ch_inputs)
     // channel: [ meta, variant_counts_type_germline ]
     ch_smlv_germline_report_counts_type_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_REPORT.out.counts_type, ch_inputs)
+
+
+    //
+    // Convert somatic VCF to MAF format using PCGR-produced VCF
+    //
+
+    // channel: [ meta_vcf2maf, eport_pcgr_pass_vcf ]
+    ch_smlv_somatic_report_pcgr_pass_vcf_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.pcgr_pass_vcf, ch_inputs)
+
+    VCF2MAF(
+        ch_smlv_somatic_report_pcgr_pass_vcf_out,
+        genome.fasta
+    )
+
+    ch_versions = ch_versions.mix(VCF2MAF.out.versions)
 
 
 
