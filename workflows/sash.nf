@@ -360,7 +360,7 @@ workflow SASH {
     // Convert somatic VCF to MAF format using PCGR-produced VCF
     //
 
-    // channel: [ meta_vcf2maf, eport_pcgr_pass_vcf ]
+    // channel: [ meta_vcf2maf, report_pcgr_pass_vcf ]
     ch_smlv_somatic_report_pcgr_pass_vcf_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.pcgr_pass_vcf, ch_inputs)
 
     VCF2MAF(
