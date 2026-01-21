@@ -34,8 +34,8 @@ process SIGRAP_MUTPAT {
 
     stub:
     """
-    mkdir -p sigrap/mutpat/
-    touch sigrap/mutpat/stub_output
+    mkdir -p mutpat/
+    touch mutpat/stub_output
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
