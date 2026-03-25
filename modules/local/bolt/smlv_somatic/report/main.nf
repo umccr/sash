@@ -21,7 +21,6 @@ process BOLT_SMLV_SOMATIC_REPORT {
     tuple val(meta), path("output/*.variant_counts_process.json") , emit: counts_process
     tuple val(meta), path("output/pcgr/*.pcgr.grch38.pass.vcf.gz"), emit: pcgr_pass_vcf
     path 'output/pcgr/'                                           , emit: pcgr_dir
-    path "output/pcgr/*.pcgr.grch38.pass.vcf.gz"                  , emit: pcgr_pass_vcf
     path "output/*.pcgr.grch38.html"                              , emit: pcgr_report
     path 'versions.yml'                                           , emit: versions
 
