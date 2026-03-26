@@ -7,6 +7,8 @@ process VCF2MAF {
     input:
     tuple val(meta), path(vcf)
     path genome_fasta
+    path genome_fasta_fai
+    path genome_fasta_gzi
 
 
     output:

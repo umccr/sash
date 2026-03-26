@@ -365,7 +365,9 @@ workflow SASH {
 
     VCF2MAF(
         ch_smlv_somatic_report_pcgr_pass_vcf_out,
-        genome.fasta
+        genome.fasta_ensembl,
+        genome.fasta_ensembl_fai,
+        genome.fasta_ensembl_gzi
     )
 
     ch_versions = ch_versions.mix(VCF2MAF.out.versions)

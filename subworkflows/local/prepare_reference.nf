@@ -51,6 +51,9 @@ workflow PREPARE_REFERENCE {
             fai: joinPath(params.ref_data_path, params.genome.fai),
             dict: joinPath(params.ref_data_path, params.genome.dict),
             version: '38',
+            fasta_ensembl: joinPath(params.ref_data_path, params.genome.fasta_ensembl),
+            fasta_ensembl_fai: joinPath(params.ref_data_path, params.genome.fasta_ensembl_fai),
+            fasta_ensembl_gzi: joinPath(params.ref_data_path, params.genome.fasta_ensembl_gzi),
         ]
 
     emit:
