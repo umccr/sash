@@ -362,6 +362,15 @@ workflow SASH {
 
     // channel: [ meta_vcf2maf, report_pcgr_pass_vcf ]
     ch_smlv_somatic_report_pcgr_pass_vcf_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.pcgr_pass_vcf, ch_inputs)
+        .map { meta, vcf ->
+            def meta_vcf2maf = [
+                key: meta.id,
+                id: meta.id,
+                tumor_id: meta.tumor_id,
+                normal_id: meta.normal_id,
+            ]
+            return [meta_vcf2maf, vcf]
+        }
 
     VCF2MAF(
         ch_smlv_somatic_report_pcgr_pass_vcf_out,
