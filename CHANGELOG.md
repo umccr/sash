@@ -15,6 +15,12 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### `Deprecated`
 
+## [0.6.4] - 2026-03-19
+
+### Fixed
+
+- Update cancer report container for hypermutated flag fix
+
 ## [0.6.3] - 2025-12-23
 
 ### Added
@@ -36,10 +42,10 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### Dependencies
 
-| Tool | Old | New |
-|------|-----|-----|
+| Tool | Old    | New    |
+| ---- | ------ | ------ |
 | bolt | 0.2.15 | 0.2.17 |
-| gpgr | 2.2.0 | 2.2.1 |
+| gpgr | 2.2.0  | 2.2.1  |
 
 ## [0.6.1] - 2025-09-16
 
@@ -63,14 +69,14 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### Dependencies
 
-| Tool | Old | New |
-|------|-----|-----|
-| eSVee | 1.0.3 | 1.1.2 |
-| LINX | 2.0.2 | 2.1 |
-| PAVE | 1.7.1 | 1.8 |
-| PURPLE | 4.1 | 4.2 |
-| bolt | 0.2.14 | 0.2.15 |
-| gpgr | 2.1.3 | 2.2.0 |
+| Tool   | Old    | New    |
+| ------ | ------ | ------ |
+| eSVee  | 1.0.3  | 1.1.2  |
+| LINX   | 2.0.2  | 2.1    |
+| PAVE   | 1.7.1  | 1.8    |
+| PURPLE | 4.1    | 4.2    |
+| bolt   | 0.2.14 | 0.2.15 |
+| gpgr   | 2.1.3  | 2.2.0  |
 
 ## [0.6.0] - 2025-06-04
 
@@ -120,9 +126,9 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### Dependencies
 
-| Tool | Old | New |
-|------|-----|-----|
-| Linx | 1.25 | 2.0 |
-| Purple | 4.0.1 | 4.1.0 |
-| Bolt | — | umccr/bolt#6 |
-| GPGR | — | umccr/gpgr#88 |
+| Tool   | Old   | New           |
+| ------ | ----- | ------------- |
+| Linx   | 1.25  | 2.0           |
+| Purple | 4.0.1 | 4.1.0         |
+| Bolt   | —     | umccr/bolt#6  |
+| GPGR   | —     | umccr/gpgr#88 |
