@@ -15,11 +15,18 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### `Deprecated`
 
-## [0.6.4] - 2026-03-19
+## [0.6.4] - 2026-03-31
 
 ### Fixed
 
 - Update cancer report container for hypermutated flag fix
+- Add missing CDKN2A gene entry for NM_058195.4 transcript-specific exon by updating reference data to `umccr_reference_data = '2--1'`
+
+### Dependencies
+
+| Tool | Old    | New    |
+| ---- | ------ | ------ |
+| bolt | 0.2.17 | 0.2.18 |
 
 ## [0.6.3] - 2025-12-23
 
