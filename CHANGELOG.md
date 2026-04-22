@@ -15,6 +15,19 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### `Deprecated`
 
+## [0.6.4] - 2026-03-31
+
+### Fixed
+
+- Revert hypermutated flag condition in cancer report (reverts >500k sage variant threshold, [gpgr#101](https://github.com/umccr/gpgr/pull/101), [bolt#28](https://github.com/umccr/bolt/pull/28)) ([#44](https://github.com/umccr/sash/issues/44))
+- Include MANE Plus Clinical transcript ENST00000579755 for CDKN2A alongside MANE Select ENST00000304494, fixing missing gene entries in the Gene Somatic CNV Calls Table when only the NM_058195.4-specific exon has a copy number loss (`umccr_reference_data = '2--1'`) ([#45](https://github.com/umccr/sash/issues/45))
+
+### Dependencies
+
+| Tool | Old    | New    |
+| ---- | ------ | ------ |
+| bolt | 0.2.17 | 0.2.18 |
+
 ## [0.6.3] - 2025-12-23
 
 ### Added
@@ -36,10 +49,10 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### Dependencies
 
-| Tool | Old | New |
-|------|-----|-----|
+| Tool | Old    | New    |
+| ---- | ------ | ------ |
 | bolt | 0.2.15 | 0.2.17 |
-| gpgr | 2.2.0 | 2.2.1 |
+| gpgr | 2.2.0  | 2.2.1  |
 
 ## [0.6.1] - 2025-09-16
 
@@ -63,14 +76,14 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### Dependencies
 
-| Tool | Old | New |
-|------|-----|-----|
-| eSVee | 1.0.3 | 1.1.2 |
-| LINX | 2.0.2 | 2.1 |
-| PAVE | 1.7.1 | 1.8 |
-| PURPLE | 4.1 | 4.2 |
-| bolt | 0.2.14 | 0.2.15 |
-| gpgr | 2.1.3 | 2.2.0 |
+| Tool   | Old    | New    |
+| ------ | ------ | ------ |
+| eSVee  | 1.0.3  | 1.1.2  |
+| LINX   | 2.0.2  | 2.1    |
+| PAVE   | 1.7.1  | 1.8    |
+| PURPLE | 4.1    | 4.2    |
+| bolt   | 0.2.14 | 0.2.15 |
+| gpgr   | 2.1.3  | 2.2.0  |
 
 ## [0.6.0] - 2025-06-04
 
@@ -120,9 +133,9 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### Dependencies
 
-| Tool | Old | New |
-|------|-----|-----|
-| Linx | 1.25 | 2.0 |
-| Purple | 4.0.1 | 4.1.0 |
-| Bolt | — | umccr/bolt#6 |
-| GPGR | — | umccr/gpgr#88 |
+| Tool   | Old   | New           |
+| ------ | ----- | ------------- |
+| Linx   | 1.25  | 2.0           |
+| Purple | 4.0.1 | 4.1.0         |
+| Bolt   | —     | umccr/bolt#6  |
+| GPGR   | —     | umccr/gpgr#88 |
