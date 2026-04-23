@@ -1,0 +1,68 @@
+name: PR checks (main)
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  version-changelog:
+    name: Version and changelog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract versions
+        id: versions
+        run: |
+          PR_VERSION=$(awk '/^manifest \{/,/^\}/' nextflow.config | grep -E '^\s+version\s*=' | grep -oP "'\K[^']+")
+          BASE_VERSION=$(git show origin/main:nextflow.config | awk '/^manifest \{/,/^\}/' | grep -E '^\s+version\s*=' | grep -oP "'\K[^']+")
+          echo "pr_version=$PR_VERSION" >> "$GITHUB_OUTPUT"
+          echo "base_version=$BASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "PR branch version: $PR_VERSION"
+          echo "Base (main) version: $BASE_VERSION"
+
+      - name: Check version is not a dev/pre-release placeholder
+        env:
+          PR_VERSION: ${{ steps.versions.outputs.pr_version }}
+        run: |
+          if echo "$PR_VERSION" | grep -qiE 'dev|snapshot|alpha|beta'; then
+            echo "::error::Version '$PR_VERSION' appears to be a development/pre-release version"
+            exit 1
+          fi
+
+      - name: Check version was bumped from main
+        env:
+          PR_VERSION: ${{ steps.versions.outputs.pr_version }}
+          BASE_VERSION: ${{ steps.versions.outputs.base_version }}
+        run: |
+          if [ "$PR_VERSION" = "$BASE_VERSION" ]; then
+            echo "::error::Version '$PR_VERSION' was not bumped from main ('$BASE_VERSION')"
+            exit 1
+          fi
+
+      - name: Check CHANGELOG.md was modified
+        run: |
+          if ! git diff --name-only origin/main...HEAD | grep -q '^CHANGELOG\.md$'; then
+            echo "::error::CHANGELOG.md was not modified in this PR"
+            exit 1
+          fi
+
+      - name: Check CHANGELOG.md has no date placeholder
+        run: |
+          if grep -qE '^## .*\[date\]' CHANGELOG.md; then
+            echo "::error::CHANGELOG.md still contains a '[date]' placeholder — replace with actual release date (YYYY-MM-DD)"
+            exit 1
+          fi
+
+      - name: Check CHANGELOG.md entry matches version in nextflow.config
+        env:
+          PR_VERSION: ${{ steps.versions.outputs.pr_version }}
+        run: |
+          VERSION_ESC="${PR_VERSION//./\\.}"
+          if ! grep -qE "^## (v?${VERSION_ESC}|\[${VERSION_ESC}\]) - [0-9]{4}-[0-9]{2}-[0-9]{2}" CHANGELOG.md; then
+            echo "::error::No dated CHANGELOG.md entry found for version '$PR_VERSION' — expected '## [${PR_VERSION}] - YYYY-MM-DD' or '## v${PR_VERSION} - YYYY-MM-DD'"
+            exit 1
+          fi
