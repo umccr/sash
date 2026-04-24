@@ -125,19 +125,19 @@ Exclusions fall into three tiers by ownership:
 - SAGE applies `KnownBlacklist.germline.38.bed` at call time ([sage/README.md#L66](https://github.com/hartwigmedical/hmftools/blob/master/sage/README.md#L66), [pipeline/README_RESOURCES.md#L88](https://github.com/hartwigmedical/hmftools/blob/master/pipeline/README_RESOURCES.md#L88))
 - ESVEE prep applies `sv_prep_blacklist.38.bed` to suppress SV calling in excluded regions ([esvee/README.md#L75](https://github.com/hartwigmedical/hmftools/blob/master/esvee/README.md#L75), [pipeline/README_RESOURCES.md#L109](https://github.com/hartwigmedical/hmftools/blob/master/pipeline/README_RESOURCES.md#L109))
 
-**Pipeline-level** — applied by sash to the imported call sets ([bolt/filter.py:67–146](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/filter.py#L67)):
+**Pipeline-level** — applied by sash to the imported call sets ([bolt/filter.py:67–146](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L67)):
 
-- [ENCODE blacklist v2](https://github.com/Boyle-Lab/Blacklist): hard exclusion — all overlapping variants removed unconditionally ([bolt/filter.py:133–137](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/filter.py#L133))
-- [GIAB genome stratifications](https://github.com/genome-in-a-bottle/genome-stratifications) (difficult regions) — AD ≥ 6 required rather than hard exclusion ([bolt/filter.py:98–117](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/filter.py#L98)); tracks used:
-  - Simple-repeat low-complexity: di/tri/quad-TR ≥ 150 bp (`GRCh38_SimpleRepeat_{di,tri,quad}TR_ge150_slop5`)
+- [ENCODE blacklist v2](https://github.com/Boyle-Lab/Blacklist): hard exclusion — all overlapping variants removed unconditionally ([bolt/filter.py:133–137](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L133))
+- [GIAB genome stratifications](https://github.com/genome-in-a-bottle/genome-stratifications) (difficult regions) — AD ≥ 6 required rather than hard exclusion ([bolt/filter.py:98–117](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L98)); tracks used ([bolt/constants.py:100–111](https://github.com/umccr/bolt/blob/v0.2.18/bolt/common/constants.py#L100)):
+  - Low-complexity simple repeats: di/tri/quad-TR ≥ 150 bp (`GRCh38_SimpleRepeat_{di,tri,quad}TR_ge150_slop5`)
   - All tandem repeats 201–10000 bp (`GRCh38_AllTandemRepeats_201to10000bp_slop5`)
   - Segmental duplications > 10 kb (`GRCh38_segdups_gt10kb`)
   - Bad promoters (`GRCh38_BadPromoters`)
-  - GC extremes: <15% and 70–85%+ in 5% bands (`GRCh38_gc15`, `GRCh38_gc70to75` … `GRCh38_gc85`)
+  - GC extremes: <15% and 70–100% in 5% bands (`GRCh38_gc15`, `GRCh38_gc70to75`, `GRCh38_gc75to80`, `GRCh38_gc80to85`, `GRCh38_gc80`)
   - Non-unique mappability at 100 bp reads, ≤ 2 mismatches (`GRCh38_nonunique_l100_m2_e1`)
-- Outside [GIAB high-confidence intervals v4.2.1](https://github.com/genome-in-a-bottle/giab_data_indexes): AD ≥ 6 required ([bolt/filter.py:119–120](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/filter.py#L119))
-- Panel-of-normal artefacts: PoN count ≥ 5 ([bolt/filter.py:128–131](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/filter.py#L128))
-- Common population variants: gnomAD AF ≥ 1% ([bolt/filter.py:143–146](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/filter.py#L143))
+- Outside [GIAB high-confidence intervals v4.2.1](https://github.com/genome-in-a-bottle/giab_data_indexes): AD ≥ 6 required ([bolt/filter.py:119–120](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L119))
+- Panel-of-normal artefacts: PoN count ≥ 5 ([bolt/filter.py:128–131](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L128))
+- Common population variants: gnomAD AF ≥ 1% ([bolt/filter.py:143–146](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L143))
 
 **Reporting-level** — intentional downstream exclusions:
 
@@ -149,7 +149,7 @@ In detail:
 
 1. HMF caller-level blacklist paths are tracked in sash configuration as upstream provenance ([conf/refdata.config#L70](/Users/quentinclayssen/github/sash/conf/refdata.config#L70), [conf/refdata.config#L80](/Users/quentinclayssen/github/sash/conf/refdata.config#L80)), materialised into the `hmf_data` map by [subworkflows/local/prepare_reference.nf](/Users/quentinclayssen/github/sash/subworkflows/local/prepare_reference.nf#L11). The `sv_prep_blacklist` replaced the former `gridss_region_blocklist` when GRIDSS/GRIPSS was superseded by eSVee in [v0.6.0](https://github.com/umccr/sash/blob/main/CHANGELOG.md#0.6.0---2025-06-04); the GRIDSS blocklist was explicitly removed in [v0.6.1](https://github.com/umccr/sash/blob/main/CHANGELOG.md#0.6.1---2025-09-16).
 
-1. Pipeline-level annotation is performed by bolt's vcfanno step ([bolt/annotate.py:51–61](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/annotate.py#L51), [constants.py:97–111](/Users/quentinclayssen/github/bolt/bolt/common/constants.py#L97)) using the `vcfanno_annotations.toml` from the reference annotations directory. ENCODE and all GIAB stratification tracks are flagged as `INFO` fields and then consumed by the filter step. See [Filter](#filter) for exact thresholds.
+1. Pipeline-level annotation is performed by bolt's vcfanno step ([bolt/annotate.py:51–61](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L51), [constants.py:97–111](https://github.com/umccr/bolt/blob/v0.2.18/bolt/common/constants.py#L97)) using the `vcfanno_annotations.toml` from the reference annotations directory. ENCODE and all GIAB stratification tracks are flagged as `INFO` fields and then consumed by the filter step. See [Filter](#filter) for exact thresholds.
 
 ---
 
@@ -228,14 +228,14 @@ The Annotation process employs Reference Sources (GA4GH/GIAB problem region stra
 
 1. Set FILTER to "PASS" for unfiltered variants:
    - Iterate over the input VCF file and set the `FILTER` field to `PASS` for any variants that currently have no filter status (`FILTER` is `.` or `None`).
-2. Annotate the VCF against reference sources ([bolt/annotate.py:51–61](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/annotate.py#L51)):
+2. Annotate the VCF against reference sources ([bolt/annotate.py:51–61](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L51)):
    - Use vcfanno to add annotations to the VCF file:
      - gnomAD (version 2.1) [`INFO/gnomAD_AF`]
      - Hartwig Hotspots [`INFO/HMF_HOTSPOT`]
      - ENCODE Blacklist [`INFO/ENCODE`]
      - Genome in a Bottle High-Confidence Regions (v4.2.1) [`INFO/GIAB_CONF`]
      - GA4GH/GIAB problem region stratifications [`INFO/DIFFICULT_*`]: low-complexity tandem repeats (di/tri/quad and general), GC extremes (<15% and 70–100% in graduated bands), bad promoter, non-unique mappability, segmental duplications
-3. Annotate with UMCCR panel of normals counts ([bolt/annotate.py:64–73](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/annotate.py#L64)):
+3. Annotate with UMCCR panel of normals counts ([bolt/annotate.py:64–73](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L64)):
    - Use vcfanno and bcftools to annotate the VCF with counts from the UMCCR panel of normals [`INFO/PON_COUNT`].
 4. Standardize the VCF fields:
    - Add new `INFO` fields for use with PCGR:
@@ -272,21 +272,21 @@ The Filter step applies a series of stringent filters to somatic variant calls i
 
 #### Filters
 
-Variants that do not meet these criteria will be filtered out unless they qualify for [Clinical Significance Exceptions](#clinical-significance-exceptions). Filter logic: [bolt/filter.py:67–146](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/filter.py#L67); thresholds: [bolt/constants.py:17–21](/Users/quentinclayssen/github/bolt/bolt/common/constants.py#L17).
+Variants that do not meet these criteria will be filtered out unless they qualify for [Clinical Significance Exceptions](#clinical-significance-exceptions). Filter logic: [bolt/filter.py:67–146](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L67); thresholds: [bolt/constants.py:17–21](https://github.com/umccr/bolt/blob/v0.2.18/bolt/common/constants.py#L17).
 
-| **Filter Type**                            | **Threshold/Criteria**                                                                                                                                                                                      |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Allele Frequency (AF) Filter**           | Tumor AF < 10% (0.10)                                                                                                                                                                                       |
-| **Allele Depth (AD) Filter**               | Fewer than 4 supporting reads                                                                                                                                                                               |
-| **Difficult Region AD Filter**             | AD < 6 in segmental duplications, GC extremes, LCR, bad promoter, or non-unique mappability regions ([bolt/filter.py:98–117](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/filter.py#L98)) |
-| **Non-GIAB AD Filter**                     | AD < 6 outside GIAB high-confidence regions ([bolt/filter.py:119–120](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/filter.py#L119))                                                       |
-| **ENCODE Blacklist Filter**                | Hard exclusion for all variants in ENCODE regions ([bolt/filter.py:133–137](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/filter.py#L133))                                                 |
-| **Population Frequency (gnomAD) Filter**   | gnomAD AF ≥ 1% (0.01)                                                                                                                                                                                       |
-| **Panel of Normals (PoN) Germline Filter** | Present in ≥ 5 normal samples                                                                                                                                                                               |
+| **Filter Type**                            | **Threshold/Criteria**                                                                                                                                                                                              |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Allele Frequency (AF) Filter**           | Tumor AF < 10% (0.10)                                                                                                                                                                                               |
+| **Allele Depth (AD) Filter**               | Fewer than 4 supporting reads                                                                                                                                                                                       |
+| **Difficult Region AD Filter**             | AD < 6 in segmental duplications, GC extremes, LCR, bad promoter, or non-unique mappability regions ([bolt/filter.py:98–117](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L98)) |
+| **Non-GIAB AD Filter**                     | AD < 6 outside GIAB high-confidence regions ([bolt/filter.py:119–120](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L119))                                                       |
+| **ENCODE Blacklist Filter**                | Hard exclusion for all variants in ENCODE regions ([bolt/filter.py:133–137](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L133))                                                 |
+| **Population Frequency (gnomAD) Filter**   | gnomAD AF ≥ 1% (0.01)                                                                                                                                                                                               |
+| **Panel of Normals (PoN) Germline Filter** | Present in ≥ 5 normal samples                                                                                                                                                                                       |
 
 #### Clinical Significance Exceptions
 
-Rescue logic: [bolt/filter.py:152–220](/Users/quentinclayssen/github/bolt/bolt/workflows/smlv_somatic/filter.py#L152); rescue thresholds: [bolt/constants.py:29–41](/Users/quentinclayssen/github/bolt/bolt/common/constants.py#L29).
+Rescue logic: [bolt/filter.py:152–220](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L152); rescue thresholds: [bolt/constants.py:29–41](https://github.com/umccr/bolt/blob/v0.2.18/bolt/common/constants.py#L29).
 
 | Exception Category               | Criteria                                                                                                                                 |
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
