@@ -3,15 +3,26 @@
 ## Table of Contents
 
 - [Overview](#overview)
-- [HMFtools WiGiTs](#hmftools-wigits)
+- [HMFtools](#hmftools)
 - [Other Tools](#other-tools)
 - [Pipeline Inputs](#pipeline-inputs)
 - [Reference Exclusions and Blocklists](#reference-exclusions-and-blocklists)
 - [Workflows](#workflows)
   - [Somatic Small Variants](#somatic-small-variants)
+    - [Variant Calling Re-calling](#variant-calling-re-calling)
+    - [Annotation](#annotation)
+    - [Filter](#filter)
+    - [Reports](#reports)
+    - [VCF to MAF conversion](#vcf-to-maf-conversion)
+    - [PAVE Driver Catalogue Annotation](#pave-driver-catalogue-annotation)
   - [Somatic Structural Variants](#somatic-structural-variants)
   - [Germline Small Variants](#germline-small-variants)
 - [Common Reports](#common-reports)
+  - [Cancer Report](#cancer-report)
+  - [LINX Report](#linx-report)
+  - [MultiQC](#multiqc)
+  - [PCGR](#pcgr)
+  - [CPSR Report](#cpsr-report)
 - [sash Module Outputs](#sash-module-outputs)
 - [Coverage](#coverage)
 - [Reference Data](#reference-data)
@@ -74,7 +85,7 @@ Tool for structural variant annotation and visualization to classify complex rea
 
 ### [ESVEE](https://github.com/hartwigmedical/hmftools/tree/master/esvee)
 
-Esvee is a structural variant caller optimised for short read sequencing that identifies somatic and germline somatic rearrangements.
+Esvee is a structural variant caller optimised for short read sequencing that identifies somatic and germline rearrangements.
 
 ### [VIRUSBreakend](https://github.com/PapenfussLab/gridss/blob/master/VIRUSBreakend_Readme.md)
 
@@ -141,7 +152,7 @@ Exclusions fall into three tiers by ownership:
 
 **Reporting-level** — intentional downstream exclusions:
 
-- Restricted virus taxonomy via `virus_reporting_db` and `virus_taxonomy_db` ([conf/refdata.config#L86](/Users/quentinclayssen/github/sash/conf/refdata.config#L86))
+- Restricted virus taxonomy via `virus_reporting_db` and `virus_taxonomy_db` ([conf/refdata.config#L86](conf/refdata.config#L86))
 
 In detail:
 
@@ -496,7 +507,9 @@ UMCCR cancer report containing:
 - Data Source: PURPLE CNV outputs (segmentation files, gene-level CNV TSV)
 - Tool: PURPLE
 
-The LINX report includes the following:
+### LINX Report
+
+LINX annotates and visualises structural variants, classifying complex rearrangements and predicting gene fusions. The report includes:
 
 - Tables of Variants:
   - Breakends
