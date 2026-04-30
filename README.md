@@ -11,9 +11,9 @@ functionality.
 
 ## Table of contents
 
-* [Summary](#summary)
-* [Requirements](#requirements)
-* [Usage](#usage)
+- [Summary](#summary)
+- [Requirements](#requirements)
+- [Usage](#usage)
 
 ## Summary
 
@@ -26,7 +26,7 @@ The general processes `sash` runs include:
 - MultiQC for reporting various WGS statistics / metrics for QC
 - SAGE variant calling to supplement DRAGEN small somatic variants
 - PURPLE for TMB, MSI, CNV calling, and purity / ploidy estimation
-- HRDetect and CHORD for HRD inference
+- HRDetect for HRD inference; CHORD predictions from oncoanalyser are ingested when present
 - MutationalPatterns to fit mutational signatures
 - PAVE for somatic variant annotation with MNV filtering (see [discussion](https://github.com/umccr/sash/issues/19))
 
@@ -50,7 +50,7 @@ subject_a.example,subject_a,sample_somatic,oncoanalyser_dir,/path/to/oncoanalyse
 Execute analysis
 
 ```bash
-nextflow run scwatts/sash \
+nextflow run umccr/sash \
   -profile docker \
   --input samplesheet.csv \
   --ref_data_path /path/to/reference_data/ \
@@ -63,10 +63,10 @@ For detailed instructions, see [docs/usage.md](docs/usage.md).
 
 The `sash` pipeline comes with documentation in the `docs/` directory:
 
-* [Usage](docs/usage.md): Detailed instructions on how to run the pipeline.
-* [Output](docs/output.md): Description of the output files and reports.
-* [Details](docs/details.md): In-depth explanation of the pipeline steps and tools.
-* [ADR](docs/adr.md): Architectural Decision Records.
+- [Usage](docs/usage.md): Detailed instructions on how to run the pipeline.
+- [Output](docs/output.md): Description of the output files and reports.
+- [Details](docs/details.md): In-depth explanation of the pipeline steps and tools.
+- [ADR](docs/adr.md): Architectural Decision Records.
 
 ## Citations
 
