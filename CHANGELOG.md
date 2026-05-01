@@ -22,6 +22,12 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 - Revert hypermutated flag condition in cancer report (reverts >500k sage variant threshold, [gpgr#101](https://github.com/umccr/gpgr/pull/101), [bolt#28](https://github.com/umccr/bolt/pull/28)) ([#44](https://github.com/umccr/sash/issues/44))
 - Include MANE Plus Clinical transcript ENST00000579755 for CDKN2A alongside MANE Select ENST00000304494, fixing missing gene entries in the Gene Somatic CNV Calls Table when only the NM_058195.4-specific exon has a copy number loss (`umccr_reference_data = '2--1'`) ([#45](https://github.com/umccr/sash/issues/45))
 
+### Documentation
+
+- Fix broken ToC anchor, absolute local path, duplicate word, and misplaced LINX section in `docs/details.md`
+- Fix `scwatts/sash` → `umccr/sash` and stale CHORD reference in `README.md`
+- Add `sigrap/` and `vcf2maf/` to output directory tree; fix inaccurate germline preparation description in `docs/output.md`
+
 ### Dependencies
 
 | Tool | Old    | New    |

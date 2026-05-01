@@ -156,9 +156,9 @@ Exclusions fall into three tiers by ownership:
 
 In detail:
 
-1. Caller-level outputs are imported rather than regenerated in sash. [subworkflows/local/prepare_input.nf](/Users/quentinclayssen/github/sash/subworkflows/local/prepare_input.nf#L58) imports precomputed Oncoanalyser outputs, including the SAGE somatic VCF and the ESVEE reference-depth VCF plus prep directory. [workflows/sash.nf](/Users/quentinclayssen/github/sash/workflows/sash.nf#L84) wires those imported assets into the downstream sash workflow, and [modules/local/esvee/call/main.nf](/Users/quentinclayssen/github/sash/modules/local/esvee/call/main.nf#L1) runs ESVEE caller from the imported prep directory, inheriting all caller-level exclusions without re-applying them.
+1. Caller-level outputs are imported rather than regenerated in sash. [subworkflows/local/prepare_input.nf](subworkflows/local/prepare_input.nf#L58) imports precomputed Oncoanalyser outputs, including the SAGE somatic VCF and the ESVEE reference-depth VCF plus prep directory. [workflows/sash.nf](workflows/sash.nf#L84) wires those imported assets into the downstream sash workflow, and [modules/local/esvee/call/main.nf](modules/local/esvee/call/main.nf#L1) runs ESVEE caller from the imported prep directory, inheriting all caller-level exclusions without re-applying them.
 
-1. HMF caller-level blacklist paths are tracked in sash configuration as upstream provenance ([conf/refdata.config#L70](/Users/quentinclayssen/github/sash/conf/refdata.config#L70), [conf/refdata.config#L80](/Users/quentinclayssen/github/sash/conf/refdata.config#L80)), materialised into the `hmf_data` map by [subworkflows/local/prepare_reference.nf](/Users/quentinclayssen/github/sash/subworkflows/local/prepare_reference.nf#L11). The `sv_prep_blacklist` replaced the former `gridss_region_blocklist` when GRIDSS/GRIPSS was superseded by eSVee in [v0.6.0](https://github.com/umccr/sash/blob/main/CHANGELOG.md#0.6.0---2025-06-04); the GRIDSS blocklist was explicitly removed in [v0.6.1](https://github.com/umccr/sash/blob/main/CHANGELOG.md#0.6.1---2025-09-16).
+1. HMF caller-level blacklist paths are tracked in sash configuration as upstream provenance ([conf/refdata.config#L70](conf/refdata.config#L70), [conf/refdata.config#L80](conf/refdata.config#L80)), materialised into the `hmf_data` map by [subworkflows/local/prepare_reference.nf](subworkflows/local/prepare_reference.nf#L11). The `sv_prep_blacklist` replaced the former `gridss_region_blocklist` when GRIDSS/GRIPSS was superseded by eSVee in [v0.6.0](https://github.com/umccr/sash/blob/main/CHANGELOG.md#0.6.0---2025-06-04); the GRIDSS blocklist was explicitly removed in [v0.6.1](https://github.com/umccr/sash/blob/main/CHANGELOG.md#0.6.1---2025-09-16).
 
 1. Pipeline-level annotation is performed by bolt's vcfanno step ([bolt/annotate.py:51–61](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L51), [constants.py:97–111](https://github.com/umccr/bolt/blob/v0.2.18/bolt/common/constants.py#L97)) using the `vcfanno_annotations.toml` from the reference annotations directory. ENCODE and all GIAB stratification tracks are flagged as `INFO` fields and then consumed by the filter step. See [Filter](#filter) for exact thresholds.
 
@@ -385,7 +385,7 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
 #### Steps
 
 1. eSVee filtering:
-   - Evaluate split-read and paired-end support; discard variants with low support.
+   - Evaluate split fragment (SF) and discordant fragment (DF) support; discard variants with low support.
    - Apply panel-of-normals filtering to remove artifacts observed in normal samples.
    - Retain variants overlapping known oncogenic fusion hotspots (using UMCCR-curated lists).
    - Exclude variants in repetitive regions based on Repeat Masker annotations.
@@ -404,7 +404,7 @@ The Somatic Structural Variants (SVs) pipeline identifies and annotates large-sc
    - Classify Variants:
      - Structural Variants (SVs): Variants labeled with the source `sv_esvee`.
      - Copy Number Variants (CNVs): Variants labeled with the source `cnv_purple`.
-5. Prioritize variants on a 4-tier system using [prioritize_sv](https://github.com/umccr/vcf_stuff/blob/master/scripts/prioritize_sv.):
+5. Prioritize variants on a 4-tier system using [prioritize_sv](https://github.com/umccr/vcf_stuff/blob/master/scripts/prioritize_sv):
    - **1 (high)** - **2 (moderate)** - **3 (low)** - **4 (no interest)**
    - Exon loss:
      - On cancer gene list (1)
