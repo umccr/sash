@@ -144,7 +144,7 @@ Exclusions fall into three tiers by ownership:
   - All tandem repeats 201–10000 bp (`GRCh38_AllTandemRepeats_201to10000bp_slop5`)
   - Segmental duplications > 10 kb (`GRCh38_segdups_gt10kb`)
   - Bad promoters (`GRCh38_BadPromoters`)
-  - GC extremes: <15% and 70–100% in 5% bands (`GRCh38_gc15`, `GRCh38_gc70to75`, `GRCh38_gc75to80`, `GRCh38_gc80to85`, `GRCh38_gc80`)
+  - GC extremes: <15% (`GRCh38_gc15`) and high-GC bands from 70% upward — three 5% bands (`GRCh38_gc70to75`, `GRCh38_gc75to80`, `GRCh38_gc80to85`) plus a ≥80% overlay (`GRCh38_gc80`)
   - Non-unique mappability at 100 bp reads, ≤ 2 mismatches (`GRCh38_nonunique_l100_m2_e1`)
 - Outside [GIAB high-confidence intervals v4.2.1](https://github.com/genome-in-a-bottle/giab_data_indexes): AD ≥ 6 required ([bolt/filter.py:119–120](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L119))
 - Panel-of-normal artefacts: PoN count ≥ 5 ([bolt/filter.py:128–131](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L128))

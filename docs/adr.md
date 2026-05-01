@@ -17,7 +17,7 @@
 
 Original plan (not implemented): split VCF files into chunks of ≤ 500,000 variants, process each chunk in parallel through PCGR, then merge annotated outputs.
 
-Current implementation — bolt applies a `select_variants` function that progressively excludes lower-priority variants until the count falls below 500,000 ([bolt/annotate.py:182–200](https://github.com/umccr/bolt/blob/main/bolt/workflows/smlv_somatic/annotate.py#L182)):
+Current implementation — bolt applies a `select_variants` function that progressively excludes lower-priority variants until the count falls below 500,000 ([bolt/annotate.py:182–200](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L182)):
 
 1. If total ≤ 500,000: pass all variants unchanged
 2. Remove non-PASS variants; if now ≤ 500,000: stop
@@ -26,7 +26,7 @@ Current implementation — bolt applies a `select_variants` function that progre
 
 This reduction affects only the PCGR report input. The full filtered VCF is published independently. TMB and MSI are derived from PURPLE and are unaffected by PCGR input size.
 
-Open TODOs remain: logging of the reduction steps and tempdir cleanup ([bolt/annotate.py:177–179](https://github.com/umccr/bolt/blob/main/bolt/workflows/smlv_somatic/annotate.py#L177)).
+Open TODOs remain: logging of the reduction steps and tempdir cleanup ([bolt/annotate.py:177–179](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L177)).
 
 A "hypermutated" flag was added to the gpgr cancer report to surface this condition to analysts. It was reverted in [v0.6.4](https://github.com/umccr/sash/blob/main/CHANGELOG.md) due to incorrect triggering conditions ([gpgr#101](https://github.com/umccr/gpgr/pull/101), [bolt#28](https://github.com/umccr/bolt/pull/28)). A redesigned flag may be reintroduced in a future release.
 
@@ -50,7 +50,7 @@ Negative:
 
 ### Links
 
-- [bolt/annotate.py — select_variants](https://github.com/umccr/bolt/blob/main/bolt/workflows/smlv_somatic/annotate.py#L182)
+- [bolt/annotate.py — select_variants](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L182)
 - [PCGR — large input sets](https://sigven.github.io/pcgr/articles/running.html#large-input-sets-vcf)
 - [v0.6.4 — hypermutated flag revert](https://github.com/umccr/sash/blob/main/CHANGELOG.md)
 - [gpgr#101](https://github.com/umccr/gpgr/pull/101), [bolt#28](https://github.com/umccr/bolt/pull/28)
