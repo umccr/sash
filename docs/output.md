@@ -3,6 +3,7 @@
 ## Introduction
 
 This document outlines the key results and files produced by the UMCCR SASH (post-processing WGS tumor/normal) pipeline. After a run, the pipeline organizes output files by analysis module under a directory for each tumor/normal pair (identified by run ID and sample names). The main outputs include annotated variant reports for somatic and germline variants, copy number and structural variant analyses, and a comprehensive MultiQC report for quality control. All paths below are relative to the top-level results directory of a given run.
+
 ## Pipeline overview
 
 - [Sash Output](#sash-output)
@@ -16,10 +17,10 @@ This document outlines the key results and files produced by the UMCCR SASH (pos
       - [Summary](#summary-1)
     - [Details](#details)
   - [bolt smlv somatic rescue](#bolt-smlv-somatic-rescue)
-      - [BOLT\_SMLV\_SOMATIC\_ANNOTATE](#bolt_smlv_somatic_annotate)
-      - [BOLT\_SMLV\_SOMATIC\_FILTER](#bolt_smlv_somatic_filter)
-      - [SOMATIC\_SNV\_REPORTS](#somatic_snv_reports)
-      - [VCF2MAF](#vcf2maf)
+    - [BOLT_SMLV_SOMATIC_ANNOTATE](#bolt_smlv_somatic_annotate)
+    - [BOLT_SMLV_SOMATIC_FILTER](#bolt_smlv_somatic_filter)
+    - [SOMATIC_SNV_REPORTS](#somatic_snv_reports)
+    - [VCF2MAF](#vcf2maf)
     - [Somatic Structural Variants](#somatic-structural-variants)
       - [General](#general-1)
       - [Summary](#summary-2)
@@ -54,13 +55,17 @@ This document outlines the key results and files produced by the UMCCR SASH (pos
 │   ├── hrd/
 │   ├── json/
 │   ├── purple/
-│   └── sigs/ 
+│   └── sigs/
 ├── linx/
 │ ├── germline_annotations/
 │ ├── somatic_annotations/
 │ └── somatic_plots/
 ├── multiqc_data/
 ├── purple/
+├── sigrap/
+│ ├── hrdetect/
+│ └── mutpat/
+├── vcf2maf/
 ├── smlv_germline/
 │ └── prepare/
 │ └── report/
@@ -73,6 +78,7 @@ This document outlines the key results and files produced by the UMCCR SASH (pos
    ├── annotate/
    └── prioritise/
 ```
+
 ## Summary
 
 The **Sash Workflow** comprises three primary pipelines: **Somatic Small Variants**, **Somatic Structural Variants**, and **Germline Variants**. These pipelines utilize **Bolt**, a Python package designed for modular processing, and leverage outputs from the **DRAGEN Variant Caller** alongside **HMFtools in Oncoanalyser**. Each pipeline is tailored to a specific type of genomic variant, incorporating filtering, annotation, and HTML reports for research and curation.
@@ -219,7 +225,7 @@ The **Germline Variants** workflow analyzes inherited variants from the normal s
 
 </details>
 
-This process prepares germline variants for downstream annotation and reporting. It applies normalization, left-alignment, and other preprocessing steps to ensure consistent variant representation.
+This process prepares germline variants for downstream analysis. It filters to PASS variants and restricts calls to transcript regions defined by the germline gene panel before CPSR reporting.
 
 #### Germline Reports
 
@@ -286,7 +292,7 @@ The cancer report integrates findings from all analysis modules into a comprehen
     - `<tumor_id>.linx.fusion.tsv`: Gene fusion predictions.
     - `<tumor_id>.linx.links.tsv`: Links between somatic SVs.
     - `<tumor_id>.linx.svs.tsv`: Somatic structural variants.
-    - Visualization data files (vis_*).
+    - Visualization data files (vis\_\*).
     - `linx.version`: LINX version information.
   - `somatic_plots/`: Visualizations of somatic structural variants.
 
