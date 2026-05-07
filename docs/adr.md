@@ -17,7 +17,7 @@
 
 Original plan (not implemented): split VCF files into chunks of ≤ 500,000 variants, process each chunk in parallel through PCGR, then merge annotated outputs.
 
-Current implementation — bolt applies a `select_variants` function that progressively excludes lower-priority variants until the count falls below 500,000 ([bolt/annotate.py:182–200](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L182)):
+Current implementation: bolt applies a `select_variants` function that progressively excludes lower-priority variants until the count falls below 500,000 ([bolt/annotate.py:182–200](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L182)):
 
 1. If total ≤ 500,000: pass all variants unchanged
 2. Remove non-PASS variants; if now ≤ 500,000: stop
@@ -50,9 +50,9 @@ Negative:
 
 ### Links
 
-- [bolt/annotate.py — select_variants](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L182)
-- [PCGR — large input sets](https://sigven.github.io/pcgr/articles/running.html#large-input-sets-vcf)
-- [v0.6.4 — hypermutated flag revert](https://github.com/umccr/sash/blob/main/CHANGELOG.md)
+- [bolt/annotate.py: select_variants](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L182)
+- [PCGR: large input sets](https://sigven.github.io/pcgr/articles/running.html#large-input-sets-vcf)
+- [v0.6.4: hypermutated flag revert](https://github.com/umccr/sash/blob/main/CHANGELOG.md)
 - [gpgr#101](https://github.com/umccr/gpgr/pull/101), [bolt#28](https://github.com/umccr/bolt/pull/28)
 
 ---
@@ -126,7 +126,7 @@ Positive:
 Negative:
 
 - PURPLE's purity/ploidy fitting operates without the germline variant constraint that SAGE-based pipelines benefit from. May reduce accuracy in edge cases (e.g. samples with low somatic variant counts or unusual ploidy).
-- The limitation is silent at runtime — nothing in the pipeline output signals that germline enrichment is inactive.
+- The limitation is silent at runtime; nothing in the pipeline output signals that germline enrichment is inactive.
 
 ### Remaining Challenges
 
@@ -151,7 +151,7 @@ Negative:
 
 ### Context
 
-PURPLE's driver catalogue (identifying driver genes with somatic SNVs/indels) depends on PAVE functional annotations (consequence, impact, coding effect) being present in the somatic VCF. Without PAVE, PURPLE produces an incomplete driver catalogue. At the same time, sash uses bolt for all clinical filtering and reporting — PAVE annotations are neither required nor consumed by the bolt pipeline or the cancer report.
+PURPLE's driver catalogue (identifying driver genes with somatic SNVs/indels) depends on PAVE functional annotations (consequence, impact, coding effect) being present in the somatic VCF. Without PAVE, PURPLE produces an incomplete driver catalogue. At the same time, sash uses bolt for all clinical filtering and reporting; PAVE annotations are neither required nor consumed by the bolt pipeline or the cancer report.
 
 ### Decision
 
@@ -175,11 +175,11 @@ Positive:
 Negative:
 
 - **PAVE annotations absent from the published VCF**: the clinical output (`smlv_somatic/filter/{tumor_id}.pass.vcf.gz`) does not carry PAVE consequence fields. Any downstream tool that needs PAVE annotations must re-run PAVE independently.
-- The pipeline runs PAVE on a temporary intermediate that is discarded — compute cost is paid but the output is invisible to the analyst.
+- The pipeline runs PAVE on a temporary intermediate that is discarded; compute cost is paid but the output is invisible to the analyst.
 
 ### Links
 
 - [workflows/sash.nf:171](workflows/sash.nf#L171)
 - [modules/local/pave/somatic/main.nf](modules/local/pave/somatic/main.nf)
-- [sash#19 — PAVE MNV filtering discussion](https://github.com/umccr/sash/issues/19)
+- [sash#19: PAVE MNV filtering discussion](https://github.com/umccr/sash/issues/19)
 - [v0.6.1 changelog](https://github.com/umccr/sash/blob/main/CHANGELOG.md)
