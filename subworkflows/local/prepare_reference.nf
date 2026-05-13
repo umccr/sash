@@ -29,7 +29,7 @@ workflow PREPARE_REFERENCE {
 
             DECOMP_MISC_DATA(ch_misc_data_inputs)
 
-            ch_misc_data_extracted = DECOMP_MISC_DATA.out.extracted_dir
+            ch_misc_data_channel = DECOMP_MISC_DATA.out.extracted_dir
                 .collect()
                 .map { dir_list ->
                     // Convert list of directories to a map of [name: dir]
@@ -37,10 +37,24 @@ workflow PREPARE_REFERENCE {
                         [(dir.getFileName().toString()): dir]
                     }
                     // Merge extracted data with existing misc_data map
-                    return createDataMap(params.miscdata_paths, params.ref_data_path) + extracted_map
+                    def merged = createDataMap(params.miscdata_paths, params.ref_data_path) + extracted_map
+                    // Derive Ensembl FASTA paths from the extracted PCGR bundle
+                    if (extracted_map.containsKey('pcgr_dir')) {
+                        def fa_base = 'data/grch38/misc/fasta/assembly/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
+                        merged.fasta_ensembl     = extracted_map['pcgr_dir'].resolve("${fa_base}.gz")
+                        merged.fasta_ensembl_fai = extracted_map['pcgr_dir'].resolve("${fa_base}.gz.fai")
+                        merged.fasta_ensembl_gzi = extracted_map['pcgr_dir'].resolve("${fa_base}.gz.gzi")
+                    }
+                    return merged
                 }
-
-            ch_misc_data = ch_misc_data_extracted
+        } else {
+            def pcgr_dir_path = ch_misc_data['pcgr_dir']
+            def fa_base = 'data/grch38/misc/fasta/assembly/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
+            ch_misc_data_channel = Channel.value(ch_misc_data + [
+                fasta_ensembl:     file("${pcgr_dir_path}/${fa_base}.gz",     checkIfExists: true),
+                fasta_ensembl_fai: file("${pcgr_dir_path}/${fa_base}.gz.fai", checkIfExists: true),
+                fasta_ensembl_gzi: file("${pcgr_dir_path}/${fa_base}.gz.gzi", checkIfExists: true),
+            ])
         }
 
         //
@@ -51,16 +65,14 @@ workflow PREPARE_REFERENCE {
             fai: joinPath(params.ref_data_path, params.genome.fai),
             dict: joinPath(params.ref_data_path, params.genome.dict),
             version: '38',
-            fasta_ensembl: joinPath(params.ref_data_path, params.genome.fasta_ensembl),
-            fasta_ensembl_fai: joinPath(params.ref_data_path, params.genome.fasta_ensembl_fai),
-            fasta_ensembl_gzi: joinPath(params.ref_data_path, params.genome.fasta_ensembl_gzi),
         ]
 
     emit:
         genome                 = genome                         // map: Genome paths and info
         hmf_data               = ch_hmf_data                    // map: HMF data paths
         umccr_data             = ch_umccr_data                  // map: UMCCR data paths
-        misc_data              = ch_misc_data                   // map: Misc data paths
+        misc_data              = ch_misc_data                   // map: Misc data paths (static)
+        misc_data_ch           = ch_misc_data_channel           // channel: Misc data with runtime-extracted dirs and fasta_ensembl
 
         versions               = ch_versions                    // channel: [versions.yml]
 }
