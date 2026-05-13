@@ -69,6 +69,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
     touch output/${meta.tumor_id}.somatic.variant_counts_type.yaml
     touch output/${meta.tumor_id}.somatic.variant_counts_process.json
     touch output/${meta.tumor_id}.somatic.bcftools_stats.txt
+    touch output/pcgr/${meta.tumor_id}.pcgr.grch38.pass.vcf.gz
     touch output/${meta.tumor_id}.pcgr.grch38.html
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """

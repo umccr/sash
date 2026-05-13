@@ -19,7 +19,7 @@ process SIGRAP_HRDETECT {
 
     """
     sigrap.R hrdetect \\
-        --sample ${meta.id} \\
+        --sample ${meta.tumor_id} \\
         --snv ${smlv_somatic_vcf} \\
         --sv ${sv_somatic_vcf} \\
         --cnv ${cnv_somatic_tsv} \\
