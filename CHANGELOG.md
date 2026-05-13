@@ -15,6 +15,33 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### `Deprecated`
 
+## [0.7.0] - 2026-05-13
+
+### Added
+
+- VCF2MAF process for somatic PASS VCF conversion to MAF format
+- SIGRAP_HRDETECT and SIGRAP_MUTPAT processes for HRDetect and mutational pattern analysis
+- CUSTOM_EXTRACTTARBALL helper: PCGR and VEP reference data now shipped as tarballs and extracted at runtime
+- `pcgr_variant_chunk_size` parameter for chunked PCGR runs on hypermutated samples
+- `process_medium_memory` resource label
+- Zenodo DOI
+
+### Changed
+
+- Updated to oncoanalyser v2.x data structure
+- PCGR output filename: `*.pcgr_acmg.grch38.html` → `*.pcgr.grch38.html`
+- BOLT_OTHER_CANCER_REPORT now consumes SIGRAP hrdetect and mutpat outputs
+- `BOLT_OTHER_CANCER_REPORT` and `BOLT_SMLV_SOMATIC_ANNOTATE` relabelled to `process_medium_memory`
+- Reference data: PCGR 20220203 → 20250314; VEP 113; PCGR/VEP data shipped as tarballs
+
+### Dependencies
+
+| Tool      | Old      | New      |
+| --------- | -------- | -------- |
+| bolt      | 0.2.17   | 0.3.0    |
+| PCGR data | 20220203 | 20250314 |
+| VEP       | —        | 113      |
+
 ## [0.6.3] - 2025-10-07
 
 ### Added
@@ -29,10 +56,10 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### Dependencies
 
-| Tool | Old | New |
-|------|-----|-----|
+| Tool | Old    | New    |
+| ---- | ------ | ------ |
 | bolt | 0.2.15 | 0.2.17 |
-| gpgr | 2.2.0 | 2.2.1 |
+| gpgr | 2.2.0  | 2.2.1  |
 
 ## [0.6.1] - 2025-09-16
 
@@ -56,14 +83,14 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### Dependencies
 
-| Tool | Old | New |
-|------|-----|-----|
-| eSVee | 1.0.3 | 1.1.2 |
-| LINX | 2.0.2 | 2.1 |
-| PAVE | 1.7.1 | 1.8 |
-| PURPLE | 4.1 | 4.2 |
-| bolt | 0.2.14 | 0.2.15 |
-| gpgr | 2.1.3 | 2.2.0 |
+| Tool   | Old    | New    |
+| ------ | ------ | ------ |
+| eSVee  | 1.0.3  | 1.1.2  |
+| LINX   | 2.0.2  | 2.1    |
+| PAVE   | 1.7.1  | 1.8    |
+| PURPLE | 4.1    | 4.2    |
+| bolt   | 0.2.14 | 0.2.15 |
+| gpgr   | 2.1.3  | 2.2.0  |
 
 ## [0.6.0] - 2025-06-04
 
