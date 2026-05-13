@@ -32,29 +32,13 @@ workflow PREPARE_REFERENCE {
             ch_misc_data_channel = DECOMP_MISC_DATA.out.extracted_dir
                 .collect()
                 .map { dir_list ->
-                    // Convert list of directories to a map of [name: dir]
                     def extracted_map = dir_list.collectEntries { dir ->
                         [(dir.getFileName().toString()): dir]
                     }
-                    // Merge extracted data with existing misc_data map
-                    def merged = createDataMap(params.miscdata_paths, params.ref_data_path) + extracted_map
-                    // Derive Ensembl FASTA paths from the extracted PCGR bundle
-                    if (extracted_map.containsKey('pcgr_dir')) {
-                        def fa_base = 'data/grch38/misc/fasta/assembly/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
-                        merged.fasta_ensembl     = extracted_map['pcgr_dir'].resolve("${fa_base}.gz")
-                        merged.fasta_ensembl_fai = extracted_map['pcgr_dir'].resolve("${fa_base}.gz.fai")
-                        merged.fasta_ensembl_gzi = extracted_map['pcgr_dir'].resolve("${fa_base}.gz.gzi")
-                    }
-                    return merged
+                    return addEnsemblFasta(createDataMap(params.miscdata_paths, params.ref_data_path) + extracted_map)
                 }
         } else {
-            def pcgr_dir_path = ch_misc_data['pcgr_dir']
-            def fa_base = 'data/grch38/misc/fasta/assembly/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
-            ch_misc_data_channel = Channel.value(ch_misc_data + [
-                fasta_ensembl:     file("${pcgr_dir_path}/${fa_base}.gz",     checkIfExists: true),
-                fasta_ensembl_fai: file("${pcgr_dir_path}/${fa_base}.gz.fai", checkIfExists: true),
-                fasta_ensembl_gzi: file("${pcgr_dir_path}/${fa_base}.gz.gzi", checkIfExists: true),
-            ])
+            ch_misc_data_channel = Channel.value(addEnsemblFasta(ch_misc_data))
         }
 
         //
@@ -116,4 +100,13 @@ def getTarballInputs(entries, ref_data_base_path) {
 def joinPath(a, b) {
     def a_noslash = file(a).toUriString().replaceAll('/$', '')
     return file("${a_noslash}/${b}", checkIfExists: true)
+}
+
+def addEnsemblFasta(map) {
+    def fa_base = 'data/grch38/misc/fasta/assembly/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
+    return map + [
+        fasta_ensembl:     map['pcgr_dir'].resolve("${fa_base}.gz"),
+        fasta_ensembl_fai: map['pcgr_dir'].resolve("${fa_base}.gz.fai"),
+        fasta_ensembl_gzi: map['pcgr_dir'].resolve("${fa_base}.gz.gzi"),
+    ]
 }
