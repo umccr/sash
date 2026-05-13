@@ -109,7 +109,6 @@ workflow SASH {
     genome               = PREPARE_REFERENCE.out.genome
     umccr_data           = PREPARE_REFERENCE.out.umccr_data
     hmf_data             = PREPARE_REFERENCE.out.hmf_data
-    misc_data            = PREPARE_REFERENCE.out.misc_data
     ch_misc_data         = PREPARE_REFERENCE.out.misc_data_ch
 
 

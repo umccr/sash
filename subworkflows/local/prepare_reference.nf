@@ -32,6 +32,7 @@ workflow PREPARE_REFERENCE {
             ch_misc_data_channel = DECOMP_MISC_DATA.out.extracted_dir
                 .collect()
                 .map { dir_list ->
+                    assert dir_list.size() == misc_tarball_inputs.size()
                     def extracted_map = dir_list.collectEntries { dir ->
                         [(dir.getFileName().toString()): dir]
                     }
@@ -55,7 +56,6 @@ workflow PREPARE_REFERENCE {
         genome                 = genome                         // map: Genome paths and info
         hmf_data               = ch_hmf_data                    // map: HMF data paths
         umccr_data             = ch_umccr_data                  // map: UMCCR data paths
-        misc_data              = ch_misc_data                   // map: Misc data paths (static)
         misc_data_ch           = ch_misc_data_channel           // channel: Misc data with runtime-extracted dirs and fasta_ensembl
 
         versions               = ch_versions                    // channel: [versions.yml]
