@@ -24,6 +24,10 @@ workflow PREPARE_INPUT {
                             break;
                         case 'oncoanalyser_dir':
                             break;
+                        case 'dragen_somatic_vcf':
+                            break;
+                        case 'dragen_germline_vcf':
+                            break;
                         default:
                             log.error "got bad filetype: ${it.filetype}"
                             Nextflow.exit(1)
@@ -150,9 +154,10 @@ workflow PREPARE_INPUT {
 
         // DRAGEN germline variants
         // channel: [ meta, dragen_germline_vcf ]
+        // Explicit path via dragen_germline_vcf samplesheet row takes precedence over constructed path.
         ch_input_vcf_germline = ch_metas.map { meta ->
-            def base = file(meta.dragen_germline_dir).toUriString()
-            def dragen_germline_vcf = "${base}/${meta.normal_id}.hard-filtered.vcf.gz"
+            def dragen_germline_vcf = meta.dragen_germline_vcf
+                ?: "${file(meta.dragen_germline_dir).toUriString()}/${meta.normal_id}.hard-filtered.vcf.gz"
             if (!file(dragen_germline_vcf).exists()) {
                 log.error "DRAGEN germline VCF not found for ${meta.id}: ${dragen_germline_vcf}"
                 Nextflow.exit(1)
@@ -162,9 +167,10 @@ workflow PREPARE_INPUT {
 
         // DRAGEN somatic variants
         // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
+        // Explicit path via dragen_somatic_vcf samplesheet row takes precedence over constructed path.
         ch_input_vcf_somatic = ch_metas.map { meta ->
-            def base = file(meta.dragen_somatic_dir).toUriString()
-            def dragen_somatic_vcf = "${base}/${meta.tumor_id}.hard-filtered.vcf.gz"
+            def dragen_somatic_vcf = meta.dragen_somatic_vcf
+                ?: "${file(meta.dragen_somatic_dir).toUriString()}/${meta.tumor_id}.hard-filtered.vcf.gz"
             def dragen_somatic_tbi = "${dragen_somatic_vcf}.tbi"
             if (!file(dragen_somatic_vcf).exists()) {
                 log.error "DRAGEN somatic VCF not found for ${meta.id}: ${dragen_somatic_vcf}"
