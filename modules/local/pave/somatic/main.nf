@@ -29,7 +29,12 @@ process PAVE_SOMATIC {
     def xmx_mod = task.ext.xmx_mod ?: 0.75
 
     """
-    bcftools view --exclude 'INFO/MNVTAG!="."' --write-index=tbi --output ${meta.sample_id}.mnv_filtred.vcf.gz ${vcf}
+    if bcftools view -h ${vcf} | grep -q '##INFO=<ID=MNVTAG,'; then
+        bcftools view --exclude 'INFO/MNVTAG!="."' --write-index=tbi --output ${meta.sample_id}.mnv_filtred.vcf.gz ${vcf}
+    else
+        cp ${vcf} ${meta.sample_id}.mnv_filtred.vcf.gz
+        bcftools index --tbi ${meta.sample_id}.mnv_filtred.vcf.gz
+    fi
 
     pave \\
         -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
