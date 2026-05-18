@@ -25,8 +25,10 @@ workflow PREPARE_INPUT {
                         case 'oncoanalyser_dir':
                             break;
                         case 'dragen_somatic_vcf':
+                            // TODO: document in docs/usage.md
                             break;
                         case 'dragen_germline_vcf':
+                            // TODO: document in docs/usage.md
                             break;
                         default:
                             log.error "got bad filetype: ${it.filetype}"
