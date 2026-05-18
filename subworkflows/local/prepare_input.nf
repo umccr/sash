@@ -159,7 +159,8 @@ workflow PREPARE_INPUT {
         // Explicit path via dragen_germline_vcf samplesheet row takes precedence over constructed path.
         ch_input_vcf_germline = ch_metas.map { meta ->
             def dragen_germline_vcf = meta.dragen_germline_vcf
-                ?: "${file(meta.dragen_germline_dir).toUriString()}/${meta.normal_id}.hard-filtered.vcf.gz"
+                ? file(meta.dragen_germline_vcf).toUriString()
+                : "${file(meta.dragen_germline_dir).toUriString()}/${meta.normal_id}.hard-filtered.vcf.gz"
             if (!file(dragen_germline_vcf).exists()) {
                 log.error "DRAGEN germline VCF not found for ${meta.id}: ${dragen_germline_vcf}"
                 Nextflow.exit(1)
@@ -172,7 +173,8 @@ workflow PREPARE_INPUT {
         // Explicit path via dragen_somatic_vcf samplesheet row takes precedence over constructed path.
         ch_input_vcf_somatic = ch_metas.map { meta ->
             def dragen_somatic_vcf = meta.dragen_somatic_vcf
-                ?: "${file(meta.dragen_somatic_dir).toUriString()}/${meta.tumor_id}.hard-filtered.vcf.gz"
+                ? file(meta.dragen_somatic_vcf).toUriString()
+                : "${file(meta.dragen_somatic_dir).toUriString()}/${meta.tumor_id}.hard-filtered.vcf.gz"
             def dragen_somatic_tbi = "${dragen_somatic_vcf}.tbi"
             if (!file(dragen_somatic_vcf).exists()) {
                 log.error "DRAGEN somatic VCF not found for ${meta.id}: ${dragen_somatic_vcf}"
