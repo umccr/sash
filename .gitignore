@@ -1,3 +1,5 @@
 .DS_Store
 .nextflow.log*
 .nextflow/
+.nf-test/
+.nf-test.log

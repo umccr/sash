@@ -1,0 +1,95 @@
+nextflow_workflow {
+
+    name "Test Workflow PREPARE_INPUT"
+    script "subworkflows/local/prepare_input.nf"
+    workflow "PREPARE_INPUT"
+    config "subworkflows/local/tests/prepare_input/nextflow.config"
+    tag "subworkflows/local/prepare_input"
+
+    // Default behavior: DRAGEN VCF path is constructed from tumor_id / normal_id.
+    test("constructs DRAGEN VCF paths from tumor_id when no override is provided") {
+
+        when {
+            workflow {
+                """
+                def base = file("${projectDir}/subworkflows/local/tests/prepare_input/fixtures/default")
+                def ss   = file("${launchDir}/samplesheet_default.csv")
+                ss.text  = [
+                    "id,subject_name,sample_name,filetype,filepath",
+                    "TEST_01,SUBJECT_01,TUMOR,dragen_somatic_dir,\${base}/dragen_somatic_dir",
+                    "TEST_01,SUBJECT_01,NORMAL,dragen_germline_dir,\${base}/dragen_germline_dir",
+                    "TEST_01,SUBJECT_01,TUMOR,oncoanalyser_dir,\${base}/oncoanalyser_dir",
+                ].join("\\n")
+                input[0] = ss
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.vcf_somatic) {
+                assert size() == 1
+                with(get(0)) {
+                    assert get(1).toString().endsWith("TUMOR.hard-filtered.vcf.gz")
+                    assert get(2).toString().endsWith("TUMOR.hard-filtered.vcf.gz.tbi")
+                }
+            }
+
+            with(workflow.out.vcf_germline) {
+                assert size() == 1
+                with(get(0)) {
+                    assert get(1).toString().endsWith("NORMAL.hard-filtered.vcf.gz")
+                }
+            }
+        }
+    }
+
+    // Override behavior: samplesheet includes explicit dragen_somatic_vcf /
+    // dragen_germline_vcf rows, which take precedence over the constructed path.
+    // Mirrors the APGI case where DRAGEN files use a shorter prefix (TUMOR) but
+    // oncoanalyser outputs use the library-style ID (TUMOR_T).
+    test("uses explicit dragen_somatic_vcf and dragen_germline_vcf paths from samplesheet") {
+
+        when {
+            workflow {
+                """
+                def base = file("${projectDir}/subworkflows/local/tests/prepare_input/fixtures/override")
+                def ss   = file("${launchDir}/samplesheet_override.csv")
+                ss.text  = [
+                    "id,subject_name,sample_name,filetype,filepath",
+                    // tumor_id = TUMOR_T so oncoanalyser files resolve naturally,
+                    // but DRAGEN outputs still use old TUMOR prefix
+                    "TEST_01,SUBJECT_01,TUMOR_T,dragen_somatic_dir,\${base}/dragen_somatic_dir",
+                    "TEST_01,SUBJECT_01,NORMAL_N,dragen_germline_dir,\${base}/dragen_germline_dir",
+                    "TEST_01,SUBJECT_01,TUMOR_T,oncoanalyser_dir,\${base}/oncoanalyser_dir",
+                    // explicit overrides pointing at the old-named DRAGEN files
+                    "TEST_01,SUBJECT_01,TUMOR_T,dragen_somatic_vcf,\${base}/dragen_somatic_dir/TUMOR.hard-filtered.vcf.gz",
+                    "TEST_01,SUBJECT_01,NORMAL_N,dragen_germline_vcf,\${base}/dragen_germline_dir/NORMAL.hard-filtered.vcf.gz",
+                ].join("\\n")
+                input[0] = ss
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.vcf_somatic) {
+                assert size() == 1
+                with(get(0)) {
+                    // Must use the explicitly specified file, not the constructed TUMOR_T path
+                    assert get(1).toString().endsWith("TUMOR.hard-filtered.vcf.gz")
+                    assert get(2).toString().endsWith("TUMOR.hard-filtered.vcf.gz.tbi")
+                }
+            }
+
+            with(workflow.out.vcf_germline) {
+                assert size() == 1
+                with(get(0)) {
+                    assert get(1).toString().endsWith("NORMAL.hard-filtered.vcf.gz")
+                }
+            }
+        }
+    }
+}

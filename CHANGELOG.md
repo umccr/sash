@@ -19,6 +19,7 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### Added
 
+- Allow explicit DRAGEN VCF paths in the samplesheet via optional `dragen_somatic_vcf` and `dragen_germline_vcf` filetypes, falling back to the path constructed from `tumor_id` / `normal_id` when not provided. Enables samples where DRAGEN and oncoanalyser outputs use different sample ID prefixes (e.g. APGI cohort).
 - VCF2MAF process for somatic PASS VCF conversion to MAF format
 - SIGRAP_HRDETECT and SIGRAP_MUTPAT processes for HRDetect and mutational pattern analysis
 - CUSTOM_EXTRACTTARBALL helper: PCGR and VEP reference data now shipped as tarballs and extracted at runtime
