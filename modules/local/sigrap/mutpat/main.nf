@@ -16,6 +16,8 @@ process SIGRAP_MUTPAT {
     task.ext.when == null || task.ext.when
 
     script:
+    def args = task.ext.args ?: ''
+
     """
     sigrap.R mutpat \\
         --sample ${meta.tumor_id} \\

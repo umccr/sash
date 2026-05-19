@@ -95,4 +95,4 @@ The `sash` pipeline comes with documentation in the `docs/` directory:
 
 You can cite a specific version of `sash` from the Zenodo record [10.5281/zenodo.15833492](https://doi.org/10.5281/zenodo.15833492) such as:
 
-> Watts, S. C., Savelyev, V., Diakumis, P., Clayssen, Q., Mitchell, H., & Hofmann, O. (2025). umccr/sash: 0.7.0 (0.7.0). Zenodo. <https://doi.org/10.5281/zenodo.15833493>
+> Watts, S. C., Savelyev, V., Diakumis, P., Clayssen, Q., Mitchell, H., & Hofmann, O. (2025). umccr/sash: 0.6.0 (0.6.0). Zenodo. <https://doi.org/10.5281/zenodo.15833493>

@@ -15,6 +15,8 @@ process SIGRAP_HRDETECT {
     task.ext.when == null || task.ext.when
 
     script:
+    def args = task.ext.args ?: ''
+
     """
     sigrap.R hrdetect \\
         --sample ${meta.tumor_id} \\
