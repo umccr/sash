@@ -43,17 +43,26 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 | PCGR data | 20220203 | 20250314 |
 | VEP       | —        | 113      |
 
+## [0.6.4] - 2026-03-31
+
+### Fixed
+
+- Revert hypermutated flag condition in cancer report (reverts >500k sage variant threshold, [gpgr#101](https://github.com/umccr/gpgr/pull/101), [bolt#28](https://github.com/umccr/bolt/pull/28)) ([#44](https://github.com/umccr/sash/issues/44))
+- Include MANE Plus Clinical transcript ENST00000579755 for CDKN2A alongside MANE Select ENST00000304494, fixing missing gene entries in the Gene Somatic CNV Calls Table when only the NM_058195.4-specific exon has a copy number loss (`umccr_reference_data = '2--1'`) ([#45](https://github.com/umccr/sash/issues/45))
+
+### Documentation
+
+- Fix broken ToC anchor, absolute local path, duplicate word, and misplaced LINX section in `docs/details.md`
+- Fix `scwatts/sash` → `umccr/sash` and stale CHORD reference in `README.md`
+- Add `sigrap/` and `vcf2maf/` to output directory tree; fix inaccurate germline preparation description in `docs/output.md`
+
+### Dependencies
+
+| Tool | Old    | New    |
+| ---- | ------ | ------ |
+| bolt | 0.2.17 | 0.2.18 |
+
 ## [0.6.3] - 2025-10-07
-
-### Added
-
-- Validate input files in `prepare_run`: warn when optional files are missing; fail when mandatory files are missing. (see PR #29)
-
-## [0.6.2] - 2025-10-01
-
-### Changed
-
-- Made Dragen HRD file optional in the cancer report
 
 ### Dependencies
 
@@ -116,7 +125,7 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
   - PR (Paired-Read) → DF (Discordant Fragments)
 - Linx v1.25 → v2.0 (affects all Linx reports/files)
 - Purple v4.0.1 → v4.1.0
-  - MSI calculation relies on SAGE-specific tags (#7)
+  - MSI calculation relay on SAGE-specific tags #7
   - (reverted) Circos have link sizes dependent on the size of SV #6
 - Filter PoN SV in cancer report tables #8
 
