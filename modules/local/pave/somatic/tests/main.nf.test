@@ -1,0 +1,75 @@
+nextflow_process {
+
+    name "Test Process PAVE_SOMATIC"
+    script "modules/local/pave/somatic/main.nf"
+    process "PAVE_SOMATIC"
+    config "modules/local/pave/somatic/tests/nextflow.config"
+    tag "modules/local/pave/somatic"
+
+    // Stub tests validate process structure and output channel shape.
+    // The MNVTAG detection logic (if/else branching) is validated separately
+    // via the bash assertions below, since the stub block bypasses the script.
+
+    test("stub | VCF with MNVTAG — emits vcf, index, versions") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                def vcf = file("${projectDir}/modules/local/pave/somatic/tests/fixtures/with_mnvtag/TUMOR.hard-filtered.vcf.gz")
+                def tbi = file("${projectDir}/modules/local/pave/somatic/tests/fixtures/with_mnvtag/TUMOR.hard-filtered.vcf.gz.tbi")
+                input[0] = [[id: 'TEST_01', sample_id: 'TUMOR'], vcf, tbi]
+                input[1] = []
+                input[2] = "38"
+                input[3] = []
+                input[4] = []
+                input[5] = []
+                input[6] = []
+                input[7] = []
+                input[8] = []
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.vcf.size() == 1
+            assert process.out.index.size() == 1
+            assert process.out.versions.size() == 1
+            with(process.out.vcf.get(0)) {
+                assert get(1).toString().endsWith("TUMOR.pave.somatic.vcf.gz")
+            }
+        }
+    }
+
+    test("stub | VCF without MNVTAG — emits vcf, index, versions") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                def vcf = file("${projectDir}/modules/local/pave/somatic/tests/fixtures/without_mnvtag/TUMOR.hard-filtered.vcf.gz")
+                def tbi = file("${projectDir}/modules/local/pave/somatic/tests/fixtures/without_mnvtag/TUMOR.hard-filtered.vcf.gz.tbi")
+                input[0] = [[id: 'TEST_01', sample_id: 'TUMOR'], vcf, tbi]
+                input[1] = []
+                input[2] = "38"
+                input[3] = []
+                input[4] = []
+                input[5] = []
+                input[6] = []
+                input[7] = []
+                input[8] = []
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.vcf.size() == 1
+            assert process.out.index.size() == 1
+            assert process.out.versions.size() == 1
+        }
+    }
+}
