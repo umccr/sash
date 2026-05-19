@@ -16,8 +16,8 @@ process PAVE_SOMATIC {
     path gnomad_resource
 
     output:
-    tuple val(meta), path("*.vcf.gz")    , emit: vcf
-    tuple val(meta), path("*.vcf.gz.tbi"), emit: index
+    tuple val(meta), path("*.pave.somatic.vcf.gz")    , emit: vcf
+    tuple val(meta), path("*.pave.somatic.vcf.gz.tbi"), emit: index
     path 'versions.yml'                  , emit: versions
 
     when:
