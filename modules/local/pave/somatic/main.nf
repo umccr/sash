@@ -29,13 +29,18 @@ process PAVE_SOMATIC {
     def xmx_mod = task.ext.xmx_mod ?: 0.75
 
     """
-    bcftools view --exclude 'INFO/MNVTAG!="."' --write-index=tbi --output ${meta.sample_id}.mnv_filtred.vcf.gz ${vcf}
+    if bcftools view -h ${vcf} | grep -q '##INFO=<ID=MNVTAG,'; then
+        bcftools view --exclude 'INFO/MNVTAG!="."' --write-index=tbi --output ${meta.sample_id}.mnv_filtered.vcf.gz ${vcf}
+        mnv_input="${meta.sample_id}.mnv_filtered.vcf.gz"
+    else
+        mnv_input="${vcf}"
+    fi
 
     pave \\
         -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
         ${args} \\
         -sample ${meta.sample_id} \\
-        -input_vcf ${meta.sample_id}.mnv_filtred.vcf.gz \\
+        -input_vcf \${mnv_input} \\
         -output_vcf ${meta.sample_id}.pave.somatic.vcf.gz \\
         -ref_genome ${genome_fasta} \\
         -ref_genome_version ${genome_ver} \\
@@ -48,7 +53,6 @@ process PAVE_SOMATIC {
         -threads ${task.cpus} \\
         -output_dir ./
 
-    rm ${meta.sample_id}.mnv_filtred.vcf.gz{,.tbi}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         pave: \$(pave -version | sed -n '/^Pave version / { s/^.* //p }')
