@@ -47,6 +47,29 @@ subject_a.example,subject_a,sample_somatic,dragen_somatic_dir,/path/to/dragen_so
 subject_a.example,subject_a,sample_somatic,oncoanalyser_dir,/path/to/oncoanalyser/
 ```
 
+The `dragen_somatic_vcf` and `dragen_germline_vcf` filetypes are optional overrides that take precedence over
+the paths constructed from `dragen_somatic_dir`/`dragen_germline_dir`. Use these when DRAGEN output filenames
+do not match the `tumor_id`/`normal_id` used by oncoanalyser (e.g. cohorts with differing sample ID prefixes):
+
+```text
+id,subject_name,sample_name,filetype,filepath
+subject_a.example,subject_a,sample_germline,dragen_germline_dir,/path/to/dragen_germline/
+subject_a.example,subject_a,sample_somatic,dragen_somatic_dir,/path/to/dragen_somatic/
+subject_a.example,subject_a,sample_somatic,oncoanalyser_dir,/path/to/oncoanalyser/
+subject_a.example,subject_a,sample_somatic,dragen_somatic_vcf,/path/to/dragen_somatic/SAMPLE.hard-filtered.vcf.gz
+subject_a.example,subject_a,sample_germline,dragen_germline_vcf,/path/to/dragen_germline/SAMPLE.hard-filtered.vcf.gz
+```
+
+The `pcgr_variant_chunk_size` parameter can be set to run PCGR in chunked mode for hypermutated samples.
+When set, the somatic annotation process splits the VCF into chunks of the specified size before running PCGR,
+preventing memory and runtime issues on highly mutated tumours:
+
+```bash
+nextflow run umccr/sash \
+  --pcgr_variant_chunk_size 50000 \
+  ...
+```
+
 Execute analysis
 
 ```bash
@@ -72,4 +95,4 @@ The `sash` pipeline comes with documentation in the `docs/` directory:
 
 You can cite a specific version of `sash` from the Zenodo record [10.5281/zenodo.15833492](https://doi.org/10.5281/zenodo.15833492) such as:
 
-> Watts, S. C., Savelyev, V., Diakumis, P., Clayssen, Q., Mitchell, H., & Hofmann, O. (2025). umccr/sash: 0.6.0 (0.6.0). Zenodo. <https://doi.org/10.5281/zenodo.15833493>
+> Watts, S. C., Savelyev, V., Diakumis, P., Clayssen, Q., Mitchell, H., & Hofmann, O. (2025). umccr/sash: 0.7.0 (0.7.0). Zenodo. <https://doi.org/10.5281/zenodo.15833493>
