@@ -38,6 +38,7 @@ workflow PREPARE_REFERENCE {
                     }
                     return addEnsemblFasta(createDataMap(params.miscdata_paths, params.ref_data_path) + extracted_map)
                 }
+                .first()
         } else {
             ch_misc_data_channel = Channel.value(addEnsemblFasta(ch_misc_data))
         }

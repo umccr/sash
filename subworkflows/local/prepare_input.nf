@@ -134,9 +134,9 @@ workflow PREPARE_INPUT {
         // channel: [ meta, chord_prediction_tsv ]
         ch_chord = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def chord_prediction_tsv = "${base}/chord/${meta.tumor_id}.chord.prediction.tsv"  
+            def chord_prediction_tsv = "${base}/chord/${meta.tumor_id}.chord.prediction.tsv"
             if (!file(chord_prediction_tsv).exists()) {
-                log.error "CHORD prediction file not found for ${meta.id}: ${chord_prediction_tsv}"  
+                log.error "CHORD prediction file not found for ${meta.id}: ${chord_prediction_tsv}"
                 Nextflow.exit(1)
             }
             return [meta, chord_prediction_tsv]

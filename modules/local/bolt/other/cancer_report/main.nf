@@ -1,6 +1,7 @@
 process BOLT_OTHER_CANCER_REPORT {
     tag "${meta.id}"
-    label 'process_medium_memory', 'process_long'
+    label 'process_medium_memory'
+    label 'process_long'
 
     container 'ghcr.io/umccr/bolt:0.3.1-gpgr'
 

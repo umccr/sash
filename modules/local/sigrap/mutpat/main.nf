@@ -1,6 +1,7 @@
 process SIGRAP_MUTPAT {
     tag "${meta.id}"
-    label 'process_medium_memory', 'process_long'
+    label 'process_medium_memory'
+    label 'process_long'
 
     container 'docker.io/qclayssen/sigrap:0.2.0-dev-7'
 
@@ -15,8 +16,6 @@ process SIGRAP_MUTPAT {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-
     """
     sigrap.R mutpat \\
         --sample ${meta.tumor_id} \\

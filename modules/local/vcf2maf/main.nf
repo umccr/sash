@@ -37,7 +37,7 @@ process VCF2MAF {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        vcf2maf: \$(vcf2maf.pl --help | grep -o 'vcf2maf [0-9.]*' | sed 's/vcf2maf //' || echo "1.6.22")
+        vcf2maf: "1.6.22"
     END_VERSIONS
     """
 
