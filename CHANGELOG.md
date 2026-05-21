@@ -40,6 +40,7 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 | Tool      | Old      | New      |
 | --------- | -------- | -------- |
 | bolt      | 0.2.17   | 0.3.0    |
+| PCGR      | —        | v2.2.5   |
 | PCGR data | 20220203 | 20250314 |
 | VEP       | —        | 113      |
 
