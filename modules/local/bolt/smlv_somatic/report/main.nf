@@ -29,6 +29,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
 
     script:
     def args = task.ext.args ?: ''
+    def dragen_arg = smlv_dragen_vcf.name != 'NO_FILE' ? "--vcf_dragen_fp ${smlv_dragen_vcf}" : ''
 
     """
     bolt smlv_somatic report \\
@@ -37,7 +38,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
         \\
         --vcf_fp ${smlv_vcf} \\
         --vcf_filters_fp ${smlv_filters_vcf} \\
-        --vcf_dragen_fp ${smlv_dragen_vcf} \\
+        ${dragen_arg} \\
         \\
         --pcgr_conda pcgr \\
         --pcgrr_conda pcgrr \\

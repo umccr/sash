@@ -37,6 +37,10 @@ workflow PREPARE_INPUT {
 
                     meta[it.filetype] = it.filepath
 
+                    // Explicit tumor_id/normal_id columns for OA-only samplesheets (no dragen rows)
+                    if (it.tumor_id && !meta.containsKey('tumor_id')) meta.tumor_id = it.tumor_id
+                    if (it.normal_id && !meta.containsKey('normal_id')) meta.normal_id = it.normal_id
+
                     // Sample name
                     if (! meta.containsKey('subject_id')) {
                         meta.subject_id = it.subject_name
@@ -103,12 +107,16 @@ workflow PREPARE_INPUT {
 
         // SAGE: somatic small variant calls
         // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
+        // NOTE(QC): OA v2.3.0+ uses sage/ instead of sage_calling/ — try both paths
         ch_sage_somatic = ch_metas.map { meta ->
             def base = file(meta.oncoanalyser_dir).toUriString()
             def sage_somatic_vcf = "${base}/sage_calling/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
+            if (!file(sage_somatic_vcf).exists()) {
+                sage_somatic_vcf = "${base}/sage/somatic/${meta.tumor_id}.sage.somatic.vcf.gz"
+            }
             def sage_somatic_tbi = "${sage_somatic_vcf}.tbi"
             if (!file(sage_somatic_vcf).exists()) {
-                log.error "SAGE somatic VCF not found for ${meta.id}: ${sage_somatic_vcf}"
+                log.error "SAGE somatic VCF not found for ${meta.id} (tried sage_calling/ and sage/)"
                 Nextflow.exit(1)
             }
             if (!file(sage_somatic_tbi).exists()) {
@@ -145,6 +153,9 @@ workflow PREPARE_INPUT {
         // HRD: homologous recombination deficiency scores
         // channel: [ meta, hrdscore_csv ]
         ch_input_hrd = ch_metas.map { meta ->
+            if (!meta.dragen_somatic_dir) {
+                return [meta, []]
+            }
             def base = file(meta.dragen_somatic_dir).toUriString()
             def hrdscore_csv = "${base}/${meta.tumor_id}.hrdscore.csv"
             if (!file(hrdscore_csv).exists()) {
@@ -154,24 +165,40 @@ workflow PREPARE_INPUT {
             return [meta, hrdscore_csv]
         }
 
-        // DRAGEN germline variants
-        // channel: [ meta, dragen_germline_vcf ]
-        // Explicit path via dragen_germline_vcf samplesheet row takes precedence over constructed path.
+        // Germline variants
+        // channel: [ meta, germline_vcf ]
+        // Priority: explicit dragen_germline_vcf > dragen_germline_dir > OA PAVE germline > skip
         ch_input_vcf_germline = ch_metas.map { meta ->
-            def dragen_germline_vcf = meta.dragen_germline_vcf
-                ? file(meta.dragen_germline_vcf).toUriString()
-                : "${file(meta.dragen_germline_dir).toUriString()}/${meta.normal_id}.hard-filtered.vcf.gz"
-            if (!file(dragen_germline_vcf).exists()) {
-                log.error "DRAGEN germline VCF not found for ${meta.id}: ${dragen_germline_vcf}"
-                Nextflow.exit(1)
+            if (meta.dragen_germline_vcf || meta.dragen_germline_dir) {
+                def dragen_germline_vcf = meta.dragen_germline_vcf
+                    ? file(meta.dragen_germline_vcf).toUriString()
+                    : "${file(meta.dragen_germline_dir).toUriString()}/${meta.normal_id}.hard-filtered.vcf.gz"
+                if (!file(dragen_germline_vcf).exists()) {
+                    log.error "DRAGEN germline VCF not found for ${meta.id}: ${dragen_germline_vcf}"
+                    Nextflow.exit(1)
+                }
+                return [meta, dragen_germline_vcf]
             }
-            return [meta, dragen_germline_vcf]
+            // OA-only: fall back to PAVE germline from oncoanalyser output
+            def base = file(meta.oncoanalyser_dir).toUriString()
+            def pave_germline_vcf = "${base}/pave/${meta.normal_id}.pave.germline.vcf.gz"
+            if (file(pave_germline_vcf).exists()) {
+                log.warn "No DRAGEN germline for ${meta.id} — using OA PAVE germline (SAGE-based, differs from DRAGEN)"
+                return [meta, pave_germline_vcf]
+            }
+            log.warn "No germline VCF found for ${meta.id} — germline report will be skipped"
+            return [meta, []]
         }
 
         // DRAGEN somatic variants
         // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
         // Explicit path via dragen_somatic_vcf samplesheet row takes precedence over constructed path.
+        // OA-only mode: returns [meta, [], []] when no dragen somatic — rescue step is skipped.
         ch_input_vcf_somatic = ch_metas.map { meta ->
+            if (!meta.dragen_somatic_vcf && !meta.dragen_somatic_dir) {
+                log.warn "No DRAGEN somatic VCF for ${meta.id} — OA-only mode, rescue step skipped"
+                return [meta, [], []]
+            }
             def dragen_somatic_vcf = meta.dragen_somatic_vcf
                 ? file(meta.dragen_somatic_vcf).toUriString()
                 : "${file(meta.dragen_somatic_dir).toUriString()}/${meta.tumor_id}.hard-filtered.vcf.gz"

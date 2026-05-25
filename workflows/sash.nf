@@ -118,10 +118,16 @@ workflow SASH {
     // Somatic small variants
     //
 
-    // Prepare rescue inputs with meta transformation
+    // Branch somatic channel: OA-only (no dragen VCF) vs standard (dragen present)
+    ch_input_vcf_somatic.branch {
+        has_dragen: it[1]
+        oa_only:    !it[1]
+    }.set { ch_somatic_branch }
+
+    // Prepare rescue inputs with meta transformation (dragen samples only)
     // channel: [ meta_bolt, dragen_somatic_vcf, dragen_somatic_tbi, sage_somatic_vcf, sage_somatic_tbi ]
     ch_smlv_somatic_rescue_inputs = WorkflowSash.groupByMeta(
-        ch_input_vcf_somatic,
+        ch_somatic_branch.has_dragen,
         ch_sage_somatic,
     )
         .map {
@@ -143,8 +149,20 @@ workflow SASH {
 
     ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_RESCUE.out.versions)
 
+    // OA-only: pass sage somatic directly into annotate (rescue not applicable without dragen)
+    ch_sage_somatic_passthrough = WorkflowSash.groupByMeta(
+        ch_somatic_branch.oa_only.map { meta, vcf, tbi -> [meta] },
+        ch_sage_somatic,
+    )
+        .map { meta, sage_vcf, sage_tbi ->
+            def meta_bolt = [key: meta.id, id: meta.id, tumor_id: meta.tumor_id, normal_id: meta.normal_id, sample_id: meta.tumor_id]
+            return [meta_bolt, sage_vcf]
+        }
+
+    ch_rescued_vcf = BOLT_SMLV_SOMATIC_RESCUE.out.vcf.mix(ch_sage_somatic_passthrough)
+
     BOLT_SMLV_SOMATIC_ANNOTATE(
-        BOLT_SMLV_SOMATIC_RESCUE.out.vcf,
+        ch_rescued_vcf,
         umccr_data.somatic_panel_regions_gene,
         umccr_data.annotations_dir,
         ch_misc_data.map { it.pon_dir },
@@ -195,17 +213,16 @@ workflow SASH {
     // Germline small variants
     //
 
-    // channel: [ meta_bolt, dragen_germline_vcf ]
+    // channel: [ meta_bolt, germline_vcf ] — skipped when no germline VCF available
     ch_smlv_germline_prepare_inputs = ch_input_vcf_germline
-        .map { meta, dragen_vcf ->
-
+        .filter { meta, vcf -> vcf }
+        .map { meta, vcf ->
             def meta_bolt = [
                 key: meta.id,
                 id: meta.id,
                 normal_id: meta.normal_id,
             ]
-
-            return [meta_bolt, dragen_vcf]
+            return [meta_bolt, vcf]
         }
 
     BOLT_SMLV_GERMLINE_PREPARE(
@@ -284,7 +301,8 @@ workflow SASH {
     // Small variant reporting (PCGR, CPSR, stats)
     //
 
-    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_filters_vcf, dragen_somatic_vcf, dragen_somatic_tbi, purple_dir ]
+    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_filters_vcf, dragen_somatic_vcf, purple_purity_tsv ]
+    // vcf_dragen is [] in OA-only mode — bolt 0.3.1-dev-oa accepts --vcf_dragen_fp as optional
     ch_smlv_somatic_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_smlv_somatic_filters_out,
@@ -301,7 +319,7 @@ workflow SASH {
                 normal_id: meta.normal_id,
             ]
 
-            return [meta_bolt, vcf, vcf_filters, vcf_dragen, purity_tsv]
+            return [meta_bolt, vcf, vcf_filters, vcf_dragen ?: [], purity_tsv]
         }
 
     BOLT_SMLV_SOMATIC_REPORT(
@@ -316,18 +334,19 @@ workflow SASH {
 
     ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_REPORT.out.versions)
 
-    // channel: [ meta_bolt, smlv_germline_vcf, dragen_germline_vcf ]
+    // channel: [ meta_bolt, smlv_germline_vcf, germline_vcf ] — only for samples with germline data
     ch_smlv_germline_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_germline_out,
         ch_input_vcf_germline,
     )
-        .map { meta, vcf, vcf_dragen ->
+        .filter { meta, vcf, vcf_src -> vcf }
+        .map { meta, vcf, vcf_src ->
             def meta_bolt = [
                 key: meta.id,
                 id: meta.id,
                 normal_id: meta.normal_id,
             ]
-            return [meta_bolt, vcf, vcf_dragen]
+            return [meta_bolt, vcf, vcf_src]
         }
 
     BOLT_SMLV_GERMLINE_REPORT(
@@ -559,12 +578,14 @@ workflow SASH {
     // Generate MultiQC report
     //
 
-    // channel: [ meta, somatic_dragen_dir ]
+    // channel: [ meta, somatic_dragen_dir ] — empty channel in OA-only mode
     ch_input_dragen_somatic_dir = ch_inputs
+        .filter { meta -> meta.dragen_somatic_dir }
         .map { meta -> [meta, file(meta.dragen_somatic_dir)] }
 
-    // channel: [ meta, germline_dragen_dir ]
+    // channel: [ meta, germline_dragen_dir ] — empty channel in OA-only mode
     ch_input_dragen_germline_dir = ch_inputs
+        .filter { meta -> meta.dragen_germline_dir }
         .map { meta -> [meta, file(meta.dragen_germline_dir)] }
 
     // channel: [ meta_multiqc, [somatic_dragen_dir, germline_dragen_dir, somatic_bcftools_stats, germline_bcftools_stats, somatic_counts_type, germline_counts_type, purple_dir] ]
