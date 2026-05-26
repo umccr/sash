@@ -151,7 +151,7 @@ workflow SASH {
 
     // OA-only: pass sage somatic directly into annotate (rescue not applicable without dragen)
     ch_sage_somatic_passthrough = WorkflowSash.groupByMeta(
-        ch_somatic_branch.oa_only.map { meta, vcf, tbi -> [meta] },
+        ch_somatic_branch.oa_only,
         ch_sage_somatic,
     )
         .map { meta, sage_vcf, sage_tbi ->
