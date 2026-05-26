@@ -1,5 +1,2 @@
 id,subject_name,sample_name,filetype,filepath,tumor_id,normal_id
-subject_a.example,subject_a,sample_germline,dragen_germline_dir,/path/to/dragen_germline/,,
-subject_a.example,subject_a,sample_somatic,dragen_somatic_dir,/path/to/dragen_somatic/,,
-subject_a.example,subject_a,sample_somatic,oncoanalyser_dir,/path/to/oncoanalyser/,,
 sbx_001.example,sbx_001,,oncoanalyser_dir,s3://sbx-evaluation-980504796380-ap-southeast-2/illumina/L2600081__L2600080/,L2600081,L2600080
