@@ -42,7 +42,6 @@ include { BOLT_SMLV_GERMLINE_PREPARE } from '../modules/local/bolt/smlv_germline
 include { BOLT_SMLV_GERMLINE_REPORT  } from '../modules/local/bolt/smlv_germline/report/main'
 include { BOLT_SMLV_SOMATIC_ANNOTATE } from '../modules/local/bolt/smlv_somatic/annotate/main'
 include { BOLT_SMLV_SOMATIC_FILTER   } from '../modules/local/bolt/smlv_somatic/filter/main'
-include { BOLT_SMLV_SOMATIC_RESCUE   } from '../modules/local/bolt/smlv_somatic/rescue/main'
 include { BOLT_SMLV_SOMATIC_REPORT   } from '../modules/local/bolt/smlv_somatic/report/main'
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
@@ -92,10 +91,7 @@ workflow SASH {
     ch_call_inputs         = PREPARE_INPUT.out.call_inputs       // channel: [ meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir ]
     ch_chord               = PREPARE_INPUT.out.chord             // channel: [ meta, chord_prediction_tsv ]
 
-    // DRAGEN inputs
-    ch_input_hrd           = PREPARE_INPUT.out.hrd               // channel: [ meta, hrdscore_csv ]
-    ch_input_vcf_germline  = PREPARE_INPUT.out.vcf_germline      // channel: [ meta, dragen_germline_vcf ]
-    ch_input_vcf_somatic   = PREPARE_INPUT.out.vcf_somatic       // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
+    ch_input_vcf_germline  = PREPARE_INPUT.out.vcf_germline      // channel: [ meta, pave_germline_vcf ]
 
 
 
@@ -118,51 +114,15 @@ workflow SASH {
     // Somatic small variants
     //
 
-    // Branch somatic channel: OA-only (no dragen VCF) vs standard (dragen present)
-    ch_input_vcf_somatic.branch {
-        has_dragen: it[1]
-        oa_only:    !it[1]
-    }.set { ch_somatic_branch }
-
-    // Prepare rescue inputs with meta transformation (dragen samples only)
-    // channel: [ meta_bolt, dragen_somatic_vcf, dragen_somatic_tbi, sage_somatic_vcf, sage_somatic_tbi ]
-    ch_smlv_somatic_rescue_inputs = WorkflowSash.groupByMeta(
-        ch_somatic_branch.has_dragen,
-        ch_sage_somatic,
-    )
-        .map {
-            def meta = it[0]
-            def meta_bolt = [
-                key: meta.id,
-                id: meta.id,
-                tumor_id: meta.tumor_id,
-                normal_id: meta.normal_id,
-                sample_id: meta.tumor_id
-            ]
-            return [meta_bolt, *it[1..-1]]
-        }
-
-    BOLT_SMLV_SOMATIC_RESCUE(
-        ch_smlv_somatic_rescue_inputs,
-        umccr_data.hotspots,
-    )
-
-    ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_RESCUE.out.versions)
-
-    // OA-only: pass sage somatic directly into annotate (rescue not applicable without dragen)
-    ch_sage_somatic_passthrough = WorkflowSash.groupByMeta(
-        ch_somatic_branch.oa_only,
-        ch_sage_somatic,
-    )
+    // Pass sage somatic directly into annotate
+    ch_smlv_somatic_annotate_inputs = ch_sage_somatic
         .map { meta, sage_vcf, sage_tbi ->
             def meta_bolt = [key: meta.id, id: meta.id, tumor_id: meta.tumor_id, normal_id: meta.normal_id, sample_id: meta.tumor_id]
             return [meta_bolt, sage_vcf]
         }
 
-    ch_rescued_vcf = BOLT_SMLV_SOMATIC_RESCUE.out.vcf.mix(ch_sage_somatic_passthrough)
-
     BOLT_SMLV_SOMATIC_ANNOTATE(
-        ch_rescued_vcf,
+        ch_smlv_somatic_annotate_inputs,
         umccr_data.somatic_panel_regions_gene,
         umccr_data.annotations_dir,
         ch_misc_data.map { it.pon_dir },
@@ -271,10 +231,7 @@ workflow SASH {
         ch_pave_somatic_out,
 
 
-        // NOTE(SW): PURPLE germline enrichment requires tumor AD and GT information in the germline calls but DRAGEN does not generate such a file, see:
-        //   * https://github.com/hartwigmedical/hmftools/blob/a2f82e5/purple/src/main/java/com/hartwig/hmftools/purple/germline/GermlineVariantEnrichment.java#L30
-        //   * https://github.com/hartwigmedical/hmftools/blob/a2f82e5/purple/src/main/java/com/hartwig/hmftools/purple/germline/GermlinePurityEnrichment.java#L50
-        //   * https://github.com/hartwigmedical/hmftools/blob/a2f82e5/purple/src/main/java/com/hartwig/hmftools/purple/germline/GermlineGenotypeEnrichment.java#L63
+        // NOTE(SW): PURPLE germline enrichment requires tumor AD and GT information that PAVE germline calls lack
         //ch_smlv_germline_out,
         ch_smlv_germline_out.map { meta, vcf -> return [meta, []] },
 
@@ -301,25 +258,16 @@ workflow SASH {
     // Small variant reporting (PCGR, CPSR, stats)
     //
 
-    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_filters_vcf, dragen_somatic_vcf, purple_purity_tsv ]
-    // vcf_dragen is [] in OA-only mode — bolt 0.3.1-dev-oa accepts --vcf_dragen_fp as optional
+    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_filters_vcf, [], purple_purity_tsv ]
     ch_smlv_somatic_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_smlv_somatic_filters_out,
-        ch_input_vcf_somatic,
         PURPLE_CALLING.out.purple_dir,
     )
-        .map { meta, vcf, vcf_filters, vcf_dragen, tbi_dragen, purple_dir ->
+        .map { meta, vcf, vcf_filters, purple_dir ->
+            def meta_bolt = [key: meta.id, id: meta.id, tumor_id: meta.tumor_id, normal_id: meta.normal_id]
             def purity_tsv = file(purple_dir).resolve("${meta.tumor_id}.purple.purity.tsv")
-
-            def meta_bolt = [
-                key: meta.id,
-                id: meta.id,
-                tumor_id: meta.tumor_id,
-                normal_id: meta.normal_id,
-            ]
-
-            return [meta_bolt, vcf, vcf_filters, vcf_dragen ?: [], purity_tsv]
+            return [meta_bolt, vcf, vcf_filters, [], purity_tsv]
         }
 
     BOLT_SMLV_SOMATIC_REPORT(
@@ -533,7 +481,7 @@ workflow SASH {
     // Generate the cancer report
     //
 
-    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_bcftools_stats, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, dragen_hrd, mutpat, hrdetect, chord ]
+    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_bcftools_stats, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, [], mutpat, hrdetect, chord ]
     ch_cancer_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_smlv_somatic_report_stats_out,
@@ -546,7 +494,7 @@ workflow SASH {
         ch_purple_baf_plot_out,
         PURPLE_CALLING.out.purple_dir,
         ch_virusbreakend,
-        ch_input_hrd,
+        ch_inputs.map { meta -> [meta, []] },
         ch_sigrap_mutpat,
         ch_sigrap_hrdetect,
         ch_chord,
@@ -578,20 +526,8 @@ workflow SASH {
     // Generate MultiQC report
     //
 
-    // channel: [ meta, somatic_dragen_dir ] — empty channel in OA-only mode
-    ch_input_dragen_somatic_dir = ch_inputs
-        .filter { meta -> meta.dragen_somatic_dir }
-        .map { meta -> [meta, file(meta.dragen_somatic_dir)] }
-
-    // channel: [ meta, germline_dragen_dir ] — empty channel in OA-only mode
-    ch_input_dragen_germline_dir = ch_inputs
-        .filter { meta -> meta.dragen_germline_dir }
-        .map { meta -> [meta, file(meta.dragen_germline_dir)] }
-
-    // channel: [ meta_multiqc, [somatic_dragen_dir, germline_dragen_dir, somatic_bcftools_stats, germline_bcftools_stats, somatic_counts_type, germline_counts_type, purple_dir] ]
+    // channel: [ meta_multiqc, [somatic_bcftools_stats, germline_bcftools_stats, somatic_counts_type, germline_counts_type, purple_dir] ]
     ch_multiqc_report_inputs = WorkflowSash.groupByMeta(
-        ch_input_dragen_somatic_dir,
-        ch_input_dragen_germline_dir,
         ch_smlv_somatic_report_stats_out,
         ch_smlv_germline_report_stats_out,
         ch_smlv_somatic_report_counts_type_out,

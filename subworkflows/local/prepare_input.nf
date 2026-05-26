@@ -14,21 +14,8 @@ workflow PREPARE_INPUT {
             .map { key, entries ->
                 def meta = [id: key]
                 entries.each {
-                    // Filetype
                     switch (it.filetype) {
-                        case 'dragen_somatic_dir':
-                            meta.tumor_id = it.sample_name;
-                            break;
-                        case 'dragen_germline_dir':
-                            meta.normal_id = it.sample_name;
-                            break;
                         case 'oncoanalyser_dir':
-                            break;
-                        case 'dragen_somatic_vcf':
-                            // TODO: document in docs/usage.md
-                            break;
-                        case 'dragen_germline_vcf':
-                            // TODO: document in docs/usage.md
                             break;
                         default:
                             log.error "got bad filetype: ${it.filetype}"
@@ -37,7 +24,6 @@ workflow PREPARE_INPUT {
 
                     meta[it.filetype] = it.filepath
 
-                    // Explicit tumor_id/normal_id columns for OA-only samplesheets (no dragen rows)
                     if (it.tumor_id && !meta.containsKey('tumor_id')) meta.tumor_id = it.tumor_id
                     if (it.normal_id && !meta.containsKey('normal_id')) meta.normal_id = it.normal_id
 
@@ -54,7 +40,7 @@ workflow PREPARE_INPUT {
                 return meta
             }
 
-        // Map oncoanalyser assets and DRAGEN outputs into channels
+        // Map oncoanalyser assets into channels
 
         // AMBER: copy number segmentation data
         // channel: [ meta, amber_dir ]
@@ -150,68 +136,19 @@ workflow PREPARE_INPUT {
             return [meta, chord_prediction_tsv]
         }
 
-        // HRD: homologous recombination deficiency scores
-        // channel: [ meta, hrdscore_csv ]
-        ch_input_hrd = ch_metas.map { meta ->
-            if (!meta.dragen_somatic_dir) {
-                return [meta, []]
-            }
-            def base = file(meta.dragen_somatic_dir).toUriString()
-            def hrdscore_csv = "${base}/${meta.tumor_id}.hrdscore.csv"
-            if (!file(hrdscore_csv).exists()) {
-                log.warn "Optional HRD score file missing for sample ${meta.id} at ${hrdscore_csv} - pipeline will continue without this file"
-                return [meta, []]
-            }
-            return [meta, hrdscore_csv]
-        }
-
-        // Germline variants
+        // Germline variants — use PAVE germline from oncoanalyser output if available
         // channel: [ meta, germline_vcf ]
-        // Priority: explicit dragen_germline_vcf > dragen_germline_dir > OA PAVE germline > skip
         ch_input_vcf_germline = ch_metas.map { meta ->
-            if (meta.dragen_germline_vcf || meta.dragen_germline_dir) {
-                def dragen_germline_vcf = meta.dragen_germline_vcf
-                    ? file(meta.dragen_germline_vcf).toUriString()
-                    : "${file(meta.dragen_germline_dir).toUriString()}/${meta.normal_id}.hard-filtered.vcf.gz"
-                if (!file(dragen_germline_vcf).exists()) {
-                    log.error "DRAGEN germline VCF not found for ${meta.id}: ${dragen_germline_vcf}"
-                    Nextflow.exit(1)
-                }
-                return [meta, dragen_germline_vcf]
+            if (!meta.normal_id) {
+                return [meta, []]
             }
-            // OA-only: fall back to PAVE germline from oncoanalyser output
             def base = file(meta.oncoanalyser_dir).toUriString()
             def pave_germline_vcf = "${base}/pave/${meta.normal_id}.pave.germline.vcf.gz"
             if (file(pave_germline_vcf).exists()) {
-                log.warn "No DRAGEN germline for ${meta.id} — using OA PAVE germline (SAGE-based, differs from DRAGEN)"
                 return [meta, pave_germline_vcf]
             }
-            log.warn "No germline VCF found for ${meta.id} — germline report will be skipped"
+            log.warn "No PAVE germline VCF found for ${meta.id} — germline report will be skipped"
             return [meta, []]
-        }
-
-        // DRAGEN somatic variants
-        // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
-        // Explicit path via dragen_somatic_vcf samplesheet row takes precedence over constructed path.
-        // OA-only mode: returns [meta, [], []] when no dragen somatic — rescue step is skipped.
-        ch_input_vcf_somatic = ch_metas.map { meta ->
-            if (!meta.dragen_somatic_vcf && !meta.dragen_somatic_dir) {
-                log.warn "No DRAGEN somatic VCF for ${meta.id} — OA-only mode, rescue step skipped"
-                return [meta, [], []]
-            }
-            def dragen_somatic_vcf = meta.dragen_somatic_vcf
-                ? file(meta.dragen_somatic_vcf).toUriString()
-                : "${file(meta.dragen_somatic_dir).toUriString()}/${meta.tumor_id}.hard-filtered.vcf.gz"
-            def dragen_somatic_tbi = "${dragen_somatic_vcf}.tbi"
-            if (!file(dragen_somatic_vcf).exists()) {
-                log.error "DRAGEN somatic VCF not found for ${meta.id}: ${dragen_somatic_vcf}"
-                Nextflow.exit(1)
-            }
-            if (!file(dragen_somatic_tbi).exists()) {
-                log.error "DRAGEN somatic VCF index not found for ${meta.id}: ${dragen_somatic_tbi}"
-                Nextflow.exit(1)
-            }
-            return [meta, dragen_somatic_vcf, dragen_somatic_tbi]
         }
     emit:
         // Sample metadata
@@ -225,8 +162,6 @@ workflow PREPARE_INPUT {
         chord            = ch_chord                   // channel: [ meta, chord_prediction_tsv ]
         call_inputs      = ch_call_inputs             // channel: [ meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir ]
 
-        // DRAGEN channels
-        hrd              = ch_input_hrd               // channel: [ meta, hrdscore_csv ]
-        vcf_germline     = ch_input_vcf_germline      // channel: [ meta, dragen_germline_vcf ]
-        vcf_somatic      = ch_input_vcf_somatic       // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
+        // OA germline
+        vcf_germline     = ch_input_vcf_germline      // channel: [ meta, pave_germline_vcf ]
 }
