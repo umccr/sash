@@ -143,7 +143,7 @@ workflow PREPARE_INPUT {
                 return [meta, []]
             }
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def pave_germline_vcf = "${base}/pave/${meta.normal_id}.pave.germline.vcf.gz"
+            def pave_germline_vcf = "${base}/pave/${meta.tumor_id}.pave.germline.vcf.gz"
             if (file(pave_germline_vcf).exists()) {
                 return [meta, pave_germline_vcf]
             }
