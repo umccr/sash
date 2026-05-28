@@ -14,7 +14,7 @@ process BOLT_SMLV_GERMLINE_REPORT {
     tuple val(meta), path("output/*.variant_counts_type.yaml"), emit: counts_type
     tuple val(meta), path("output/*.bcftools_stats.txt")      , emit: bcftools_stats
     path 'output/cpsr/'                                       , emit: cpsr_dir
-    path 'output/*.cpsr.grch38.html'                          , emit: cpsr_report
+    path 'output/*.cpsr.grch38.html'  , optional: true        , emit: cpsr_report
     path "output/*.annotations.vcf.gz"                        , emit: vcf
     path 'versions.yml'                                       , emit: versions
 
@@ -37,7 +37,7 @@ process BOLT_SMLV_GERMLINE_REPORT {
         --threads ${task.cpus} \\
         --output_dir output/
 
-    mv output/cpsr/${meta.normal_id}.cpsr.grch38.html output/
+    [[ -f output/cpsr/${meta.normal_id}.cpsr.grch38.html ]] && mv output/cpsr/${meta.normal_id}.cpsr.grch38.html output/ || true
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
