@@ -258,7 +258,7 @@ workflow SASH {
     // Small variant reporting (PCGR, CPSR, stats)
     //
 
-    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_filters_vcf, [], purple_purity_tsv ]
+    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_filters_vcf, purple_purity_tsv ]
     ch_smlv_somatic_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_smlv_somatic_filters_out,
@@ -267,7 +267,7 @@ workflow SASH {
         .map { meta, vcf, vcf_filters, purple_dir ->
             def meta_bolt = [key: meta.id, id: meta.id, tumor_id: meta.tumor_id, normal_id: meta.normal_id]
             def purity_tsv = file(purple_dir).resolve("${meta.tumor_id}.purple.purity.tsv")
-            return [meta_bolt, vcf, vcf_filters, [], purity_tsv]
+            return [meta_bolt, vcf, vcf_filters, purity_tsv]
         }
 
     BOLT_SMLV_SOMATIC_REPORT(
