@@ -5,7 +5,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
     container 'ghcr.io/umccr/bolt:0.3.2-pcgr'
 
     input:
-    tuple val(meta), path(smlv_vcf), path(smlv_filters_vcf), path(smlv_dragen_vcf), path(purple_purity)
+    tuple val(meta), path(smlv_vcf), path(smlv_filters_vcf), path(purple_purity)
     path pcgr_data_dir
     path vep_dir
     path somatic_driver_panel_regions_coding
@@ -29,7 +29,6 @@ process BOLT_SMLV_SOMATIC_REPORT {
 
     script:
     def args = task.ext.args ?: ''
-    def dragen_arg = smlv_dragen_vcf.name != 'NO_FILE' ? "--vcf_dragen_fp ${smlv_dragen_vcf}" : ''
 
     """
     bolt smlv_somatic report \\
@@ -38,7 +37,6 @@ process BOLT_SMLV_SOMATIC_REPORT {
         \\
         --vcf_fp ${smlv_vcf} \\
         --vcf_filters_fp ${smlv_filters_vcf} \\
-        ${dragen_arg} \\
         \\
         --pcgr_conda pcgr \\
         --pcgrr_conda pcgrr \\

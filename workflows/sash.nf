@@ -481,7 +481,7 @@ workflow SASH {
     // Generate the cancer report
     //
 
-    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_bcftools_stats, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, [], mutpat, hrdetect, chord ]
+    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_bcftools_stats, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, mutpat, hrdetect, chord ]
     ch_cancer_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_smlv_somatic_report_stats_out,
@@ -494,7 +494,6 @@ workflow SASH {
         ch_purple_baf_plot_out,
         PURPLE_CALLING.out.purple_dir,
         ch_virusbreakend,
-        ch_inputs.map { meta -> [meta, []] },
         ch_sigrap_mutpat,
         ch_sigrap_hrdetect,
         ch_chord,
