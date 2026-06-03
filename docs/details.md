@@ -130,28 +130,29 @@ sash expects oncoanalyser v2.2.0+ output directory structure (added in [v0.6.1](
 
 Exclusions fall into three tiers by ownership:
 
-**Caller-level** — applied upstream before sash imports any outputs:
+**Caller-level**: applied upstream before sash imports any outputs:
 
 - Oncoanalyser REDUX excludes the `unmapped` region class during read processing
 - SAGE applies `KnownBlacklist.germline.38.bed` at call time ([sage/README.md#L66](https://github.com/hartwigmedical/hmftools/blob/master/sage/README.md#L66), [pipeline/README_RESOURCES.md#L88](https://github.com/hartwigmedical/hmftools/blob/master/pipeline/README_RESOURCES.md#L88))
 - ESVEE prep applies `sv_prep_blacklist.38.bed` to suppress SV calling in excluded regions ([esvee/README.md#L75](https://github.com/hartwigmedical/hmftools/blob/master/esvee/README.md#L75), [pipeline/README_RESOURCES.md#L109](https://github.com/hartwigmedical/hmftools/blob/master/pipeline/README_RESOURCES.md#L109))
 
-**Pipeline-level** — applied by sash to the imported call sets ([bolt/filter.py:67–146](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L67)):
+**Pipeline-level**: applied by sash to the imported call sets ([bolt/filter.py:67–146](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L67)):
 
-- [ENCODE blacklist v2](https://github.com/Boyle-Lab/Blacklist): hard exclusion — all overlapping variants removed unconditionally ([bolt/filter.py:133–137](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L133))
-- [GIAB genome stratifications](https://github.com/genome-in-a-bottle/genome-stratifications) (difficult regions) — AD ≥ 6 required rather than hard exclusion ([bolt/filter.py:98–117](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L98)); tracks used ([bolt/constants.py:100–111](https://github.com/umccr/bolt/blob/v0.2.18/bolt/common/constants.py#L100)):
+- [ENCODE blacklist v2](https://github.com/Boyle-Lab/Blacklist): hard exclusion, all overlapping variants removed unconditionally ([bolt/filter.py:133–137](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L133))
+- [GIAB genome stratifications](https://github.com/genome-in-a-bottle/genome-stratifications) (difficult regions): AD ≥ 6 required rather than hard exclusion ([bolt/filter.py:98–117](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L98)); tracks used ([bolt/constants.py:100–111](https://github.com/umccr/bolt/blob/v0.2.18/bolt/common/constants.py#L100)):
   - Low-complexity simple repeats: di/tri/quad-TR ≥ 150 bp (`GRCh38_SimpleRepeat_{di,tri,quad}TR_ge150_slop5`)
   - All tandem repeats 201–10000 bp (`GRCh38_AllTandemRepeats_201to10000bp_slop5`)
   - Segmental duplications > 10 kb (`GRCh38_segdups_gt10kb`)
   - Bad promoters (`GRCh38_BadPromoters`)
-  - GC extremes: <15% (`GRCh38_gc15`) and high-GC bands from 70% upward — three 5% bands (`GRCh38_gc70to75`, `GRCh38_gc75to80`, `GRCh38_gc80to85`) plus a ≥80% overlay (`GRCh38_gc80`)
+  - GC extremes: <15% (`GRCh38_gc15`) and high-GC bands from 70% upward, three 5% bands (`GRCh38_gc70to75`, `GRCh38_gc75to80`, `GRCh38_gc80to85`) plus a ≥80% overlay (`GRCh38_gc80`)
   - Non-unique mappability at 100 bp reads, ≤ 2 mismatches (`GRCh38_nonunique_l100_m2_e1`)
 - Outside [GIAB high-confidence intervals v4.2.1](https://github.com/genome-in-a-bottle/giab_data_indexes): AD ≥ 6 required ([bolt/filter.py:119–120](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L119))
 - Panel-of-normal artefacts: PoN count ≥ 5 ([bolt/filter.py:128–131](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L128))
 - Common population variants: gnomAD AF ≥ 1% ([bolt/filter.py:143–146](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/filter.py#L143))
 
-**Reporting-level** — intentional downstream exclusions:
+**Reporting-level**: intentional downstream exclusions:
 
+- Germline variants outside transcript regions of the [PMCC germline predisposition panel](https://github.com/umccr/gene_panels/tree/main/germline_panel) (~77 genes) are excluded and not passed to CPSR ([Germline Small Variants → Prepare](#germline-small-variants))
 - Restricted virus taxonomy via `virus_reporting_db` and `virus_taxonomy_db` ([conf/refdata.config#L86](conf/refdata.config#L86))
 
 In detail:
@@ -335,7 +336,7 @@ The Report step utilizes the Personal Cancer Genome Reporter (PCGR) and other to
    - Count the total number and types of variants (SNPs, Indels, Others) passing filters in both the DRAGEN VCF and the Filtered BOLT VCF.
 4. Count Variants by Processing Stage.
 5. Parse Purity and Ploidy Information (Purple Data).
-6. Run PCGR (GRCh38 VEP 113 / `pcgr_ref_data.20250314`) to generate the final report. For samples exceeding PCGR's 500,000-variant limit, bolt progressively reduces the input before this step — see [ADR #1](adr.md).
+6. Run PCGR (GRCh38 VEP 113 / `pcgr_ref_data.20250314`) to generate the final report. For samples exceeding PCGR's 500,000-variant limit, bolt progressively reduces the input before this step; see [ADR #1](adr.md).
 
 ### VCF to MAF conversion
 
@@ -348,7 +349,7 @@ After filtering, the pipeline converts the somatic VCF to MAF using `vcf2maf` (v
 
 ### PAVE Driver Catalogue Annotation
 
-PAVE (v1.8, [modules/local/pave/somatic/main.nf](modules/local/pave/somatic/main.nf)) runs on the bolt-filtered VCF to produce functional variant annotations required for the PURPLE driver catalogue. It is not part of the primary clinical filtering chain — its output feeds `PURPLE_CALLING` ([workflows/sash.nf:251](workflows/sash.nf#L251)) rather than the cancer report.
+PAVE (v1.8, [modules/local/pave/somatic/main.nf](modules/local/pave/somatic/main.nf)) runs on the bolt-filtered VCF to produce functional variant annotations required for the PURPLE driver catalogue. It is not part of the primary clinical filtering chain; its output feeds `PURPLE_CALLING` ([workflows/sash.nf:251](workflows/sash.nf#L251)) rather than the cancer report.
 
 Before running PAVE, MNV-component variants are excluded:
 
@@ -459,6 +460,10 @@ Filtering Select passing variants in the given [gene panel transcript regions](h
 2. Report:
    - Generate CPSR (Cancer Predisposition Sequencing Report) summarizing germline findings.
 
+#### Limitations
+
+The germline panel (`umccr_predisposition_genes`) currently contains **86 genes** from the PMCC familial cancer clinic list ([gene_panels/germline_panel/2_final_panel/final_panel.tsv](https://github.com/umccr/gene_panels/blob/main/germline_panel/2_final_panel/final_panel.tsv)). Three genes, CSDE1, EGLN1, and EGLN2, are absent from the CPSR superpanel (panel 0) and will not appear in the CPSR HTML report, though variants in those genes are present in the output germline VCF (see [gene_panels/germline_panel/README.md](https://github.com/umccr/gene_panels/blob/main/germline_panel/README.md)).
+
 ---
 
 ## Common Reports
@@ -495,7 +500,7 @@ UMCCR cancer report containing:
 #### MSI (Microsatellite Instability)
 
 - Data Source: SAGE-specific tags within the somatic VCF passed to PURPLE
-- Tool: PURPLE (from v4.1, MSI calculation relies on SAGE-specific tags rather than raw indel counts — changed in [v0.6.0](https://github.com/umccr/sash/blob/main/CHANGELOG.md))
+- Tool: PURPLE (from v4.1, MSI calculation relies on SAGE-specific tags rather than raw indel counts, changed in [v0.6.0](https://github.com/umccr/sash/blob/main/CHANGELOG.md))
 
 #### Structural Variant Metrics
 
@@ -701,6 +706,10 @@ Databases/datasets PCGR Reference Data:
 ---
 
 ## FAQ
+
+### Q: How many genes are in the germline panel and are there any reporting gaps?
+
+A: The germline panel (`umccr_predisposition_genes`) contains [86 genes](https://github.com/umccr/gene_panels/blob/main/germline_panel/2_final_panel/final_panel.tsv) from the PMCC familial cancer clinic list. Variants are filtered to transcript regions of those genes before CPSR reporting. Three genes, CSDE1, EGLN1, and EGLN2, are absent from the CPSR superpanel (panel 0) and will not appear in the CPSR HTML report, though variants in those genes are retained in the output germline VCF (see [gene_panels/germline_panel/README.md](https://github.com/umccr/gene_panels/blob/main/germline_panel/README.md)).
 
 ### Q: Do we use PCGR for the rescue of SAGE?
 
