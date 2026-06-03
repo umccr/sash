@@ -152,7 +152,7 @@ Exclusions fall into three tiers by ownership:
 
 **Reporting-level** — intentional downstream exclusions:
 
-- Germline variants restricted to transcript regions of the [PMCC germline predisposition panel](https://github.com/umccr/gene_panels/tree/main/germline_panel) (~77 genes) — variants outside these regions are not passed to CPSR ([Germline Small Variants → Prepare](#germline-small-variants))
+- Germline variants outside transcript regions of the [PMCC germline predisposition panel](https://github.com/umccr/gene_panels/tree/main/germline_panel) (~77 genes) are excluded and not passed to CPSR ([Germline Small Variants → Prepare](#germline-small-variants))
 - Restricted virus taxonomy via `virus_reporting_db` and `virus_taxonomy_db` ([conf/refdata.config#L86](conf/refdata.config#L86))
 
 In detail:
