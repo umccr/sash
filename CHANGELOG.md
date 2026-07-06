@@ -35,11 +35,17 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 - `BOLT_OTHER_CANCER_REPORT` and `BOLT_SMLV_SOMATIC_ANNOTATE` relabelled to `process_medium_memory`
 - Reference data: PCGR 20220203 → 20250314; VEP 113; PCGR/VEP data shipped as tarballs
 
+### Fixed
+
+- Bump bolt to 0.3.2: PCGR now gracefully skips hypermutated samples whose variant count still exceeds the per-chunk ceiling ([sash#52](https://github.com/umccr/sash/issues/52)), and PCGR chunk runs disable MSI/TMB estimates that were meaningless on partial VCFs
+- Migrate sigrap containers from personal `docker.io/qclayssen/sigrap:0.3.0-dev-8` build to official `ghcr.io/umccr/sigrap:0.3.0`
+
 ### Dependencies
 
 | Tool      | Old      | New      |
 | --------- | -------- | -------- |
-| bolt      | 0.2.17   | 0.3.0    |
+| bolt      | 0.2.17   | 0.3.2    |
+| sigrap    | —        | 0.3.0    |
 | PCGR      | —        | v2.2.5   |
 | PCGR data | 20220203 | 20250314 |
 | VEP       | —        | 113      |
