@@ -3,7 +3,7 @@ process SIGRAP_MUTPAT {
     label 'process_medium_memory'
     label 'process_long'
 
-    container 'docker.io/qclayssen/sigrap:0.3.0-dev-8'
+    container 'ghcr.io/umccr/sigrap:0.3.0'
 
     input:
     tuple val(meta), path(smlv_somatic_vcf)
