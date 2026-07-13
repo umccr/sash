@@ -41,32 +41,4 @@ nextflow_workflow {
             }
         }
     }
-
-    test("OA-only: germline emits empty when no PAVE VCF present") {
-
-        when {
-            workflow {
-                """
-                def base = file("${projectDir}/subworkflows/local/tests/prepare_input/fixtures/default")
-                def ss   = file("${launchDir}/samplesheet_no_germline.csv")
-                ss.text  = [
-                    "id,subject_name,sample_name,filetype,filepath,tumor_id,normal_id",
-                    "TEST_01,SUBJECT_01,,oncoanalyser_dir,\${base}/oncoanalyser_dir,TUMOR,",
-                ].join("\\n")
-                input[0] = ss
-                """
-            }
-        }
-
-        then {
-            assert workflow.success
-
-            with(workflow.out.vcf_germline) {
-                assert size() == 1
-                with(get(0)) {
-                    assert get(1) == []
-                }
-            }
-        }
-    }
 }

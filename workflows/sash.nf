@@ -173,9 +173,8 @@ workflow SASH {
     // Germline small variants
     //
 
-    // channel: [ meta_bolt, germline_vcf ] — skipped when no germline VCF available
+    // channel: [ meta_bolt, germline_vcf ]
     ch_smlv_germline_prepare_inputs = ch_input_vcf_germline
-        .filter { meta, vcf -> vcf }
         .map { meta, vcf ->
             def meta_bolt = [
                 key: meta.id,
@@ -282,12 +281,11 @@ workflow SASH {
 
     ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_REPORT.out.versions)
 
-    // channel: [ meta_bolt, smlv_germline_vcf, germline_vcf ] — only for samples with germline data
+    // channel: [ meta_bolt, smlv_germline_vcf, germline_vcf ]
     ch_smlv_germline_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_germline_out,
         ch_input_vcf_germline,
     )
-        .filter { meta, vcf, vcf_src -> vcf }
         .map { meta, vcf, vcf_src ->
             def meta_bolt = [
                 key: meta.id,

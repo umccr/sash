@@ -136,19 +136,20 @@ workflow PREPARE_INPUT {
             return [meta, chord_prediction_tsv]
         }
 
-        // Germline variants — use PAVE germline from oncoanalyser output if available
+        // Germline variants: PAVE germline VCF from oncoanalyser output
         // channel: [ meta, germline_vcf ]
         ch_input_vcf_germline = ch_metas.map { meta ->
             if (!meta.normal_id) {
-                return [meta, []]
+                log.error "normal_id is required for ${meta.id}: OA-only mode does not support tumor-only analysis"
+                Nextflow.exit(1)
             }
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def pave_germline_vcf = "${base}/pave/${meta.tumor_id}.pave.germline.vcf.gz"
-            if (file(pave_germline_vcf).exists()) {
-                return [meta, pave_germline_vcf]
+            def pave_germline_vcf = "${base}/pave/${meta.normal_id}.pave.germline.vcf.gz"
+            if (!file(pave_germline_vcf).exists()) {
+                log.error "PAVE germline VCF not found for ${meta.id}: ${pave_germline_vcf}"
+                Nextflow.exit(1)
             }
-            log.warn "No PAVE germline VCF found for ${meta.id} — germline report will be skipped"
-            return [meta, []]
+            return [meta, pave_germline_vcf]
         }
     emit:
         // Sample metadata
