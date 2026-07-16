@@ -144,7 +144,10 @@ workflow PREPARE_INPUT {
                 Nextflow.exit(1)
             }
             def base = file(meta.oncoanalyser_dir).toUriString()
-            def pave_germline_vcf = "${base}/pave/${meta.normal_id}.pave.germline.vcf.gz"
+            // NOTE: oncoanalyser names all per-pair outputs (including the germline VCF) by
+            // tumor_id, not normal_id - see oncoanalyser's pave_annotation/main.nf, which sets
+            // sample_id: Utils.getTumorDnaSampleName(meta) for PAVE_GERMLINE.
+            def pave_germline_vcf = "${base}/pave/${meta.tumor_id}.pave.germline.vcf.gz"
             if (!file(pave_germline_vcf).exists()) {
                 log.error "PAVE germline VCF not found for ${meta.id}: ${pave_germline_vcf}"
                 Nextflow.exit(1)

@@ -36,7 +36,8 @@ nextflow_workflow {
             with(workflow.out.vcf_germline) {
                 assert size() == 1
                 with(get(0)) {
-                    assert get(1).toString().endsWith("NORMAL.pave.germline.vcf.gz")
+                    // oncoanalyser names the PAVE germline VCF by tumor_id, not normal_id
+                    assert get(1).toString().endsWith("TUMOR.pave.germline.vcf.gz")
                 }
             }
         }
