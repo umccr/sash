@@ -15,6 +15,18 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### `Deprecated`
 
+## [0.7.1] - 2026-07-17
+
+### Fixed
+
+- Bump bolt to 0.3.2: PCGR now gracefully skips hypermutated samples whose variant count still exceeds the per-chunk ceiling ([sash#52](https://github.com/umccr/sash/issues/52)), and PCGR chunk runs disable MSI/TMB estimates that were meaningless on partial VCFs
+
+### Dependencies
+
+| Tool | Old   | New   |
+| ---- | ----- | ----- |
+| bolt | 0.3.1 | 0.3.2 |
+
 ## [0.7.0] - 2026-05-13
 
 ### Added
@@ -37,14 +49,13 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### Fixed
 
-- Bump bolt to 0.3.2: PCGR now gracefully skips hypermutated samples whose variant count still exceeds the per-chunk ceiling ([sash#52](https://github.com/umccr/sash/issues/52)), and PCGR chunk runs disable MSI/TMB estimates that were meaningless on partial VCFs
 - Migrate sigrap containers from personal `docker.io/qclayssen/sigrap:0.3.0-dev-8` build to official `ghcr.io/umccr/sigrap:0.3.0`
 
 ### Dependencies
 
 | Tool      | Old      | New      |
 | --------- | -------- | -------- |
-| bolt      | 0.2.17   | 0.3.2    |
+| bolt      | 0.2.17   | 0.3.1    |
 | sigrap    | —        | 0.3.0    |
 | PCGR      | —        | v2.2.5   |
 | PCGR data | 20220203 | 20250314 |
