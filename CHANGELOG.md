@@ -46,6 +46,7 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 - BOLT_OTHER_CANCER_REPORT now consumes SIGRAP hrdetect and mutpat outputs
 - `BOLT_OTHER_CANCER_REPORT` and `BOLT_SMLV_SOMATIC_ANNOTATE` relabelled to `process_medium_memory`
 - Reference data: PCGR 20220203 → 20250314; VEP 113; PCGR/VEP data shipped as tarballs
+- **Breaking:** `prepare_reference` no longer supports plain directory inputs for `miscdata_paths`; entries requiring extraction (at minimum `pcgr_dir`, `vep_dir`) must be provided as `.tar.gz`/`.tgz` tarballs. An explicit error is raised if no tarball entries are found.
 
 ### Fixed
 
