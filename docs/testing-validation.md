@@ -50,7 +50,10 @@ The OA-only path expects the oncoanalyser v2.2.0 layout: `esvee/`,
 ## Hypermutated edge case (>450k variants)
 
 The PCGR-skip / VCF2MAF-skip logic (sash #59, tracked by #52) needs a genuinely hypermutated
-sample.
+sample. This is a bolt/PCGR problem, not sash-only: the failure it guards against is an OOM
+inside PCGR (which runs in bolt), recorded for SBJ02862 in
+[umccr/biodaily#199](https://github.com/umccr/biodaily/issues/199). bolt #33/#36 carry the
+matching fixes.
 
 - **Smoke test:** a synthetic 550k-variant VCF exercises the skip branch directly and confirms
   the sample exits 0 without a full run. Generate one with a script that emits >450k PASS
@@ -65,6 +68,11 @@ Compare a new release against the previous one with the Sash Regression Service
 ([`umccr/service-sash-regression`](https://github.com/umccr/service-sash-regression)) on case
 SEQC-II-medium (L2301218/L2301217). The 0.6.4 baseline is already wired. This replaces manual
 output diffing.
+
+The prior 0.7.0-vs-0.6.x validation record — 11 samples, CPSR/PCGR concordance, tier analysis,
+and the validated sash+bolt version table — is
+[umccr/biodaily#199](https://github.com/umccr/biodaily/issues/199). Use it as the concordance
+baseline rather than re-running those comparisons.
 
 ## Variant monitoring (NATA)
 
