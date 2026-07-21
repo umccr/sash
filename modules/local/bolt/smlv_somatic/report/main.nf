@@ -2,25 +2,27 @@ process BOLT_SMLV_SOMATIC_REPORT {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/umccr/bolt:0.2.18-pcgr'
+    container 'ghcr.io/umccr/bolt:0.3.2-pcgr'
 
     input:
     tuple val(meta), path(smlv_vcf), path(smlv_filters_vcf), path(smlv_dragen_vcf), path(purple_purity)
     path pcgr_data_dir
+    path vep_dir
     path somatic_driver_panel_regions_coding
     path giab_regions
     path genome_fasta
     path genome_fai
 
     output:
-    tuple val(meta), path('output/af_tumor.txt')                 , emit: af_global
-    tuple val(meta), path('output/af_tumor_keygenes.txt')        , emit: af_keygenes
-    tuple val(meta), path("output/*.bcftools_stats.txt")         , emit: bcftools_stats
-    tuple val(meta), path("output/*.variant_counts_type.yaml")   , emit: counts_type
-    tuple val(meta), path("output/*.variant_counts_process.json"), emit: counts_process
-    path 'output/pcgr/'                                          , emit: pcgr_dir
-    path "output/*.pcgr_acmg.grch38.html"                        , emit: pcgr_report
-    path 'versions.yml'                                          , emit: versions
+    tuple val(meta), path('output/af_tumor.txt')                  , emit: af_global
+    tuple val(meta), path('output/af_tumor_keygenes.txt')         , emit: af_keygenes
+    tuple val(meta), path("output/*.bcftools_stats.txt")          , emit: bcftools_stats
+    tuple val(meta), path("output/*.variant_counts_type.yaml")    , emit: counts_type
+    tuple val(meta), path("output/*.variant_counts_process.json") , emit: counts_process
+    tuple val(meta), path("output/pcgr/*.pcgr.grch38.pass.vcf.gz"), emit: pcgr_pass_vcf
+    path 'output/pcgr/'                                           , emit: pcgr_dir
+    path "output/*.pcgr.grch38.html"                              , emit: pcgr_report
+    path 'versions.yml'                                           , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -40,6 +42,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
         --pcgr_conda pcgr \\
         --pcgrr_conda pcgrr \\
         --pcgr_data_dir ${pcgr_data_dir} \\
+        --vep_dir ${vep_dir} \\
         --purple_purity_fp ${purple_purity} \\
         \\
         --cancer_genes_fp ${somatic_driver_panel_regions_coding} \\
@@ -49,7 +52,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
         --threads ${task.cpus} \\
         --output_dir output/
 
-    mv output/pcgr/${meta.tumor_id}.pcgr_acmg.grch38.html output/
+    mv output/pcgr/${meta.tumor_id}.pcgr.grch38.html output/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -66,8 +69,8 @@ process BOLT_SMLV_SOMATIC_REPORT {
     touch output/${meta.tumor_id}.somatic.variant_counts_type.yaml
     touch output/${meta.tumor_id}.somatic.variant_counts_process.json
     touch output/${meta.tumor_id}.somatic.bcftools_stats.txt
-    touch output/${meta.tumor_id}.pcgr_acmg.grch38.html
+    touch output/pcgr/${meta.tumor_id}.pcgr.grch38.pass.vcf.gz
+    touch output/${meta.tumor_id}.pcgr.grch38.html
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
-

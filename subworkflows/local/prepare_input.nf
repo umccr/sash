@@ -24,6 +24,12 @@ workflow PREPARE_INPUT {
                             break;
                         case 'oncoanalyser_dir':
                             break;
+                        case 'dragen_somatic_vcf':
+                            // TODO: document in docs/usage.md
+                            break;
+                        case 'dragen_germline_vcf':
+                            // TODO: document in docs/usage.md
+                            break;
                         default:
                             log.error "got bad filetype: ${it.filetype}"
                             Nextflow.exit(1)
@@ -124,6 +130,18 @@ workflow PREPARE_INPUT {
             return [meta, virusbreakend_dir]
         }
 
+        // CHORD: homologous recombination deficiency prediction
+        // channel: [ meta, chord_prediction_tsv ]
+        ch_chord = ch_metas.map { meta ->
+            def base = file(meta.oncoanalyser_dir).toUriString()
+            def chord_prediction_tsv = "${base}/chord/${meta.tumor_id}.chord.prediction.tsv"
+            if (!file(chord_prediction_tsv).exists()) {
+                log.error "CHORD prediction file not found for ${meta.id}: ${chord_prediction_tsv}"
+                Nextflow.exit(1)
+            }
+            return [meta, chord_prediction_tsv]
+        }
+
         // HRD: homologous recombination deficiency scores
         // channel: [ meta, hrdscore_csv ]
         ch_input_hrd = ch_metas.map { meta ->
@@ -138,9 +156,11 @@ workflow PREPARE_INPUT {
 
         // DRAGEN germline variants
         // channel: [ meta, dragen_germline_vcf ]
+        // Explicit path via dragen_germline_vcf samplesheet row takes precedence over constructed path.
         ch_input_vcf_germline = ch_metas.map { meta ->
-            def base = file(meta.dragen_germline_dir).toUriString()
-            def dragen_germline_vcf = "${base}/${meta.normal_id}.hard-filtered.vcf.gz"
+            def dragen_germline_vcf = meta.dragen_germline_vcf
+                ? file(meta.dragen_germline_vcf).toUriString()
+                : "${file(meta.dragen_germline_dir).toUriString()}/${meta.normal_id}.hard-filtered.vcf.gz"
             if (!file(dragen_germline_vcf).exists()) {
                 log.error "DRAGEN germline VCF not found for ${meta.id}: ${dragen_germline_vcf}"
                 Nextflow.exit(1)
@@ -150,9 +170,11 @@ workflow PREPARE_INPUT {
 
         // DRAGEN somatic variants
         // channel: [ meta, dragen_somatic_vcf, dragen_somatic_tbi ]
+        // Explicit path via dragen_somatic_vcf samplesheet row takes precedence over constructed path.
         ch_input_vcf_somatic = ch_metas.map { meta ->
-            def base = file(meta.dragen_somatic_dir).toUriString()
-            def dragen_somatic_vcf = "${base}/${meta.tumor_id}.hard-filtered.vcf.gz"
+            def dragen_somatic_vcf = meta.dragen_somatic_vcf
+                ? file(meta.dragen_somatic_vcf).toUriString()
+                : "${file(meta.dragen_somatic_dir).toUriString()}/${meta.tumor_id}.hard-filtered.vcf.gz"
             def dragen_somatic_tbi = "${dragen_somatic_vcf}.tbi"
             if (!file(dragen_somatic_vcf).exists()) {
                 log.error "DRAGEN somatic VCF not found for ${meta.id}: ${dragen_somatic_vcf}"
@@ -173,6 +195,7 @@ workflow PREPARE_INPUT {
         cobalt           = ch_cobalt                  // channel: [ meta, cobalt_dir ]
         sage_somatic     = ch_sage_somatic            // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
         virusbreakend    = ch_virusbreakend           // channel: [ meta, virusbreakend_dir ]
+        chord            = ch_chord                   // channel: [ meta, chord_prediction_tsv ]
         call_inputs      = ch_call_inputs             // channel: [ meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir ]
 
         // DRAGEN channels

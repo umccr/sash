@@ -15,6 +15,42 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### `Deprecated`
 
+## [0.7.0] - 2026-05-13
+
+### Added
+
+- Allow explicit DRAGEN VCF paths in the samplesheet via optional `dragen_somatic_vcf` and `dragen_germline_vcf` filetypes, falling back to the path constructed from `tumor_id` / `normal_id` when not provided. Enables samples where DRAGEN and oncoanalyser outputs use different sample ID prefixes (e.g. APGI cohort).
+- VCF2MAF process for somatic PASS VCF conversion to MAF format
+- SIGRAP_HRDETECT and SIGRAP_MUTPAT processes for HRDetect and mutational pattern analysis
+- CUSTOM_EXTRACTTARBALL helper: PCGR and VEP reference data now shipped as tarballs and extracted at runtime
+- `pcgr_variant_chunk_size` parameter for chunked PCGR runs on hypermutated samples
+- `process_medium_memory` resource label
+- Zenodo DOI
+
+### Changed
+
+- Updated to oncoanalyser v2.x data structure
+- PCGR output filename: `*.pcgr_acmg.grch38.html` → `*.pcgr.grch38.html`
+- BOLT_OTHER_CANCER_REPORT now consumes SIGRAP hrdetect and mutpat outputs
+- `BOLT_OTHER_CANCER_REPORT` and `BOLT_SMLV_SOMATIC_ANNOTATE` relabelled to `process_medium_memory`
+- Reference data: PCGR 20220203 → 20250314; VEP 113; PCGR/VEP data shipped as tarballs
+- **Breaking:** `prepare_reference` no longer supports plain directory inputs for `miscdata_paths`; entries requiring extraction (at minimum `pcgr_dir`, `vep_dir`) must be provided as `.tar.gz`/`.tgz` tarballs. An explicit error is raised if no tarball entries are found.
+
+### Fixed
+
+- Bump bolt to 0.3.2: PCGR now gracefully skips hypermutated samples whose variant count still exceeds the per-chunk ceiling ([sash#52](https://github.com/umccr/sash/issues/52)), and PCGR chunk runs disable MSI/TMB estimates that were meaningless on partial VCFs
+- Migrate sigrap containers from personal `docker.io/qclayssen/sigrap:0.3.0-dev-8` build to official `ghcr.io/umccr/sigrap:0.3.0`
+
+### Dependencies
+
+| Tool      | Old      | New      |
+| --------- | -------- | -------- |
+| bolt      | 0.2.17   | 0.3.2    |
+| sigrap    | —        | 0.3.0    |
+| PCGR      | —        | v2.2.5   |
+| PCGR data | 20220203 | 20250314 |
+| VEP       | —        | 113      |
+
 ## [0.6.4] - 2026-03-31
 
 ### Fixed
@@ -34,24 +70,7 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 | ---- | ------ | ------ |
 | bolt | 0.2.17 | 0.2.18 |
 
-## [0.6.3] - 2025-12-23
-
-### Added
-
-- Comprehensive documentation including architecture decision records (ADR), detailed workflow descriptions, and output specifications
-- Pipeline overview diagram and quality control metrics documentation
-
-### Changed
-
-- Enhanced usage documentation with clearer instructions
-- Improved output.md with detailed descriptions of all pipeline outputs
-- Updated README with better project structure documentation
-
-## [0.6.2] - 2025-10-1
-
-### Changed
-
-- Dragen HRD file facultatif
+## [0.6.3] - 2025-10-07
 
 ### Dependencies
 

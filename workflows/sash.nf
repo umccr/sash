@@ -42,13 +42,17 @@ include { BOLT_SMLV_GERMLINE_PREPARE } from '../modules/local/bolt/smlv_germline
 include { BOLT_SMLV_GERMLINE_REPORT  } from '../modules/local/bolt/smlv_germline/report/main'
 include { BOLT_SMLV_SOMATIC_ANNOTATE } from '../modules/local/bolt/smlv_somatic/annotate/main'
 include { BOLT_SMLV_SOMATIC_FILTER   } from '../modules/local/bolt/smlv_somatic/filter/main'
-include { BOLT_SMLV_SOMATIC_REPORT   } from '../modules/local/bolt/smlv_somatic/report/main'
 include { BOLT_SMLV_SOMATIC_RESCUE   } from '../modules/local/bolt/smlv_somatic/rescue/main'
+include { BOLT_SMLV_SOMATIC_REPORT   } from '../modules/local/bolt/smlv_somatic/report/main'
 include { BOLT_SV_SOMATIC_ANNOTATE   } from '../modules/local/bolt/sv_somatic/annotate/main'
 include { BOLT_SV_SOMATIC_PRIORITISE } from '../modules/local/bolt/sv_somatic/prioritise/main'
-include { ESVEE_CALL                 } from '../modules/local/esvee/call/main'
 include { PAVE_SOMATIC               } from '../modules/local/pave/somatic/main'
+include { SIGRAP_HRDETECT            } from '../modules/local/sigrap/hrdetect/main'
+include { SIGRAP_MUTPAT              } from '../modules/local/sigrap/mutpat/main'
+include { VCF2MAF                    } from '../modules/local/vcf2maf/main'
 
+
+include { ESVEE_CALL                 } from '../modules/local/esvee/call/main'
 include { LINX_ANNOTATION            } from '../subworkflows/local/linx_annotation'
 include { LINX_PLOTTING              } from '../subworkflows/local/linx_plotting'
 include { PREPARE_INPUT              } from '../subworkflows/local/prepare_input'
@@ -74,13 +78,6 @@ workflow SASH {
     // channel: [ versions.yml ]
     ch_versions = Channel.empty()
 
-
-
-
-    //
-    // Prepare inputs from samplesheet
-    //
-
     PREPARE_INPUT(
         file(params.input),
     )
@@ -93,6 +90,7 @@ workflow SASH {
     ch_sage_somatic        = PREPARE_INPUT.out.sage_somatic      // channel: [ meta, sage_somatic_vcf, sage_somatic_tbi ]
     ch_virusbreakend       = PREPARE_INPUT.out.virusbreakend     // channel: [ meta, virusbreakend_dir ]
     ch_call_inputs         = PREPARE_INPUT.out.call_inputs       // channel: [ meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir ]
+    ch_chord               = PREPARE_INPUT.out.chord             // channel: [ meta, chord_prediction_tsv ]
 
     // DRAGEN inputs
     ch_input_hrd           = PREPARE_INPUT.out.hrd               // channel: [ meta, hrdscore_csv ]
@@ -111,7 +109,7 @@ workflow SASH {
     genome               = PREPARE_REFERENCE.out.genome
     umccr_data           = PREPARE_REFERENCE.out.umccr_data
     hmf_data             = PREPARE_REFERENCE.out.hmf_data
-    misc_data            = PREPARE_REFERENCE.out.misc_data
+    ch_misc_data         = PREPARE_REFERENCE.out.misc_data_ch
 
 
 
@@ -120,8 +118,7 @@ workflow SASH {
     // Somatic small variants
     //
 
-
-
+    // Prepare rescue inputs with meta transformation
     // channel: [ meta_bolt, dragen_somatic_vcf, dragen_somatic_tbi, sage_somatic_vcf, sage_somatic_tbi ]
     ch_smlv_somatic_rescue_inputs = WorkflowSash.groupByMeta(
         ch_input_vcf_somatic,
@@ -150,8 +147,9 @@ workflow SASH {
         BOLT_SMLV_SOMATIC_RESCUE.out.vcf,
         umccr_data.somatic_panel_regions_gene,
         umccr_data.annotations_dir,
-        misc_data.pon_dir,
-        misc_data.pcgr_dir,
+        ch_misc_data.map { it.pon_dir },
+        ch_misc_data.map { it.pcgr_dir },
+        ch_misc_data.map { it.vep_dir }
     )
 
     ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_ANNOTATE.out.versions)
@@ -162,6 +160,7 @@ workflow SASH {
 
     ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_FILTER.out.versions)
 
+    // Restore meta and create clean outputs
     // channel: [ meta, smlv_somatic_vcf ]
     ch_smlv_somatic_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf, ch_inputs)
         .map { meta, vcf, tbi -> [meta, vcf] }
@@ -181,8 +180,13 @@ workflow SASH {
         hmf_data.gnomad_resource,
     )
 
+    ch_versions = ch_versions.mix(PAVE_SOMATIC.out.versions)
+
     // channel: [ meta, pave_somatic_vcf ]
     ch_pave_somatic_out = WorkflowSash.restoreMeta(PAVE_SOMATIC.out.vcf, ch_inputs)
+
+
+
 
 
 
@@ -219,7 +223,6 @@ workflow SASH {
 
     //
     // Somatic structural variants
-
     //
 
     ESVEE_CALL(
@@ -303,7 +306,8 @@ workflow SASH {
 
     BOLT_SMLV_SOMATIC_REPORT(
         ch_smlv_somatic_report_inputs,
-        misc_data.pcgr_dir,
+        ch_misc_data.map { it.pcgr_dir },
+        ch_misc_data.map { it.vep_dir },
         umccr_data.somatic_panel_regions_cds,
         hmf_data.sage_highconf_regions,
         genome.fasta,
@@ -329,7 +333,8 @@ workflow SASH {
     BOLT_SMLV_GERMLINE_REPORT(
         ch_smlv_germline_report_inputs,
         umccr_data.germline_panel_genes,
-        misc_data.pcgr_dir,
+        ch_misc_data.map { it.pcgr_dir },
+        ch_misc_data.map { it.vep_dir }
     )
 
     ch_versions = ch_versions.mix(BOLT_SMLV_GERMLINE_REPORT.out.versions)
@@ -349,6 +354,32 @@ workflow SASH {
     ch_smlv_germline_report_stats_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_REPORT.out.bcftools_stats, ch_inputs)
     // channel: [ meta, variant_counts_type_germline ]
     ch_smlv_germline_report_counts_type_out = WorkflowSash.restoreMeta(BOLT_SMLV_GERMLINE_REPORT.out.counts_type, ch_inputs)
+
+
+    //
+    // Convert somatic VCF to MAF format using PCGR-produced VCF
+    //
+
+    // channel: [ meta_vcf2maf, report_pcgr_pass_vcf ]
+    ch_smlv_somatic_report_pcgr_pass_vcf_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.pcgr_pass_vcf, ch_inputs)
+        .map { meta, vcf ->
+            def meta_vcf2maf = [
+                key: meta.id,
+                id: meta.id,
+                tumor_id: meta.tumor_id,
+                normal_id: meta.normal_id,
+            ]
+            return [meta_vcf2maf, vcf]
+        }
+
+    VCF2MAF(
+        ch_smlv_somatic_report_pcgr_pass_vcf_out,
+        ch_misc_data.map { it.fasta_ensembl },
+        ch_misc_data.map { it.fasta_ensembl_fai },
+        ch_misc_data.map { it.fasta_ensembl_gzi }
+    )
+
+    ch_versions = ch_versions.mix(VCF2MAF.out.versions)
 
 
 
@@ -375,7 +406,7 @@ workflow SASH {
         ch_sv_somatic_inputs,
         genome.fasta,
         genome.fai,
-        misc_data.snpeff_dir,
+        ch_misc_data.map { it.snpeff_dir },
     )
 
     ch_versions = ch_versions.mix(BOLT_SV_SOMATIC_ANNOTATE.out.versions)
@@ -387,7 +418,7 @@ workflow SASH {
         umccr_data.known_fusion_three,
         umccr_data.somatic_panel_genes,
         umccr_data.somatic_panel_genes_ts,
-        misc_data.appris,
+        ch_misc_data.map { it.appris },
     )
 
     ch_versions = ch_versions.mix(BOLT_SV_SOMATIC_PRIORITISE.out.versions)
@@ -431,10 +462,59 @@ workflow SASH {
 
 
     //
+    // Sigrap
+    //
+
+    // channel: [ meta_sigrap, smlv_somatic_vcf, sv_somatic_vcf, cnv_somatic_tsv ]
+    ch_sigrap_hrdetect_inputs = WorkflowSash.groupByMeta(
+        ch_smlv_somatic_out,
+        ch_sv_somatic_sv_vcf_out,
+        ch_sv_somatic_cnv_tsv_out,
+    )
+        .map { meta, smlv_vcf, sv_vcf, cnv_tsv ->
+            def meta_sigrap = [
+                key: meta.id,
+                id: meta.id,
+                tumor_id: meta.tumor_id,
+            ]
+            return [meta_sigrap, smlv_vcf, sv_vcf, cnv_tsv]
+        }
+
+    SIGRAP_HRDETECT(
+        ch_sigrap_hrdetect_inputs
+    )
+
+    // channel: [ meta, hrdetect_json ]
+    ch_sigrap_hrdetect = WorkflowSash.restoreMeta(SIGRAP_HRDETECT.out.hrdetect_json, ch_inputs)
+    ch_versions = ch_versions.mix(SIGRAP_HRDETECT.out.versions)
+
+    // channel: [ meta_sigrap, smlv_somatic_vcf ]
+    ch_sigrap_mutpat_inputs = ch_smlv_somatic_out.map { meta, vcf ->
+        def meta_sigrap = [
+            key: meta.id,
+            id: meta.id,
+            tumor_id: meta.tumor_id,
+        ]
+        return [meta_sigrap, vcf]
+    }
+
+    SIGRAP_MUTPAT(
+        ch_sigrap_mutpat_inputs
+    )
+
+    // channel: [ meta, mutpat_output ]
+    ch_sigrap_mutpat = WorkflowSash.restoreMeta(SIGRAP_MUTPAT.out.mutpat_output, ch_inputs)
+    ch_versions = ch_versions.mix(SIGRAP_MUTPAT.out.versions)
+
+
+
+
+
+    //
     // Generate the cancer report
     //
 
-    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_bcftools_stats, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, dragen_hrd ]
+    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_bcftools_stats, smlv_somatic_counts_process, sv_tsv, sv_vcf, cnv_tsv, af_global, af_keygenes, purple_baf_circos_plot, purple_dir, virusbreakend_dir, dragen_hrd, mutpat, hrdetect, chord ]
     ch_cancer_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_smlv_somatic_report_stats_out,
@@ -448,6 +528,9 @@ workflow SASH {
         PURPLE_CALLING.out.purple_dir,
         ch_virusbreakend,
         ch_input_hrd,
+        ch_sigrap_mutpat,
+        ch_sigrap_hrdetect,
+        ch_chord,
         flatten_mode: 'nonrecursive',
     )
         .map {
@@ -464,7 +547,7 @@ workflow SASH {
     BOLT_OTHER_CANCER_REPORT(
         ch_cancer_report_inputs,
         umccr_data.somatic_panel,
-        misc_data.oncokb_genes,
+        ch_misc_data.map { it.oncokb_genes },
     )
 
     ch_versions = ch_versions.mix(BOLT_OTHER_CANCER_REPORT.out.versions)
@@ -518,7 +601,7 @@ workflow SASH {
 
 
     //
-    // Annotate post processed strucutral variant events
+    // Annotate post processed structural variant events
     //
 
     LINX_ANNOTATION(
@@ -539,7 +622,6 @@ workflow SASH {
     )
 
     ch_versions = ch_versions.mix(LINX_PLOTTING.out.versions)
-
 
 
 
