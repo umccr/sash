@@ -24,23 +24,27 @@ workflow PREPARE_REFERENCE {
         // Extract tarball resources (e.g. PCGR data, VEP cache) when provided as .tar.gz/.tgz
         //
         misc_tarball_inputs = getTarballInputs(params.miscdata_paths, params.ref_data_path)
-        if (misc_tarball_inputs) {
-            ch_misc_data_inputs = Channel.fromList(misc_tarball_inputs)
-
-            DECOMP_MISC_DATA(ch_misc_data_inputs)
-
-            ch_misc_data_channel = DECOMP_MISC_DATA.out.extracted_dir
-                .collect()
-                .map { dir_list ->
-                    assert dir_list.size() == misc_tarball_inputs.size()
-                    def extracted_map = dir_list.collectEntries { dir ->
-                        [(dir.getFileName().toString()): dir]
-                    }
-                    return addEnsemblFasta(createDataMap(params.miscdata_paths, params.ref_data_path) + extracted_map)
-                }
-        } else {
-            ch_misc_data_channel = Channel.value(addEnsemblFasta(ch_misc_data))
+        if (!misc_tarball_inputs) {
+            error "No tarball entries found in miscdata_paths. At minimum pcgr_dir and vep_dir " +
+                  "must be provided as .tar.gz/.tgz archives. Plain directory inputs are no longer supported."
         }
+
+        ch_misc_data_inputs = Channel.fromList(misc_tarball_inputs)
+
+        DECOMP_MISC_DATA(ch_misc_data_inputs)
+
+        ch_misc_data_channel = DECOMP_MISC_DATA.out.extracted_dir
+            .collect()
+            .map { dir_list ->
+                assert dir_list.size() == misc_tarball_inputs.size()
+                def extracted_map = dir_list.collectEntries { dir ->
+                    [(dir.getFileName().toString()): dir]
+                }
+                return addEnsemblFasta(createDataMap(params.miscdata_paths, params.ref_data_path) + extracted_map)
+            }
+            // .first() converts from a queue channel (collect().map{} emits once) to a value
+            // channel, allowing it to broadcast to all per-sample processes in multi-sample runs.
+            .first()
 
         //
         // Prepare genome paths and info

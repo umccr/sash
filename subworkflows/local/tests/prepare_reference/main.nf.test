@@ -1,0 +1,76 @@
+nextflow_workflow {
+
+    name "Test Workflow PREPARE_REFERENCE"
+    script "subworkflows/local/prepare_reference.nf"
+    workflow "PREPARE_REFERENCE"
+    config "subworkflows/local/tests/prepare_reference/nextflow.config"
+    tag "subworkflows/local/prepare_reference"
+
+    // Reference data (genome / umccr / misc) is read entirely from params and
+    // validated with checkIfExists; shared params live in the test config and point
+    // at the fixture tree. The test exercises the tarball extraction path, which is
+    // the only supported input mode (plain directory inputs were removed).
+
+    test("single tarball — extraction runs and misc_data_ch resolves the extracted dir") {
+
+        when {
+            params {
+                miscdata_paths = [pcgr_dir: 'pcgr_dir.tar.gz']
+            }
+            workflow {
+                """
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.misc_data_ch) {
+                assert size() == 1
+                def refmap = get(0)
+                assert refmap.containsKey('pcgr_dir')
+                assert refmap.containsKey('fasta_ensembl')
+                // tarball is extracted: pcgr_dir now points at the decompressed dir
+                // (named after meta.id) produced by CUSTOM_EXTRACTTARBALL, not the .tar.gz
+                assert refmap.pcgr_dir.toString().endsWith('/pcgr_dir')
+                assert !refmap.pcgr_dir.toString().endsWith('.tar.gz')
+            }
+        }
+    }
+
+    // Multi-tarball: exercises .collect() aggregating multiple DECOMP_MISC_DATA outputs
+    // before .first() converts to a value channel. This mirrors the real refdata.config
+    // which has both pcgr_dir and vep_dir as tarballs.
+    test("multiple tarballs — both pcgr_dir and vep_dir extracted and merged into misc_data_ch") {
+
+        when {
+            params {
+                miscdata_paths = [pcgr_dir: 'pcgr_dir.tar.gz', vep_dir: 'vep_dir.tar.gz']
+            }
+            workflow {
+                """
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.misc_data_ch) {
+                assert size() == 1
+                def refmap = get(0)
+                // Both extracted dirs present in the map
+                assert refmap.containsKey('pcgr_dir')
+                assert refmap.containsKey('vep_dir')
+                assert refmap.containsKey('fasta_ensembl')
+                // Neither should still point at the tarball
+                assert !refmap.pcgr_dir.toString().endsWith('.tar.gz')
+                assert !refmap.vep_dir.toString().endsWith('.tar.gz')
+                // Extracted dirs named after their meta.id
+                assert refmap.pcgr_dir.toString().endsWith('/pcgr_dir')
+                assert refmap.vep_dir.toString().endsWith('/vep_dir')
+            }
+        }
+    }
+}
