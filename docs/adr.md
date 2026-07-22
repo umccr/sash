@@ -4,56 +4,69 @@
 
 ## ADR #1: PCGR Variant Limit Handling for Large Variant Sets
 
-**Status**: Partially Implemented
-**Date**: 2024-11-07
-**Deciders**: Oliver Hofmann, Stephen Watts, Quentin Clayssen
-**Technical Story**: PCGR cannot process more than 500,000 variants per run; hypermutated samples regularly exceed this limit.
+**Status**: Implemented (bolt ≥ 0.3.1, sash ≥ 0.7.0)  
+**Date**: 2024-11-07 (original), 2026-07-22 (updated)  
+**Deciders**: Oliver Hofmann, Stephen Watts, Quentin Clayssen  
+**Technical Story**: PCGR cannot safely process ≥ 500,000 variants; hypermutated samples regularly exceed this limit.
 
 ### Context
 
-[PCGR](https://sigven.github.io/pcgr/) has a hard variant processing limit of 500,000 variants per run. Hypermutated samples in the sash workflow often produce annotated VCFs that exceed this limit, causing PCGR to truncate or fail. Two approaches were considered: chunking the VCF into parallel PCGR runs, or progressively reducing the variant set upstream of PCGR.
+[PCGR](https://sigven.github.io/pcgr/) has a 500,000 variant threshold that triggers two silent failure modes:
+
+1. **Python side** (`pcgr/main.py`, `pcgr_vars.MAX_VARIANTS_FOR_REPORT = 500_000`):  
+   When input > 500k, PCGR silently drops intergenic, intronic, upstream_gene, and downstream_gene variants. TMB becomes an underestimate; variant selection is indiscriminate.
+
+2. **R side** (`pcgrr/R/main.R` ~line 954):  
+   If variants are still ≥ 500k after step 1, the HTML report is **silently not generated** — no error, just no output file.
+
+Neither triggers a hard failure. Both are silent. A sample could pass through bolt, enter PCGR, and produce either a misleading report (missing variants, wrong TMB) or no report at all — with no error in the logs.
 
 ### Decision
 
-Original plan (not implemented): split VCF files into chunks of ≤ 500,000 variants, process each chunk in parallel through PCGR, then merge annotated outputs.
+Set `MAX_SOMATIC_VARIANTS = 450_000` in bolt (`bolt/common/constants.py`). Bolt applies clinically-prioritised tiered filtering via `select_pcgr_variants()` to bring variant counts below this cap before sending to PCGR.
 
-Current implementation — bolt applies a `select_variants` function that progressively excludes lower-priority variants until the count falls below 500,000 ([bolt/annotate.py:182–200](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L182)):
+**Current implementation (bolt ≥ 0.3.1):**
 
-1. If total ≤ 500,000: pass all variants unchanged
-2. Remove non-PASS variants; if now ≤ 500,000: stop
-3. Remove population-common variants (gnomAD AF ≥ 1%); if now ≤ 500,000: stop
-4. Remove non-cancer-gene variants; pass whatever remains to PCGR
+1. Variants with clinical retention markers (SAGE_HOTSPOT, PANEL ±2kb, PCGR_MUTATION_HOTSPOT, HMF_HOTSPOT) bypass filtering entirely.
+2. Remaining variants are classified by `(tier, impact, region)` into ordered categories.
+3. Categories are dropped from lowest priority (NONCODING_INTERGENIC) to highest (TIER_1) until the total count ≤ 450k.
+4. If retained variants alone exceed 450k (filtering cannot help), bolt raises `RuntimeError` which sash catches — PCGR is skipped entirely for that sample.
 
-This reduction affects only the PCGR report input. The full filtered VCF is published independently. TMB and MSI are derived from PURPLE and are unaffected by PCGR input size.
+**Why 450k, not 500k?**
 
-Open TODOs remain: logging of the reduction steps and tempdir cleanup ([bolt/annotate.py:177–179](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L177)).
+- Bolt's filter is coarse-grained (drops whole categories at once). Output is always ≤ `MAX_SOMATIC_VARIANTS`, but a sample at exactly 500k would trigger pcgrr's `< 500000` check and the HTML report would be silently skipped.
+- The 50k margin ensures PCGR never triggers its own internal filtering, so bolt retains full control over clinical variant prioritisation.
+- See also: `bolt/docs/adr/001-max-somatic-variants-450k.md` for the detailed boundary analysis.
 
-A "hypermutated" flag was added to the gpgr cancer report to surface this condition to analysts. It was reverted in [v0.6.4](https://github.com/umccr/sash/blob/main/CHANGELOG.md) due to incorrect triggering conditions ([gpgr#101](https://github.com/umccr/gpgr/pull/101), [bolt#28](https://github.com/umccr/bolt/pull/28)). A redesigned flag may be reintroduced in a future release.
+**When PCGR is skipped:**
+
+- Sash marks PCGR outputs as `optional: true` in the BOLT_SMLV_SOMATIC_REPORT module.
+- VCF2MAF is skipped when its input VCF is absent.
+- The cancer report (gpgr) is unaffected — it does not consume PCGR output.
+- Real case: L2100242, 595k PASS variants (sash #52).
 
 ### Consequences
 
 Positive:
 
-- No merge step required; a single PCGR run is preserved per sample.
-- The exclusion order ensures the most clinically relevant variants are the last to be removed.
+- Bolt controls which variants reach PCGR, preserving clinical priority.
+- PCGR's own filtering never fires — TMB is accurate, HTML always generated.
+- For extreme hypermutators, graceful skip instead of silent failure.
+- Full filtered VCF is published independently regardless of PCGR skip.
 
 Negative:
 
-- **Coverage loss in PCGR report**: for extremely high variant counts, non-cancer-gene variants may be absent from the PCGR HTML even when they pass all sash filters. The published VCF is unaffected.
-- **No parallelization**: the original goal of parallel PCGR runs is not met; PCGR still runs serially on a single reduced input.
+- **Coverage loss in PCGR report**: for hypermutated samples, lower-priority variant categories are absent from the PCGR HTML. The published VCF is unaffected.
+- **No PCGR output for extreme cases**: samples where retained variants alone > 450k get no PCGR HTML, no MAF. This is intentional — PCGR would produce a misleading report anyway.
 
-### Remaining Challenges
+### References
 
-- True VCF chunking and parallel PCGR execution remain viable as a future improvement.
-- The `select_variants` logging and tempdir TODOs need resolution.
-- Reintroduction of a correctly scoped hypermutated indicator in the cancer report.
-
-### Links
-
-- [bolt/annotate.py — select_variants](https://github.com/umccr/bolt/blob/v0.2.18/bolt/workflows/smlv_somatic/annotate.py#L182)
-- [PCGR — large input sets](https://sigven.github.io/pcgr/articles/running.html#large-input-sets-vcf)
-- [v0.6.4 — hypermutated flag revert](https://github.com/umccr/sash/blob/main/CHANGELOG.md)
-- [gpgr#101](https://github.com/umccr/gpgr/pull/101), [bolt#28](https://github.com/umccr/bolt/pull/28)
+- bolt: `bolt/common/constants.py` — `MAX_SOMATIC_VARIANTS = 450_000`
+- bolt: `bolt/workflows/smlv_somatic/report.py` — `select_pcgr_variants()`
+- bolt: `bolt/docs/adr/001-max-somatic-variants-450k.md` — detailed boundary analysis
+- PCGR Python filter: `sigven/pcgr`, `pcgr/main.py` ~line 559
+- pcgrr HTML skip: `sigven/pcgr`, `pcgrr/R/main.R` ~line 954
+- sash #52, bolt #26, bolt #35
 
 ---
 
@@ -126,7 +139,7 @@ Positive:
 Negative:
 
 - PURPLE's purity/ploidy fitting operates without the germline variant constraint that SAGE-based pipelines benefit from. May reduce accuracy in edge cases (e.g. samples with low somatic variant counts or unusual ploidy).
-- The limitation is silent at runtime — nothing in the pipeline output signals that germline enrichment is inactive.
+- The limitation is silent at runtime; nothing in the pipeline output signals that germline enrichment is inactive.
 
 ### Remaining Challenges
 
@@ -151,7 +164,7 @@ Negative:
 
 ### Context
 
-PURPLE's driver catalogue (identifying driver genes with somatic SNVs/indels) depends on PAVE functional annotations (consequence, impact, coding effect) being present in the somatic VCF. Without PAVE, PURPLE produces an incomplete driver catalogue. At the same time, sash uses bolt for all clinical filtering and reporting — PAVE annotations are neither required nor consumed by the bolt pipeline or the cancer report.
+PURPLE's driver catalogue (identifying driver genes with somatic SNVs/indels) depends on PAVE functional annotations (consequence, impact, coding effect) being present in the somatic VCF. Without PAVE, PURPLE produces an incomplete driver catalogue. At the same time, sash uses bolt for all clinical filtering and reporting; PAVE annotations are neither required nor consumed by the bolt pipeline or the cancer report.
 
 ### Decision
 
@@ -175,11 +188,11 @@ Positive:
 Negative:
 
 - **PAVE annotations absent from the published VCF**: the clinical output (`smlv_somatic/filter/{tumor_id}.pass.vcf.gz`) does not carry PAVE consequence fields. Any downstream tool that needs PAVE annotations must re-run PAVE independently.
-- The pipeline runs PAVE on a temporary intermediate that is discarded — compute cost is paid but the output is invisible to the analyst.
+- The pipeline runs PAVE on a temporary intermediate that is discarded; compute cost is paid but the output is invisible to the analyst.
 
 ### Links
 
 - [workflows/sash.nf:171](workflows/sash.nf#L171)
 - [modules/local/pave/somatic/main.nf](modules/local/pave/somatic/main.nf)
-- [sash#19 — PAVE MNV filtering discussion](https://github.com/umccr/sash/issues/19)
+- [sash#19: PAVE MNV filtering discussion](https://github.com/umccr/sash/issues/19)
 - [v0.6.1 changelog](https://github.com/umccr/sash/blob/main/CHANGELOG.md)
