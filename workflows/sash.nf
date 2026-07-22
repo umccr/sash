@@ -1,27 +1,3 @@
-import Utils
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    VALIDATE INPUTS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
-
-// Validate input parameters
-WorkflowSash.initialise(params, log)
-
-// Check input path parameters to see if they exist
-def checkPathParamList = [
-    params.input,
-    params.ref_data_path,
-]
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
-
-// TODO(SW): place this into parameter validation
-// Check mandatory parameters
-if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
@@ -74,6 +50,20 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 */
 
 workflow SASH {
+    // Validate input parameters
+    WorkflowSash.initialise(params, log)
+
+    // Check input path parameters to see if they exist
+    def checkPathParamList = [
+        params.input,
+        params.ref_data_path,
+    ]
+    checkPathParamList.each { param -> if (param) { file(param, checkIfExists: true) } }
+
+    // TODO(SW): place this into parameter validation
+    // Check mandatory parameters
+    if (!params.input) { exit 1, 'Input samplesheet not specified!' }
+
     // Create channel for versions
     // channel: [ versions.yml ]
     ch_versions = Channel.empty()
@@ -133,7 +123,7 @@ workflow SASH {
                 normal_id: meta.normal_id,
                 sample_id: meta.tumor_id
             ]
-            return [meta_bolt, *it[1..-1]]
+            return [meta_bolt] + it[1..-1]
         }
 
     BOLT_SMLV_SOMATIC_RESCUE(
@@ -541,7 +531,7 @@ workflow SASH {
                 subject_id: meta.subject_id,
                 tumor_id: meta.tumor_id,
             ]
-            return [meta_bolt, *it[1..-1]]
+            return [meta_bolt] + it[1..-1]
         }
 
     BOLT_OTHER_CANCER_REPORT(
@@ -636,22 +626,6 @@ workflow SASH {
             newLine: true,
         )
 
-}
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    COMPLETION EMAIL AND SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-workflow.onComplete {
-    if (params.email || params.email_on_fail) {
-        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log)
-    }
-    NfcoreTemplate.summary(workflow, params, log)
-    if (params.hook_url) {
-        NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
-    }
 }
 
 /*
