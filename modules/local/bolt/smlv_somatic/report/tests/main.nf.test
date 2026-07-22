@@ -1,0 +1,74 @@
+nextflow_process {
+
+    name "Test Process BOLT_SMLV_SOMATIC_REPORT"
+    script "modules/local/bolt/smlv_somatic/report/main.nf"
+    process "BOLT_SMLV_SOMATIC_REPORT"
+    config "modules/local/bolt/smlv_somatic/report/tests/nextflow.config"
+    tag "modules/local/bolt/smlv_somatic/report"
+
+    test("stub | normal run — emits all outputs including PCGR") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [[id: 'TEST_01', tumor_id: 'TUMOR', normal_id: 'NORMAL'], file('stub_vcf'), file('stub_filters'), file('stub_dragen'), file('stub_purity')]
+                input[1] = file('stub_pcgr_data')
+                input[2] = file('stub_vep')
+                input[3] = file('stub_panel')
+                input[4] = file('stub_giab')
+                input[5] = file('stub_fasta')
+                input[6] = file('stub_fai')
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.af_global.size() == 1
+            assert process.out.af_keygenes.size() == 1
+            assert process.out.bcftools_stats.size() == 1
+            assert process.out.counts_type.size() == 1
+            assert process.out.counts_process.size() == 1
+            assert process.out.pcgr_pass_vcf.size() == 1
+            assert process.out.pcgr_dir.size() == 1
+            assert process.out.pcgr_report.size() == 1
+            assert process.out.versions.size() == 1
+        }
+    }
+
+    test("stub | PCGR skipped (>450k variants) — pcgr outputs not emitted") {
+
+        options "-stub"
+        config "modules/local/bolt/smlv_somatic/report/tests/nextflow_pcgr_skip.config"
+
+        when {
+            process {
+                """
+                input[0] = [[id: 'TEST_01', tumor_id: 'TUMOR', normal_id: 'NORMAL'], file('stub_vcf'), file('stub_filters'), file('stub_dragen'), file('stub_purity')]
+                input[1] = file('stub_pcgr_data')
+                input[2] = file('stub_vep')
+                input[3] = file('stub_panel')
+                input[4] = file('stub_giab')
+                input[5] = file('stub_fasta')
+                input[6] = file('stub_fai')
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.af_global.size() == 1
+            assert process.out.af_keygenes.size() == 1
+            assert process.out.bcftools_stats.size() == 1
+            assert process.out.counts_type.size() == 1
+            assert process.out.counts_process.size() == 1
+            // PCGR outputs should not be emitted when skipped
+            assert process.out.pcgr_pass_vcf.size() == 0
+            assert process.out.pcgr_dir.size() == 0
+            assert process.out.pcgr_report.size() == 0
+            assert process.out.versions.size() == 1
+        }
+    }
+}

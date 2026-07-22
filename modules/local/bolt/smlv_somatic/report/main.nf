@@ -61,16 +61,20 @@ process BOLT_SMLV_SOMATIC_REPORT {
     """
 
     stub:
+    def skip_pcgr = task.ext.args?.contains('--skip_pcgr') ?: false
     """
     mkdir -p output/pcgr/
-    touch output/pcgr/pcgr.stub
     touch output/af_tumor.txt
     touch output/af_tumor_keygenes.txt
     touch output/${meta.tumor_id}.somatic.variant_counts_type.yaml
     touch output/${meta.tumor_id}.somatic.variant_counts_process.json
     touch output/${meta.tumor_id}.somatic.bcftools_stats.txt
-    touch output/pcgr/${meta.tumor_id}.pcgr.grch38.pass.vcf.gz
-    touch output/${meta.tumor_id}.pcgr.grch38.html
+
+    if [ "${skip_pcgr}" != "true" ]; then
+        touch output/pcgr/${meta.tumor_id}.pcgr.grch38.pass.vcf.gz
+        touch output/${meta.tumor_id}.pcgr.grch38.html
+    fi
+
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
