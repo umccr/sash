@@ -57,7 +57,7 @@ workflow PURPLE_CALLING {
                     tumor_id: meta.tumor_id,
                     normal_id: meta.normal_id,
               ]
-              return [meta_purple, *it[1..-1]]
+              return [meta_purple] + it[1..-1]
             }
 
         PURPLE(

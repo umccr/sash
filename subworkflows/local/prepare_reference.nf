@@ -5,8 +5,6 @@
 include { CUSTOM_EXTRACTTARBALL as DECOMP_MISC_DATA } from '../../modules/local/custom/extract_tarball/main'
 
 workflow PREPARE_REFERENCE {
-    take:
-
     main:
         // Channel for version.yml files
         ch_versions = Channel.empty()

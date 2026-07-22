@@ -1,5 +1,3 @@
-import nextflow.Nextflow
-
 workflow PREPARE_INPUT {
     take:
         ch_samplesheet
@@ -15,24 +13,19 @@ workflow PREPARE_INPUT {
                 def meta = [id: key]
                 entries.each {
                     // Filetype
-                    switch (it.filetype) {
-                        case 'dragen_somatic_dir':
-                            meta.tumor_id = it.sample_name;
-                            break;
-                        case 'dragen_germline_dir':
-                            meta.normal_id = it.sample_name;
-                            break;
-                        case 'oncoanalyser_dir':
-                            break;
-                        case 'dragen_somatic_vcf':
-                            // TODO: document in docs/usage.md
-                            break;
-                        case 'dragen_germline_vcf':
-                            // TODO: document in docs/usage.md
-                            break;
-                        default:
-                            log.error "got bad filetype: ${it.filetype}"
-                            Nextflow.exit(1)
+                    if (it.filetype == 'dragen_somatic_dir') {
+                        meta.tumor_id = it.sample_name
+                    } else if (it.filetype == 'dragen_germline_dir') {
+                        meta.normal_id = it.sample_name
+                    } else if (it.filetype == 'oncoanalyser_dir') {
+                        // no-op
+                    } else if (it.filetype == 'dragen_somatic_vcf') {
+                        // TODO: document in docs/usage.md
+                    } else if (it.filetype == 'dragen_germline_vcf') {
+                        // TODO: document in docs/usage.md
+                    } else {
+                        log.error "got bad filetype: ${it.filetype}"
+                        nextflow.Nextflow.exit(1)
                     }
 
                     meta[it.filetype] = it.filepath
@@ -42,7 +35,7 @@ workflow PREPARE_INPUT {
                         meta.subject_id = it.subject_name
                     } else if (meta.subject_id != it.subject_name) {
                         log.error "expected ${meta.subject_id} as subject name but got ${it.subject_name}"
-                        Nextflow.exit(1)
+                        nextflow.Nextflow.exit(1)
                     }
 
                 }
@@ -59,7 +52,7 @@ workflow PREPARE_INPUT {
             def amber_dir = "${base}/amber/"
             if (!file(amber_dir).exists()) {
                 log.error "AMBER directory not found for ${meta.id}: ${amber_dir}"
-                Nextflow.exit(1)
+                nextflow.Nextflow.exit(1)
             }
             return [meta, amber_dir]
         }
@@ -71,7 +64,7 @@ workflow PREPARE_INPUT {
             def cobalt_dir = "${base}/cobalt/"
             if (!file(cobalt_dir).exists()) {
                 log.error "COBALT directory not found for ${meta.id}: ${cobalt_dir}"
-                Nextflow.exit(1)
+                nextflow.Nextflow.exit(1)
             }
             return [meta, cobalt_dir]
         }
@@ -92,11 +85,11 @@ workflow PREPARE_INPUT {
             def esvee_prep_dir = "${base}/esvee/"
             if (!file(esvee_ref_depth_vcf).exists()) {
                 log.error "eSVee depth VCF not found for ${meta.id}: ${esvee_ref_depth_vcf}"
-                Nextflow.exit(1)
+                nextflow.Nextflow.exit(1)
             }
             if (!file(esvee_prep_dir).exists()) {
                 log.error "eSVee directory not found for ${meta.id}: ${esvee_prep_dir}"
-                Nextflow.exit(1)
+                nextflow.Nextflow.exit(1)
             }
             return [meta_esvee, esvee_ref_depth_vcf, esvee_prep_dir]
         }
@@ -109,11 +102,11 @@ workflow PREPARE_INPUT {
             def sage_somatic_tbi = "${sage_somatic_vcf}.tbi"
             if (!file(sage_somatic_vcf).exists()) {
                 log.error "SAGE somatic VCF not found for ${meta.id}: ${sage_somatic_vcf}"
-                Nextflow.exit(1)
+                nextflow.Nextflow.exit(1)
             }
             if (!file(sage_somatic_tbi).exists()) {
                 log.error "SAGE somatic TBI not found for ${meta.id}: ${sage_somatic_tbi}"
-                Nextflow.exit(1)
+                nextflow.Nextflow.exit(1)
             }
             return [meta, sage_somatic_vcf, sage_somatic_tbi]
         }
@@ -125,7 +118,7 @@ workflow PREPARE_INPUT {
             def virusbreakend_dir = "${base}/virusbreakend/"
             if (!file(virusbreakend_dir).exists()) {
                 log.error "VirusBreakend directory not found for ${meta.id}: ${virusbreakend_dir}"
-                Nextflow.exit(1)
+                nextflow.Nextflow.exit(1)
             }
             return [meta, virusbreakend_dir]
         }
@@ -137,7 +130,7 @@ workflow PREPARE_INPUT {
             def chord_prediction_tsv = "${base}/chord/${meta.tumor_id}.chord.prediction.tsv"
             if (!file(chord_prediction_tsv).exists()) {
                 log.error "CHORD prediction file not found for ${meta.id}: ${chord_prediction_tsv}"
-                Nextflow.exit(1)
+                nextflow.Nextflow.exit(1)
             }
             return [meta, chord_prediction_tsv]
         }
@@ -163,7 +156,7 @@ workflow PREPARE_INPUT {
                 : "${file(meta.dragen_germline_dir).toUriString()}/${meta.normal_id}.hard-filtered.vcf.gz"
             if (!file(dragen_germline_vcf).exists()) {
                 log.error "DRAGEN germline VCF not found for ${meta.id}: ${dragen_germline_vcf}"
-                Nextflow.exit(1)
+                nextflow.Nextflow.exit(1)
             }
             return [meta, dragen_germline_vcf]
         }
@@ -178,11 +171,11 @@ workflow PREPARE_INPUT {
             def dragen_somatic_tbi = "${dragen_somatic_vcf}.tbi"
             if (!file(dragen_somatic_vcf).exists()) {
                 log.error "DRAGEN somatic VCF not found for ${meta.id}: ${dragen_somatic_vcf}"
-                Nextflow.exit(1)
+                nextflow.Nextflow.exit(1)
             }
             if (!file(dragen_somatic_tbi).exists()) {
                 log.error "DRAGEN somatic VCF index not found for ${meta.id}: ${dragen_somatic_tbi}"
-                Nextflow.exit(1)
+                nextflow.Nextflow.exit(1)
             }
             return [meta, dragen_somatic_vcf, dragen_somatic_tbi]
         }
