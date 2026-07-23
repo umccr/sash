@@ -16,8 +16,6 @@ process BOLT_SMLV_SOMATIC_RESCUE {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-
     """
     bcftools view -o ${meta.tumor_id}.main.dragen.vcf.gz ${smlv_vcf} chr{1..22} chr{X,Y,M}
     bcftools view -f PASS,. -o ${meta.tumor_id}.main.sage.filtered.vcf.gz ${sage_smlv_vcf} chr{1..22} chr{X,Y,M}

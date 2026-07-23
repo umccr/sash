@@ -18,7 +18,7 @@ workflow LINX_PLOTTING {
     main:
         // Channel for versions.yml files
         // channel: [ versions.yml ]
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
         // Select input sources
         // channel: [ meta_linx, linx_annotation_dir ]

@@ -30,7 +30,7 @@ workflow PURPLE_CALLING {
     main:
         // Channel for version.yml files
         // channel: [ versions.yml ]
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
         // Collect inputs
         // channel: [ meta, amber_dir, cobalt_dir, sv_somatic_vcf, sv_somatic_tbi, sv_germline_vcf, sv_germline_tbi, smlv_somatic_vcf, smlv_germline_vcf ]
@@ -49,15 +49,15 @@ workflow PURPLE_CALLING {
         // Create process-specific meta
         // channel: [ meta_purple, amber_dir, cobalt_dir, sv_somatic_vcf, sv_somatic_tbi, sv_germline_tbi, smlv_somatic_vcf, smlv_germline_vcf ]
         ch_purple_inputs = ch_purple_inputs_source
-            .map {
-                def meta = it[0]
+            .map { entry ->
+                def meta = entry[0]
                 def meta_purple = [
                     key: meta.id,
                     id: meta.id,
                     tumor_id: meta.tumor_id,
                     normal_id: meta.normal_id,
               ]
-              return [meta_purple, *it[1..-1]]
+              return [meta_purple] + entry[1..-1]
             }
 
         PURPLE(

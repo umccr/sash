@@ -20,7 +20,7 @@ workflow LINX_ANNOTATION {
     main:
         // Channel for versions.yml files
         // channel: [ versions.yml ]
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
         // Create inputs and create process-specific meta
         // channel: [ meta, sv_vcf ]
