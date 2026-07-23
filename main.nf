@@ -165,7 +165,7 @@ output {
         path { meta, f -> f >> "${meta.key}/sv_somatic/prioritise/${f.name}" }
     }
     purple_dir {
-        path { meta, _dir -> "${meta.key}" }
+        path { meta, _dir -> "${meta.id}" }
     }
     sigrap_hrdetect_json {
         path { meta, _f -> "${meta.key}/sigrap/hrdetect" }
@@ -177,13 +177,13 @@ output {
         path { meta, _dir -> "${meta.key}/esvee" }
     }
     linx_germline_annotation_dir {
-        path { meta, f -> f >> "${meta.key}/linx/germline_annotations/${f.name}" }
+        path { meta, f -> f >> "${meta.id}/linx/germline_annotations/${f.name}" }
     }
     linx_somatic_annotation_dir {
-        path { meta, f -> f >> "${meta.key}/linx/somatic_annotations/${f.name}" }
+        path { meta, f -> f >> "${meta.id}/linx/somatic_annotations/${f.name}" }
     }
     linx_somatic_plot_dir {
-        path { meta, f, rel -> f >> "${meta.key}/linx/somatic_plots/${rel}" }
+        path { meta, f, rel -> f >> "${meta.id}/linx/somatic_plots/${rel}" }
     }
     linxreport_html {
         path { meta, _f -> "${meta.key}" }

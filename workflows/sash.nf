@@ -628,10 +628,11 @@ workflow SASH {
         )
 
     emit:
-    // NOTE(QC): these emit the process-scoped meta (e.g. `meta_bolt`, `meta_purple`, ...,
-    // each carrying `.key`) rather than the sample-level meta restored further up via
-    // WorkflowSash.restoreMeta(). The workflow output `path {}` formulas in main.nf need
-    // `meta.key` to reproduce the pre-migration publishDir/saveAs paths exactly.
+    // NOTE(QC): most of these emit the process-scoped meta (e.g. `meta_bolt`, `meta_sigrap`, ...,
+    // each carrying `.key`) since that's the only channel these processes' subworkflows expose.
+    // purple_dir/linx_*_annotation_dir/linx_somatic_plot_dir instead reuse the sample-level meta
+    // already restored via WorkflowSash.restoreMeta() further up (its `.id` field is always the
+    // same value `.key` would have held) rather than threading a second redundant channel.
     smlv_somatic_rescue_vcf          = BOLT_SMLV_SOMATIC_RESCUE.out.vcf          // channel: [ meta_bolt, vcf ]
     smlv_somatic_annotate_vcf        = BOLT_SMLV_SOMATIC_ANNOTATE.out.vcf        // channel: [ meta_bolt, vcf ]
     smlv_somatic_filter_vcf          = BOLT_SMLV_SOMATIC_FILTER.out.vcf          // channel: [ meta_bolt, vcf, tbi ]
@@ -641,14 +642,14 @@ workflow SASH {
     sv_somatic_prioritise_sv_tsv     = BOLT_SV_SOMATIC_PRIORITISE.out.sv_tsv     // channel: [ meta_bolt, tsv ]
     sv_somatic_prioritise_sv_vcf     = BOLT_SV_SOMATIC_PRIORITISE.out.sv_vcf     // channel: [ meta_bolt, vcf ]
     sv_somatic_prioritise_cnv_tsv    = BOLT_SV_SOMATIC_PRIORITISE.out.cnv_tsv    // channel: [ meta_bolt, tsv ]
-    purple_dir                       = PURPLE_CALLING.out.purple_dir_raw        // channel: [ meta_purple, purple_dir ]
+    purple_dir                       = PURPLE_CALLING.out.purple_dir            // channel: [ meta, purple_dir ]
     sigrap_hrdetect_json             = SIGRAP_HRDETECT.out.hrdetect_json        // channel: [ meta_sigrap, hrdetect_json ]
     sigrap_mutpat_dir                = SIGRAP_MUTPAT.out.mutpat_output          // channel: [ meta_sigrap, mutpat_dir ]
     esvee_caller_dir                 = ESVEE_CALL.out.caller_dir                // channel: [ meta_esvee, caller_dir ]
-    linx_germline_annotation_dir     = LINX_ANNOTATION.out.germline_raw         // channel: [ meta_linx, linx_annotation_dir ]
-    linx_somatic_annotation_dir      = LINX_ANNOTATION.out.somatic_raw          // channel: [ meta_linx, linx_annotation_dir ]
-    linx_somatic_plot_dir            = LINX_PLOTTING.out.plot_dir_raw           // channel: [ meta_linx, plot_dir ]
-    linxreport_html                  = LINX_PLOTTING.out.linxreport_raw         // channel: [ meta_linxreport, linxreport_html ]
+    linx_germline_annotation_dir     = LINX_ANNOTATION.out.germline             // channel: [ meta, linx_annotation_dir ]
+    linx_somatic_annotation_dir      = LINX_ANNOTATION.out.somatic              // channel: [ meta, linx_annotation_dir ]
+    linx_somatic_plot_dir            = LINX_PLOTTING.out.plot_dir               // channel: [ meta, plot_dir ]
+    linxreport_html                  = LINX_PLOTTING.out.linxreport             // channel: [ meta_linxreport, linxreport_html ]
     vcf2maf_maf                      = VCF2MAF.out.maf                          // channel: [ meta_vcf2maf, maf ]
 }
 
