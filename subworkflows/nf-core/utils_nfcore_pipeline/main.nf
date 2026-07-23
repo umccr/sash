@@ -13,11 +13,10 @@ workflow UTILS_NFCORE_PIPELINE {
     nextflow_cli_args
 
     main:
-    valid_config = checkConfigProvided()
     checkProfileProvided(nextflow_cli_args)
 
     emit:
-    valid_config
+    checkConfigProvided()
 }
 
 /*
@@ -98,7 +97,7 @@ def workflowVersionToYAML() {
 // Get channel of software versions used in pipeline in YAML format
 //
 def softwareVersionsToYAML(ch_versions) {
-    return ch_versions.unique().map { version -> processVersionsFromYAML(version) }.unique().mix(Channel.of(workflowVersionToYAML()))
+    return ch_versions.unique().map { version -> processVersionsFromYAML(version) }.unique().mix(channel.of(workflowVersionToYAML()))
 }
 
 //

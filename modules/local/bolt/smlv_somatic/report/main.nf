@@ -28,8 +28,6 @@ process BOLT_SMLV_SOMATIC_REPORT {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-
     """
     bolt smlv_somatic report \\
         --tumor_name ${meta.tumor_id} \\
