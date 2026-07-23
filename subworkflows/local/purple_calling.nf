@@ -82,10 +82,6 @@ workflow PURPLE_CALLING {
         ch_outputs = WorkflowSash.restoreMeta(PURPLE.out.purple_dir, ch_inputs)
 
     emit:
-        purple_dir     = ch_outputs         // channel: [ meta, purple_dir ]
-        // NOTE(QC): process-scoped (pre restoreMeta) output retained so `meta.key` is available
-        // for the workflow output publish path formula in the entry workflow.
-        purple_dir_raw = PURPLE.out.purple_dir // channel: [ meta_purple, purple_dir ]
-
+        purple_dir = ch_outputs  // channel: [ meta, purple_dir ]
         versions   = ch_versions // channel: [ versions.yml ]
 }
