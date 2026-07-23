@@ -64,7 +64,11 @@ workflow LINX_PLOTTING {
         ch_versions = ch_versions.mix(LINXREPORT.out.versions)
 
     emit:
-        plot_dir = ch_visualiser_out // channel: [ meta, plot_dir ]
+        plot_dir         = ch_visualiser_out // channel: [ meta, plot_dir ]
+        // NOTE(QC): process-scoped (pre restoreMeta) outputs retained so `meta.key` is available
+        // for the workflow output publish path formula in the entry workflow.
+        plot_dir_raw     = LINX_VISUALISER.out.plots // channel: [ meta_linx, plot_dir ]
+        linxreport_raw   = LINXREPORT.out.html       // channel: [ meta_linxreport, linxreport_html ]
 
         versions = ch_versions       // channel: [ versions.yml ]
 }

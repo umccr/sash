@@ -75,6 +75,10 @@ workflow LINX_ANNOTATION {
     emit:
         somatic       = ch_linx_somatic_out  // channel: [ meta, linx_annotation_dir ]
         germline      = ch_linx_germline_out // channel: [ meta, linx_annotation_dir ]
+        // NOTE(QC): process-scoped (pre restoreMeta) outputs retained so `meta.key` is available
+        // for the workflow output publish path formula in the entry workflow.
+        somatic_raw   = SOMATIC.out.annotation_dir  // channel: [ meta_linx, linx_annotation_dir ]
+        germline_raw  = GERMLINE.out.annotation_dir // channel: [ meta_linx, linx_annotation_dir ]
 
         versions      = ch_versions          // channel: [ versions.yml ]
 }
