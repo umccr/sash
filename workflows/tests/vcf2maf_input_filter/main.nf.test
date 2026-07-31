@@ -1,0 +1,96 @@
+nextflow_workflow {
+
+    name "Test Workflow VCF2MAF_INPUT_FILTER"
+    script "workflows/tests/vcf2maf_input_filter/main.nf"
+    workflow "VCF2MAF_INPUT_FILTER"
+    config "workflows/tests/vcf2maf_input_filter/nextflow.config"
+    tag "workflows/tests/vcf2maf_input_filter"
+
+    // Replicates workflows/sash.nf's VCF2MAF input channel chain in isolation
+    // (sash #59 / ADR-001). Confirmed empirically via the BOLT_SMLV_SOMATIC_REPORT
+    // stub test that a sample with PCGR skipped (optional:true output not produced)
+    // yields zero channel items for that sample — not a [meta, null] entry. So this
+    // mocks ch_pcgr_pass_vcf with only ONE entry (the non-skipped sample) while
+    // ch_inputs carries metas for BOTH samples, matching real per-process-output vs.
+    // per-sample-input channel shapes.
+
+    test("hypermutated sample dropped, normal sample passes through with correct meta_vcf2maf") {
+
+        when {
+            workflow {
+                """
+                def vcf = file("${projectDir}/workflows/tests/vcf2maf_input_filter/pcgr_pass.vcf.gz")
+
+                input[0] = Channel.of(
+                    [[key: 'SAMPLE_NORMAL', id: 'SAMPLE_NORMAL', tumor_id: 'TUMOR_A', normal_id: 'NORMAL_A'], vcf]
+                )
+                input[1] = Channel.of(
+                    [id: 'SAMPLE_NORMAL', tumor_id: 'TUMOR_A', normal_id: 'NORMAL_A'],
+                    [id: 'SAMPLE_HYPERMUTATED', tumor_id: 'TUMOR_B', normal_id: 'NORMAL_B'],
+                )
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert workflow.out.out.size() == 1
+
+            with(workflow.out.out.get(0)) {
+                def meta_vcf2maf = get(0)
+                assert meta_vcf2maf.key == 'SAMPLE_NORMAL'
+                assert meta_vcf2maf.id == 'SAMPLE_NORMAL'
+                assert meta_vcf2maf.tumor_id == 'TUMOR_A'
+                assert meta_vcf2maf.normal_id == 'NORMAL_A'
+            }
+        }
+    }
+
+    // Three-sample variant: rules out sample mis-keying in restoreMeta's .cross()
+    // join — e.g. an off-by-one or first-match-wins bug that could let the wrong
+    // meta pair with the wrong vcf when more than two samples share a run.
+    // Two samples ran PCGR (SAMPLE_A, SAMPLE_C), one was skipped (SAMPLE_B, the
+    // middle entry in ch_inputs — deliberately not first/last to catch positional
+    // bugs); ch_pcgr_pass_vcf only has entries for A and C.
+
+    test("three samples, middle one hypermutated — correct pairing, no mis-keying") {
+
+        when {
+            workflow {
+                """
+                def vcf_a = file("${projectDir}/workflows/tests/vcf2maf_input_filter/pcgr_pass.vcf.gz")
+                def vcf_c = file("${projectDir}/workflows/tests/vcf2maf_input_filter/pcgr_pass_2.vcf.gz")
+
+                input[0] = Channel.of(
+                    [[key: 'SAMPLE_A', id: 'SAMPLE_A', tumor_id: 'TUMOR_A', normal_id: 'NORMAL_A'], vcf_a],
+                    [[key: 'SAMPLE_C', id: 'SAMPLE_C', tumor_id: 'TUMOR_C', normal_id: 'NORMAL_C'], vcf_c],
+                )
+                input[1] = Channel.of(
+                    [id: 'SAMPLE_A', tumor_id: 'TUMOR_A', normal_id: 'NORMAL_A'],
+                    [id: 'SAMPLE_B', tumor_id: 'TUMOR_B', normal_id: 'NORMAL_B'],
+                    [id: 'SAMPLE_C', tumor_id: 'TUMOR_C', normal_id: 'NORMAL_C'],
+                )
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert workflow.out.out.size() == 2
+
+            def by_key = workflow.out.out.collectEntries { [(it[0].key): it] }
+            assert by_key.keySet() == ['SAMPLE_A', 'SAMPLE_C'] as Set
+
+            with(by_key['SAMPLE_A']) {
+                assert get(0).tumor_id == 'TUMOR_A'
+                assert get(0).normal_id == 'NORMAL_A'
+                assert get(1).toString().endsWith('pcgr_pass.vcf.gz')
+            }
+            with(by_key['SAMPLE_C']) {
+                assert get(0).tumor_id == 'TUMOR_C'
+                assert get(0).normal_id == 'NORMAL_C'
+                assert get(1).toString().endsWith('pcgr_pass_2.vcf.gz')
+            }
+        }
+    }
+}

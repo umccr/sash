@@ -1,0 +1,84 @@
+nextflow_process {
+
+    name "Test Process BOLT_SMLV_SOMATIC_REPORT"
+    script "modules/local/bolt/smlv_somatic/report/main.nf"
+    process "BOLT_SMLV_SOMATIC_REPORT"
+    config "modules/local/bolt/smlv_somatic/report/tests/nextflow.config"
+    tag "modules/local/bolt/smlv_somatic/report"
+
+    // Stub tests validate that the optional: true PCGR outputs (pcgr_pass_vcf,
+    // pcgr_dir, pcgr_report) are correctly present/absent per sample, and that
+    // the process still succeeds when they're absent (sash #59 / ADR-001).
+    // Branching is driven by the input VCF filename, mirroring PAVE's
+    // fixture-directory-name convention.
+
+    test("stub | normal sample — emits pcgr_pass_vcf/pcgr_dir/pcgr_report") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                def vcf = file("${projectDir}/modules/local/bolt/smlv_somatic/report/tests/fixtures/normal/normal.vcf.gz")
+                def filters_vcf = file("${projectDir}/modules/local/bolt/smlv_somatic/report/tests/fixtures/normal/normal.filters.vcf.gz")
+                def dragen_vcf = file("${projectDir}/modules/local/bolt/smlv_somatic/report/tests/fixtures/normal/normal.dragen.vcf.gz")
+                def purity = file("${projectDir}/modules/local/bolt/smlv_somatic/report/tests/fixtures/normal/purple.purity.tsv")
+                input[0] = [[id: 'TEST_01', tumor_id: 'TUMOR', normal_id: 'NORMAL'], vcf, filters_vcf, dragen_vcf, purity]
+                input[1] = []
+                input[2] = []
+                input[3] = []
+                input[4] = []
+                input[5] = []
+                input[6] = []
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.pcgr_pass_vcf.size() == 1
+            assert process.out.pcgr_dir.size() == 1
+            assert process.out.pcgr_report.size() == 1
+            assert process.out.af_global.size() == 1
+            assert process.out.bcftools_stats.size() == 1
+            assert process.out.counts_type.size() == 1
+            assert process.out.counts_process.size() == 1
+            assert process.out.versions.size() == 1
+        }
+    }
+
+    test("stub | hypermutated sample — PCGR skipped, process still succeeds") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                def vcf = file("${projectDir}/modules/local/bolt/smlv_somatic/report/tests/fixtures/hypermutated/hypermutated.vcf.gz")
+                def filters_vcf = file("${projectDir}/modules/local/bolt/smlv_somatic/report/tests/fixtures/hypermutated/hypermutated.filters.vcf.gz")
+                def dragen_vcf = file("${projectDir}/modules/local/bolt/smlv_somatic/report/tests/fixtures/hypermutated/hypermutated.dragen.vcf.gz")
+                def purity = file("${projectDir}/modules/local/bolt/smlv_somatic/report/tests/fixtures/hypermutated/purple.purity.tsv")
+                input[0] = [[id: 'TEST_02', tumor_id: 'TUMOR', normal_id: 'NORMAL'], vcf, filters_vcf, dragen_vcf, purity]
+                input[1] = []
+                input[2] = []
+                input[3] = []
+                input[4] = []
+                input[5] = []
+                input[6] = []
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.pcgr_pass_vcf.size() == 0
+            assert process.out.pcgr_dir.size() == 0
+            assert process.out.pcgr_report.size() == 0
+            assert process.out.af_global.size() == 1
+            assert process.out.bcftools_stats.size() == 1
+            assert process.out.counts_type.size() == 1
+            assert process.out.counts_process.size() == 1
+            assert process.out.versions.size() == 1
+        }
+    }
+}
