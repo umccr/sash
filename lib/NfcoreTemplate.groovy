@@ -219,7 +219,8 @@ class NfcoreTemplate {
     //
     // ANSII Colours used for terminal logging
     //
-    public static Map logColours(Boolean monochrome_logs) {
+    public static Map logColours(monochrome_logs) {
+        monochrome_logs = monochrome_logs instanceof Boolean ? monochrome_logs : (monochrome_logs?.toString()?.toBoolean() ?: false)
         Map colorcodes = [:]
 
         // Reset / Meta

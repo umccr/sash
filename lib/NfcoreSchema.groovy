@@ -435,6 +435,10 @@ class NfcoreSchema {
             if (p['value'].getClass() == LinkedHashMap) {
                 new_params.replace(p.key, p['value'].toString())
             }
+            // Cast a String "true"/"false" (e.g. from a bare CLI boolean flag) to a real Boolean
+            if (p['value'] instanceof String && p['value'].toLowerCase() in ['true', 'false']) {
+                new_params.replace(p.key, p['value'].toBoolean())
+            }
         }
         return new_params
     }
