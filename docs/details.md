@@ -609,7 +609,7 @@ These are populated from the DRAGEN mapping and coverage summary files ingested 
 
 - **SV prioritisation**: genes on this list raise a variant's priority tier in the `simple_sv_annotation` step ([Somatic Structural Variants → Prioritization](#somatic-structural-variants))
 - **Somatic small variant annotation**: the gene region BED (`umccr_cancer_genes.gene_regions.bed`) and CDS region BED are passed to `bolt smlv_somatic annotate` and `bolt smlv_somatic report` ([modules/local/bolt/smlv_somatic/annotate/main.nf](modules/local/bolt/smlv_somatic/annotate/main.nf), [modules/local/bolt/smlv_somatic/report/main.nf](modules/local/bolt/smlv_somatic/report/main.nf))
-- **Hypermutated sample handling**: when variant counts exceed 500,000, variants lacking clinical impact or hotspot annotations are filtered until the threshold is met; the cancer gene list defines what "clinical impact" means in this context
+- **Hypermutated sample handling**: when variant counts exceed 450,000 (`MAX_SOMATIC_VARIANTS`), variants lacking clinical impact or hotspot annotations are filtered until the threshold is met; the cancer gene list defines what "clinical impact" means in this context. See [ADR #1](adr.md) for the full cascade and the caveat that the `Hypermutated` flag itself is computed separately, on raw (PASS + non-PASS) counts.
 
 In [v0.6.4](https://github.com/umccr/sash/blob/main/CHANGELOG.md), the CDKN2A MANE Plus Clinical transcript `ENST00000579755` was added, fixing a gap in CDKN2A CDS coverage.
 
@@ -717,7 +717,7 @@ A: Rescue is performed by BOLT using SAGE hotspot calls layered onto the DRAGEN 
 
 ### Q: How are hypermutated samples handled in the current version, and is there any impact on derived metrics such as TMB or MSI?
 
-A: When the post-filter variant count exceeds PCGR's 500,000-variant limit, bolt progressively reduces the variant set before passing it to PCGR. The published filtered VCF and PURPLE-derived TMB/MSI are unaffected. See [ADR #1](adr.md) for the full rationale, implementation details, and history of the cancer report hypermutated flag revert.
+A: When the post-filter variant count exceeds bolt's 450,000-variant cap (`MAX_SOMATIC_VARIANTS`, set below PCGR's own 500,000-variant limit as a safety margin), bolt progressively reduces the variant set before passing it to PCGR. The published filtered VCF and PURPLE-derived TMB/MSI are unaffected. See [ADR #1](adr.md) for the full rationale, implementation details, and history of the cancer report hypermutated flag revert — including the caveat that the `Hypermutated` flag itself is computed from the raw (PASS + non-PASS) DRAGEN count, so a `TRUE` result does not necessarily mean region-based filtering was applied to the variants PCGR actually annotated.
 
 ### Q: How are we handling non-standard chromosomes if present in the input VCFs (ALTs, chrM, etc)?
 
