@@ -3,7 +3,7 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
     label 'process_medium_memory'
     label 'process_long'
 
-    container 'ghcr.io/umccr/bolt:0.3.2-pcgr'
+    container 'ghcr.io/umccr/bolt:0.3.1-pcgr'
 
     input:
     tuple val(meta), path(smlv_vcf)

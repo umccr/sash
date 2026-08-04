@@ -1,0 +1,4 @@
+filepath,filetype,id,sample_name,subject_name
+s3://test-data-503977275616-ap-southeast-2/testdata/analysis/production/dragen-wgts-dna/4.4.6/SEQC-II/20260330a606412c/L2300943__L2300950__hg38__linear__dragen_wgts_dna_somatic_variant_calling/,dragen_somatic_dir,L2300943_L2300950,L2300943,SBJ00480
+s3://test-data-503977275616-ap-southeast-2/testdata/analysis/production/dragen-wgts-dna/4.4.6/SEQC-II/20260330a606412c/L2300950__hg38__graph__dragen_wgts_dna_germline_variant_calling/,dragen_germline_dir,L2300943_L2300950,L2300950,SBJ00480
+s3://test-data-503977275616-ap-southeast-2/testdata/analysis/production/oncoanalyser-wgts-dna/2.2.0/SEQC-II/20260401d6eff920/L2300943__L2300950/,oncoanalyser_dir,L2300943_L2300950,L2300943,SBJ00480

@@ -1,0 +1,2 @@
+id,subject_name,sample_name,filetype,filepath,tumor_id,normal_id
+SEQCII_L2300943,SBJ00480,L2300943,oncoanalyser_dir,s3://test-data-503977275616-ap-southeast-2/testdata/analysis/production/oncoanalyser-wgts-dna/2.2.0/SEQC-II/202604018825f20d/L2300943__L2300950/,L2300943,L2300950
