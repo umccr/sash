@@ -29,7 +29,8 @@ process PAVE_SOMATIC {
     def xmx_mod = task.ext.xmx_mod ?: 0.75
 
     """
-    if bcftools view -h ${vcf} | grep -q '##INFO=<ID=MNVTAG,'; then
+    bcftools view -h ${vcf} > header.txt
+    if grep -q '##INFO=<ID=MNVTAG,' header.txt; then
         bcftools view --exclude 'INFO/MNVTAG!="."' --write-index=tbi --output ${meta.sample_id}.mnv_filtered.vcf.gz ${vcf}
         mnv_input="${meta.sample_id}.mnv_filtered.vcf.gz"
     else

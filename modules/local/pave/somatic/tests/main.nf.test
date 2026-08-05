@@ -7,8 +7,9 @@ nextflow_process {
     tag "modules/local/pave/somatic"
 
     // Stub tests validate process structure and output channel shape.
-    // The MNVTAG detection logic (if/else branching) is validated separately
-    // via the bash assertions below, since the stub block bypasses the script.
+    // The MNVTAG detection logic (if/else branching, and the SIGPIPE/pipefail race
+    // fixed for umccr/sash#66) is validated separately in ./test_mnv_guard.sh, since
+    // the stub block below bypasses the script body entirely.
 
     test("stub | VCF with MNVTAG — emits vcf, index, versions") {
 

@@ -15,6 +15,12 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### `Deprecated`
 
+## [Unreleased]
+
+### Fixed
+
+- PAVE_SOMATIC MNV guard: `bcftools view -h | grep -q` could receive `SIGPIPE` on large real VCF headers, which under `pipefail` silently skipped MNV filtering even when `MNVTAG` was present, feeding unfiltered variants into PAVE 1.8 ([sash#66](https://github.com/umccr/sash/issues/66))
+
 ## [0.7.1] - 2026-07-17
 
 ### Fixed
