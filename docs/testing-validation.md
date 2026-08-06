@@ -155,6 +155,13 @@ Compare a new release against the previous one with the Sash Regression Service
 SEQC-II-medium (L2301218/L2301217). The 0.6.4 baseline is already wired. This replaces manual
 output diffing.
 
+**Status (2026-08-06):** sash 0.7.1's biodaily#227/sash#62 validation ran entirely on tier 3
+(EC2/AWS Batch, dev buckets) — SBJ02862 hypermutator rerun, 10-sample cohort concordance,
+etc. — but has not yet gone through tier 4 (ICA) or a 0.7.1-vs-0.7.0 Sash Regression Service
+comparison for this sample; only a stale 0.6.4-vs-0.7.0 run exists locally
+(`~/workspace/sash_regression/`). Handed off — see
+`_Brain/Handover - Stephen Watts (2026-07-13).md`, "Stephen's scope" item 6.
+
 The prior 0.7.0-vs-0.6.x validation record — 11 samples, CPSR/PCGR concordance, tier analysis,
 and the validated sash+bolt version table — is
 [umccr/biodaily#199](https://github.com/umccr/biodaily/issues/199). Use it as the concordance
