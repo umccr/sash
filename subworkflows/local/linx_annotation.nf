@@ -73,8 +73,7 @@ workflow LINX_ANNOTATION {
         ch_linx_germline_out = WorkflowSash.restoreMeta(GERMLINE.out.annotation_dir, ch_inputs)
 
     emit:
-        somatic       = ch_linx_somatic_out  // channel: [ meta, linx_annotation_dir ]
-        germline      = ch_linx_germline_out // channel: [ meta, linx_annotation_dir ]
-
-        versions      = ch_versions          // channel: [ versions.yml ]
+        somatic  = ch_linx_somatic_out  // channel: [ meta, linx_annotation_dir ]
+        germline = ch_linx_germline_out // channel: [ meta, linx_annotation_dir ]
+        versions = ch_versions          // channel: [ versions.yml ]
 }

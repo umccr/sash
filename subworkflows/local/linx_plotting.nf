@@ -64,7 +64,11 @@ workflow LINX_PLOTTING {
         ch_versions = ch_versions.mix(LINXREPORT.out.versions)
 
     emit:
-        plot_dir = ch_visualiser_out // channel: [ meta, plot_dir ]
+        plot_dir       = ch_visualiser_out // channel: [ meta, plot_dir ]
+        // NOTE(QC): LINXREPORT's output is never passed through restoreMeta, so this is the
+        // only channel available (not a redundant "raw" counterpart) — its process-scoped
+        // meta already carries `.id` matching the sample, used by the publish path formula.
+        linxreport     = LINXREPORT.out.html // channel: [ meta_linxreport, linxreport_html ]
 
         versions = ch_versions       // channel: [ versions.yml ]
 }

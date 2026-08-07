@@ -83,6 +83,5 @@ workflow PURPLE_CALLING {
 
     emit:
         purple_dir = ch_outputs  // channel: [ meta, purple_dir ]
-
         versions   = ch_versions // channel: [ versions.yml ]
 }
