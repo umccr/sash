@@ -33,7 +33,7 @@ The general processes `sash` runs include:
 ## Requirements
 
 - Java
-- Nextflow ≥22.10.6
+- Nextflow ≥26.04.6
 - Docker
 
 ## Usage

@@ -16,8 +16,6 @@ process BOLT_SMLV_GERMLINE_PREPARE {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-
     """
     bolt smlv_germline prepare \\
         --vcf_fp ${smlv_vcf} \\

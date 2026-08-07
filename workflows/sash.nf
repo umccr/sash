@@ -1,27 +1,3 @@
-import Utils
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    VALIDATE INPUTS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
-
-// Validate input parameters
-WorkflowSash.initialise(params, log)
-
-// Check input path parameters to see if they exist
-def checkPathParamList = [
-    params.input,
-    params.ref_data_path,
-]
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
-
-// TODO(SW): place this into parameter validation
-// Check mandatory parameters
-if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
@@ -74,9 +50,23 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 */
 
 workflow SASH {
+    // Validate input parameters
+    WorkflowSash.initialise(params, log)
+
+    // Check input path parameters to see if they exist
+    def checkPathParamList = [
+        params.input,
+        params.ref_data_path,
+    ]
+    checkPathParamList.each { param -> if (param) { file(param, checkIfExists: true) } }
+
+    // TODO(SW): place this into parameter validation
+    // Check mandatory parameters
+    if (!params.input) { exit 1, 'Input samplesheet not specified!' }
+
     // Create channel for versions
     // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     PREPARE_INPUT(
         file(params.input),
@@ -124,8 +114,8 @@ workflow SASH {
         ch_input_vcf_somatic,
         ch_sage_somatic,
     )
-        .map {
-            def meta = it[0]
+        .map { entry ->
+            def meta = entry[0]
             def meta_bolt = [
                 key: meta.id,
                 id: meta.id,
@@ -133,7 +123,7 @@ workflow SASH {
                 normal_id: meta.normal_id,
                 sample_id: meta.tumor_id
             ]
-            return [meta_bolt, *it[1..-1]]
+            return [meta_bolt] + entry[1..-1]
         }
 
     BOLT_SMLV_SOMATIC_RESCUE(
@@ -147,9 +137,9 @@ workflow SASH {
         BOLT_SMLV_SOMATIC_RESCUE.out.vcf,
         umccr_data.somatic_panel_regions_gene,
         umccr_data.annotations_dir,
-        ch_misc_data.map { it.pon_dir },
-        ch_misc_data.map { it.pcgr_dir },
-        ch_misc_data.map { it.vep_dir }
+        ch_misc_data.map { misc -> misc.pon_dir },
+        ch_misc_data.map { misc -> misc.pcgr_dir },
+        ch_misc_data.map { misc -> misc.vep_dir }
     )
 
     ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_ANNOTATE.out.versions)
@@ -163,7 +153,7 @@ workflow SASH {
     // Restore meta and create clean outputs
     // channel: [ meta, smlv_somatic_vcf ]
     ch_smlv_somatic_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf, ch_inputs)
-        .map { meta, vcf, tbi -> [meta, vcf] }
+        .map { meta, vcf, _tbi -> [meta, vcf] }
     // channel: [ meta, smlv_somatic_filters_vcf ]
     ch_smlv_somatic_filters_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_FILTER.out.vcf_filters, ch_inputs)
 
@@ -259,7 +249,7 @@ workflow SASH {
         //   * https://github.com/hartwigmedical/hmftools/blob/a2f82e5/purple/src/main/java/com/hartwig/hmftools/purple/germline/GermlinePurityEnrichment.java#L50
         //   * https://github.com/hartwigmedical/hmftools/blob/a2f82e5/purple/src/main/java/com/hartwig/hmftools/purple/germline/GermlineGenotypeEnrichment.java#L63
         //ch_smlv_germline_out,
-        ch_smlv_germline_out.map { meta, vcf -> return [meta, []] },
+        ch_smlv_germline_out.map { meta, _vcf -> return [meta, []] },
 
         ch_esvee_somatic_out,
         ch_esvee_germline_out,
@@ -291,7 +281,7 @@ workflow SASH {
         ch_input_vcf_somatic,
         PURPLE_CALLING.out.purple_dir,
     )
-        .map { meta, vcf, vcf_filters, vcf_dragen, tbi_dragen, purple_dir ->
+        .map { meta, vcf, vcf_filters, vcf_dragen, _tbi_dragen, purple_dir ->
             def purity_tsv = file(purple_dir).resolve("${meta.tumor_id}.purple.purity.tsv")
 
             def meta_bolt = [
@@ -306,8 +296,8 @@ workflow SASH {
 
     BOLT_SMLV_SOMATIC_REPORT(
         ch_smlv_somatic_report_inputs,
-        ch_misc_data.map { it.pcgr_dir },
-        ch_misc_data.map { it.vep_dir },
+        ch_misc_data.map { misc -> misc.pcgr_dir },
+        ch_misc_data.map { misc -> misc.vep_dir },
         umccr_data.somatic_panel_regions_cds,
         hmf_data.sage_highconf_regions,
         genome.fasta,
@@ -333,8 +323,8 @@ workflow SASH {
     BOLT_SMLV_GERMLINE_REPORT(
         ch_smlv_germline_report_inputs,
         umccr_data.germline_panel_genes,
-        ch_misc_data.map { it.pcgr_dir },
-        ch_misc_data.map { it.vep_dir }
+        ch_misc_data.map { misc -> misc.pcgr_dir },
+        ch_misc_data.map { misc -> misc.vep_dir }
     )
 
     ch_versions = ch_versions.mix(BOLT_SMLV_GERMLINE_REPORT.out.versions)
@@ -374,9 +364,9 @@ workflow SASH {
 
     VCF2MAF(
         ch_smlv_somatic_report_pcgr_pass_vcf_out,
-        ch_misc_data.map { it.fasta_ensembl },
-        ch_misc_data.map { it.fasta_ensembl_fai },
-        ch_misc_data.map { it.fasta_ensembl_gzi }
+        ch_misc_data.map { misc -> misc.fasta_ensembl },
+        ch_misc_data.map { misc -> misc.fasta_ensembl_fai },
+        ch_misc_data.map { misc -> misc.fasta_ensembl_gzi }
     )
 
     ch_versions = ch_versions.mix(VCF2MAF.out.versions)
@@ -406,7 +396,7 @@ workflow SASH {
         ch_sv_somatic_inputs,
         genome.fasta,
         genome.fai,
-        ch_misc_data.map { it.snpeff_dir },
+        ch_misc_data.map { misc -> misc.snpeff_dir },
     )
 
     ch_versions = ch_versions.mix(BOLT_SV_SOMATIC_ANNOTATE.out.versions)
@@ -418,7 +408,7 @@ workflow SASH {
         umccr_data.known_fusion_three,
         umccr_data.somatic_panel_genes,
         umccr_data.somatic_panel_genes_ts,
-        ch_misc_data.map { it.appris },
+        ch_misc_data.map { misc -> misc.appris },
     )
 
     ch_versions = ch_versions.mix(BOLT_SV_SOMATIC_PRIORITISE.out.versions)
@@ -533,21 +523,21 @@ workflow SASH {
         ch_chord,
         flatten_mode: 'nonrecursive',
     )
-        .map {
-            def meta = it[0]
+        .map { entry ->
+            def meta = entry[0]
             def meta_bolt = [
                 key: meta.id,
                 id: meta.id,
                 subject_id: meta.subject_id,
                 tumor_id: meta.tumor_id,
             ]
-            return [meta_bolt, *it[1..-1]]
+            return [meta_bolt] + entry[1..-1]
         }
 
     BOLT_OTHER_CANCER_REPORT(
         ch_cancer_report_inputs,
         umccr_data.somatic_panel,
-        ch_misc_data.map { it.oncokb_genes },
+        ch_misc_data.map { misc -> misc.oncokb_genes },
     )
 
     ch_versions = ch_versions.mix(BOLT_OTHER_CANCER_REPORT.out.versions)
@@ -577,9 +567,9 @@ workflow SASH {
         ch_smlv_germline_report_counts_type_out,
         PURPLE_CALLING.out.purple_dir,
     )
-        .map {
-            def meta = it[0]
-            def other = it[1..-1]
+        .map { entry ->
+            def meta = entry[0]
+            def other = entry[1..-1]
 
             def meta_multiqc = [
                 key: meta.id,
@@ -636,22 +626,6 @@ workflow SASH {
             newLine: true,
         )
 
-}
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    COMPLETION EMAIL AND SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-workflow.onComplete {
-    if (params.email || params.email_on_fail) {
-        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log)
-    }
-    NfcoreTemplate.summary(workflow, params, log)
-    if (params.hook_url) {
-        NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
-    }
 }
 
 /*

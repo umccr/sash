@@ -1,0 +1,4 @@
+filepath,filetype,id,sample_name,subject_name
+subworkflows/local/tests/prepare_input/fixtures/default/dragen_somatic_dir,dragen_somatic_dir,TEST_01,TUMOR,SUBJECT_01
+subworkflows/local/tests/prepare_input/fixtures/default/dragen_germline_dir,dragen_germline_dir,TEST_01,NORMAL,SUBJECT_01
+subworkflows/local/tests/prepare_input/fixtures/default/oncoanalyser_dir,oncoanalyser_dir,TEST_01,TUMOR,SUBJECT_01

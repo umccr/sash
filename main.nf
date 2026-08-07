@@ -10,14 +10,6 @@ nextflow.enable.dsl = 2
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    VALIDATE & PRINT PARAMETER SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-WorkflowMain.initialise(workflow, params, log)
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOW FOR PIPELINE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -42,7 +34,22 @@ workflow UMCCR_SASH {
 // See: https://github.com/nf-core/rnaseq/issues/619
 //
 workflow {
+    // Validate parameters and print summary to screen
+    WorkflowMain.initialise(workflow, params, log)
+
     UMCCR_SASH ()
+
+    // Completion email and summary
+    workflow.onComplete {
+        def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
+        if (params.email || params.email_on_fail) {
+            NfcoreTemplate.email(workflow, params, summary_params, projectDir, log)
+        }
+        NfcoreTemplate.summary(workflow, params, log)
+        if (params.hook_url) {
+            NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
+        }
+    }
 }
 
 /*

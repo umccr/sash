@@ -5,11 +5,9 @@
 include { CUSTOM_EXTRACTTARBALL as DECOMP_MISC_DATA } from '../../modules/local/custom/extract_tarball/main'
 
 workflow PREPARE_REFERENCE {
-    take:
-
     main:
         // Channel for version.yml files
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
         //
         // Set UMCCR and HMF reference data paths
@@ -18,7 +16,6 @@ workflow PREPARE_REFERENCE {
 
         ch_hmf_data = createDataMap(params.hmfdata_paths, params.ref_data_path)
         ch_umccr_data = createDataMap(params.umccrdata_paths, umccr_reference_data_path)
-        ch_misc_data = createDataMap(params.miscdata_paths, params.ref_data_path)
 
         //
         // Extract tarball resources (e.g. PCGR data, VEP cache) when provided as .tar.gz/.tgz
@@ -29,7 +26,7 @@ workflow PREPARE_REFERENCE {
                   "must be provided as .tar.gz/.tgz archives. Plain directory inputs are no longer supported."
         }
 
-        ch_misc_data_inputs = Channel.fromList(misc_tarball_inputs)
+        ch_misc_data_inputs = channel.fromList(misc_tarball_inputs)
 
         DECOMP_MISC_DATA(ch_misc_data_inputs)
 
@@ -75,7 +72,7 @@ def createDataMap(entries, ref_data_base_path) {
 
 def getTarballInputs(entries, ref_data_base_path) {
     return entries
-        .findAll { name, relpath ->
+        .findAll { _name, relpath ->
             if (!relpath) {
                 return false
             }

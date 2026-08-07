@@ -18,8 +18,6 @@ process BOLT_SV_SOMATIC_ANNOTATE {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-
     """
     bolt sv_somatic annotate \\
         --tumor_name ${meta.tumor_id} \\

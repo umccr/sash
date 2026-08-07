@@ -16,8 +16,6 @@ process BOLT_SMLV_SOMATIC_FILTER {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-
     """
     bolt smlv_somatic filter \\
         --tumor_name ${meta.tumor_id} \\

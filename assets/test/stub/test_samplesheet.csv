@@ -1,0 +1,4 @@
+filepath,filetype,id,sample_name,subject_name
+/Users/quentinclayssen/github/sash-strict-syntax/assets/test/stub/samples/dragen_somatic,dragen_somatic_dir,SBJ0000,TUMOR01,SBJ00480
+/Users/quentinclayssen/github/sash-strict-syntax/assets/test/stub/samples/dragen_germline,dragen_germline_dir,SBJ0000,NORMAL01,SBJ00480
+/Users/quentinclayssen/github/sash-strict-syntax/assets/test/stub/samples/oncoanalyser,oncoanalyser_dir,SBJ0000,TUMOR01,SBJ00480

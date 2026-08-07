@@ -22,8 +22,6 @@ process BOLT_SMLV_GERMLINE_REPORT {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-
     """
     bolt smlv_germline report \\
         --normal_name ${meta.normal_id} \\
