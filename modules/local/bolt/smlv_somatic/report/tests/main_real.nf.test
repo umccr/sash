@@ -1,0 +1,85 @@
+nextflow_process {
+
+    name "Test Process BOLT_SMLV_SOMATIC_REPORT (real, non-stub)"
+    script "modules/local/bolt/smlv_somatic/report/main.nf"
+    process "BOLT_SMLV_SOMATIC_REPORT"
+    config "modules/local/bolt/smlv_somatic/report/tests/nextflow_docker.config"
+    tag "modules/local/bolt/smlv_somatic/report"
+    tag "real"
+    tag "docker"
+
+    // Real (non-stub) execution against the ghcr.io/umccr/bolt:0.3.2-pcgr container,
+    // exercising the actual `script:` block -- including the `mv output/pcgr/*.html`
+    // guard fix (sash #59 / ADR-001) that stub-mode tests structurally cannot reach,
+    // since -stub bypasses `script:` entirely. Caught a real bug this way earlier in
+    // this investigation: the mv was previously unconditional and crashed the whole
+    // process when PCGR was skipped, defeating the optional:true outputs.
+    //
+    // Input VCF is a synthetic ~550k-PASS-variant VCF (real REF/ALT vs the genome
+    // fasta, all records forced INFO/SAGE_HOTSPOT so select_pcgr_variants() has
+    // nothing droppable and genuinely fails to trim below MAX_SOMATIC_VARIANTS --
+    // see ~/workspace/synthetic_hypermutated/generate_synthetic_vcf_v2.py).
+    //
+    // NOT reproducible elsewhere as-is: every non-fixture path below is a hardcoded
+    // absolute path into this machine's ~/workspace (or ~/Documents/data), none of
+    // it committed to the repo -- the synthetic VCF, its generator script, and the
+    // real refdata (genome fasta, GIAB regions, cancer genes bed, a real sample's
+    // purity/dragen-vcf) all live outside version control. This is a local, manual
+    // diagnostic test, not part of the default nf-test suite and not CI-runnable;
+    // it will fail with missing-file errors on any other machine. Requires Docker.
+    // Prerequisites to rerun:
+    //   1. Docker running, `docker pull ghcr.io/umccr/bolt:0.3.2-pcgr` (~7.6GB)
+    //   2. Genome fasta+fai (GRCh38_full_analysis_set_plus_decoy_hla, ~3.2GB) and
+    //      the GIAB high-confidence regions bed staged locally
+    //   3. UMCCR somatic cancer-gene-panel regions bed (umccr_reference_data)
+    //   4. A real sample's purple purity TSV + a small real PASS VCF to stand in
+    //      for --vcf_dragen_fp (content doesn't need to match the synthetic VCF --
+    //      only used for a stats/count comparison, not gating logic)
+    //   5. The synthetic VCF regenerated via generate_synthetic_vcf_v2.py against
+    //      any real sample's PASS VCF + the genome fasta above
+    // If none of that is available, run modules/local/bolt/smlv_somatic/report/tests/
+    // main.nf.test instead (the -stub equivalent) -- it needs none of the above but
+    // can't exercise the real `script:` block this test is specifically for.
+
+    test("real | hypermutated sample — PCGR skipped, process still succeeds") {
+
+        options ""
+
+        when {
+            process {
+                """
+                def vcf = file("/Users/quentinclayssen/workspace/synthetic_hypermutated/synthetic_550k_v3.sorted.vcf.gz")
+                def filters_vcf = file("/Users/quentinclayssen/workspace/synthetic_hypermutated/synthetic_550k_v3_filters.sorted.vcf.gz")
+                def dragen_vcf = file("/Users/quentinclayssen/workspace/sash_070_vs_older/0.7.0/L2600127_L2600126/smlv_somatic/filter/L2600127.pass.vcf.gz")
+                def purity = file("/Users/quentinclayssen/workspace/sash_070_vs_older/0.7.0/L2600127_L2600126/purple/L2600127.purple.purity.tsv")
+                def vep_dir = file("${projectDir}/modules/local/bolt/smlv_somatic/report/tests/fixtures/real_run/vep_dir_placeholder")
+                def pcgr_data_dir = file("${projectDir}/modules/local/bolt/smlv_somatic/report/tests/fixtures/real_run/pcgr_data_dir_placeholder")
+                def cancer_genes = file("/Users/quentinclayssen/Documents/data/reference_data/umccr_reference_data/v2--0/gene_panels/somatic/umccr_cancer_genes.gene_regions.bed")
+                def giab_regions = file("/Users/quentinclayssen/workspace/reference_data/annotations/HG001_GRCh38_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-X_v.3.3.2_highconf_nosomaticdel_noCENorHET7.bed.gz")
+                def genome_fasta = file("/Users/quentinclayssen/workspace/reference_data/genomes/GRCh38_full_analysis_set_plus_decoy_hla.fa")
+                def genome_fai = file("/Users/quentinclayssen/workspace/reference_data/genomes/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai")
+
+                input[0] = [[id: 'TEST_REAL', tumor_id: 'L2600127', normal_id: 'L2600126'], vcf, filters_vcf, dragen_vcf, purity]
+                input[1] = pcgr_data_dir
+                input[2] = vep_dir
+                input[3] = cancer_genes
+                input[4] = giab_regions
+                input[5] = genome_fasta
+                input[6] = genome_fai
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.pcgr_pass_vcf.size() == 0
+            assert process.out.pcgr_dir.size() == 0
+            assert process.out.pcgr_report.size() == 0
+            assert process.out.af_global.size() == 1
+            assert process.out.bcftools_stats.size() == 1
+            assert process.out.counts_type.size() == 1
+            assert process.out.counts_process.size() == 1
+            assert process.out.versions.size() == 1
+        }
+    }
+}
