@@ -361,6 +361,7 @@ workflow SASH {
     //
 
     // channel: [ meta_vcf2maf, report_pcgr_pass_vcf ]
+    // Filter handles the case where PCGR was skipped (>450k variants) and pcgr_pass_vcf was not emitted
     ch_smlv_somatic_report_pcgr_pass_vcf_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_REPORT.out.pcgr_pass_vcf, ch_inputs)
         .map { meta, vcf ->
             def meta_vcf2maf = [
@@ -371,6 +372,7 @@ workflow SASH {
             ]
             return [meta_vcf2maf, vcf]
         }
+        .filter { _meta, vcf -> vcf }
 
     VCF2MAF(
         ch_smlv_somatic_report_pcgr_pass_vcf_out,

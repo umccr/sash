@@ -19,9 +19,9 @@ process BOLT_SMLV_SOMATIC_REPORT {
     tuple val(meta), path("output/*.bcftools_stats.txt")          , emit: bcftools_stats
     tuple val(meta), path("output/*.variant_counts_type.yaml")    , emit: counts_type
     tuple val(meta), path("output/*.variant_counts_process.json") , emit: counts_process
-    tuple val(meta), path("output/pcgr/*.pcgr.grch38.pass.vcf.gz"), emit: pcgr_pass_vcf
-    path 'output/pcgr/'                                           , emit: pcgr_dir
-    path "output/*.pcgr.grch38.html"                              , emit: pcgr_report
+    tuple val(meta), path("output/pcgr/*.pcgr.grch38.pass.vcf.gz"), emit: pcgr_pass_vcf, optional: true
+    path 'output/pcgr/'                                           , emit: pcgr_dir    , optional: true
+    path "output/*.pcgr.grch38.html"                              , emit: pcgr_report , optional: true
     path 'versions.yml'                                           , emit: versions
 
     when:
@@ -52,7 +52,12 @@ process BOLT_SMLV_SOMATIC_REPORT {
         --threads ${task.cpus} \\
         --output_dir output/
 
-    mv output/pcgr/${meta.tumor_id}.pcgr.grch38.html output/
+    # NOTE(QC): PCGR is skipped (and output/pcgr/*.html never created) when the
+    # sample has too many PASS variants to trim below MAX_SOMATIC_VARIANTS
+    # (sash #59 / ADR-001) -- guard so the process still exits 0 in that case.
+    if [[ -f output/pcgr/${meta.tumor_id}.pcgr.grch38.html ]]; then
+        mv output/pcgr/${meta.tumor_id}.pcgr.grch38.html output/
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -61,16 +66,20 @@ process BOLT_SMLV_SOMATIC_REPORT {
     """
 
     stub:
-    """
+    def pcgr_skipped = smlv_vcf.name.contains('hypermutated')
+    def pcgr_stub_lines = pcgr_skipped ? '' : """
     mkdir -p output/pcgr/
-    touch output/pcgr/pcgr.stub
+    touch output/pcgr/${meta.tumor_id}.pcgr.grch38.pass.vcf.gz
+    touch output/${meta.tumor_id}.pcgr.grch38.html
+    """
+    """
+    mkdir -p output/
     touch output/af_tumor.txt
     touch output/af_tumor_keygenes.txt
     touch output/${meta.tumor_id}.somatic.variant_counts_type.yaml
     touch output/${meta.tumor_id}.somatic.variant_counts_process.json
     touch output/${meta.tumor_id}.somatic.bcftools_stats.txt
-    touch output/pcgr/${meta.tumor_id}.pcgr.grch38.pass.vcf.gz
-    touch output/${meta.tumor_id}.pcgr.grch38.html
+    ${pcgr_stub_lines}
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }

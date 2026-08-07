@@ -15,6 +15,24 @@ Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) tem
 
 ### `Deprecated`
 
+## [Unreleased]
+
+### Fixed
+
+- PAVE_SOMATIC MNV guard: `bcftools view -h | grep -q` could receive `SIGPIPE` on large real VCF headers, which under `pipefail` silently skipped MNV filtering even when `MNVTAG` was present, feeding unfiltered variants into PAVE 1.8 ([sash#66](https://github.com/umccr/sash/issues/66))
+
+## [0.7.1] - 2026-07-17
+
+### Fixed
+
+- Bump bolt to 0.3.2: PCGR now gracefully skips hypermutated samples whose variant count still exceeds the per-chunk ceiling ([sash#52](https://github.com/umccr/sash/issues/52)), and PCGR chunk runs disable MSI/TMB estimates that were meaningless on partial VCFs
+
+### Dependencies
+
+| Tool | Old   | New   |
+| ---- | ----- | ----- |
+| bolt | 0.3.1 | 0.3.2 |
+
 ## [0.7.0] - 2026-05-13
 
 ### Added

@@ -68,6 +68,30 @@ Negative:
 - pcgrr HTML skip: `sigven/pcgr`, `pcgrr/R/main.R` ~line 954
 - sash #52, bolt #26, bolt #35
 
+### The `Hypermutated` flag in the Cancer Report is a coarser, separate signal
+
+The `Hypermutated: TRUE/FALSE` row curators see in the gpgr Cancer Report QC table is **not** the same thing as the PCGR tiered-filtering cascade described above. A `TRUE` result does not by itself mean clinically-prioritised filtering (steps 2–3 of the cascade) actually ran against that sample's variants.
+
+**How the flag is computed** (bolt ≥ 0.3.0, `bolt/workflows/smlv_somatic/report.py::count_variant_process()`):
+
+```python
+counts['is_hypermutated'] = counts['dragen'] > constants.MAX_SOMATIC_VARIANTS
+```
+
+`dragen` is the raw DRAGEN variant count — **PASS and non-PASS included** (only novel SAGE calls are excluded). gpgr (≥ commit `f51919d`) reads this flag directly rather than re-deriving it; this replaced an earlier, less reliable inference based on `sage != annotated` count divergence.
+
+**Why a `TRUE` flag doesn't necessarily mean TMB was affected.** The variant-count-limiting cascade in `bolt smlv_somatic annotate` (`annotate.py::select_variants()`) runs independently of, and _before_, `select_pcgr_variants()`. It tries progressively more aggressive reductions and returns as soon as the count is under `MAX_SOMATIC_VARIANTS`:
+
+1. Exclude non-PASS variants (retaining hotspots) — FILTER tag `max_variants_non_pass`. If this alone brings the count under the limit, **the cascade stops here**.
+2. Exclude common gnomAD population variants — FILTER tag `max_variants_gnomad`.
+3. Restrict to the cancer gene panel region — FILTER tag `max_variants_non_cancer_genes`.
+
+Because `is_hypermutated` is derived purely from the raw (PASS + non-PASS) count, a sample with a lot of non-PASS noise (e.g. FFPE artifacts) can trip the flag while only needing step 1 above — i.e. ordinary PASS-only filtering, identical in effect to what any non-hypermutated sample gets via the separate `BOLT_SMLV_SOMATIC_FILTER` module. In that case PCGR annotates the full PASS(+hotspot) variant set and the resulting TMB is not an underestimate; no cancer-gene-panel-only restriction occurred.
+
+**Real case, verified directly from the published VCF** (2026-08-03, `L2600475__L2600476`): `dragen: 531,556; sage: 531,556; annotated: 163,996; filter_pass: 62,883`. Pulling `smlv_somatic/annotate/L2600475.annotations.vcf.gz` and counting FILTER tags confirms this precisely — `max_variants_non_pass` appears on 367,560 records (531,556 − 367,560 = 163,996 = `annotated`), and `max_variants_gnomad`/`max_variants_non_cancer_genes` appear on **zero** records. The cascade stopped after step 1. The sample was flagged hypermutated, but PCGR's TMB was computed from PASS-only variants with no region-based restriction — i.e. the flag was a false positive with respect to TMB accuracy.
+
+**Caveat for curators:** the flag alone cannot distinguish "raw non-PASS noise tripped the threshold, only ordinary PASS filtering applied" from "PCGR received a clinically-prioritised, region-restricted subset". Confirming which occurred currently requires checking the `annotated`/`filter_pass` counts in `{tumor_id}.somatic.variant_counts_process.json`, or grepping the FILTER column of `{tumor_id}.annotations.vcf.gz` for `max_variants_gnomad`/`max_variants_non_cancer_genes` as above — there is no single boolean for this yet. Changing `is_hypermutated` itself to be based on a PASS-only count (e.g. `filter_pass`, already computed in the same function) has been raised as a follow-up fix in `bolt` (Slack `#genomics-technical`, 2026-08-03 thread on `C025TLC7D`).
+
 ---
 
 ## ADR #2: SV Caller Replacement — GRIDSS/GRIPSS → eSVee
