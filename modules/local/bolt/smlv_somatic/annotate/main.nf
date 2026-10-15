@@ -2,7 +2,7 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
     tag "${meta.id}"
     label 'process_low'
 
-    container 'ghcr.io/umccr/bolt:0.2.18-pcgr'
+    container 'ghcr.io/umccr/bolt:0.2.19-rc.1-pcgr'
 
     input:
     tuple val(meta), path(smlv_vcf)
