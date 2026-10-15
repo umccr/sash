@@ -3,17 +3,20 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.0dev - [date]
+## [0.6.5-rc.1] - 2026-10-XX
 
-Initial release of umccr/sash, created with the [nf-core](https://nf-co.re/) template.
+### Fixed
 
-### `Added`
+- Clarify hypermutated status and any relevant filtering to curators [PR links TDB]
+- Safely close `cyvcf2.Writer` handles rather than depending on GC [PR links TDB]
+- Do not run 'MNVTAG filtering' if the tag is absent in the provided VCF [PR links TDB]
 
-### `Fixed`
+### Dependencies
 
-### `Dependencies`
-
-### `Deprecated`
+| Tool | Old    | New         |
+| ---- | ------ | ------      |
+| bolt | 0.2.18 | 0.2.19-rc.1 |
+| gpgr | 2.2.12 | 2.2.13.9000 |
 
 ## [0.6.4] - 2026-03-31
 
