@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Tool | Old    | New         |
 | ---- | ------ | ------      |
-| bolt | 0.2.18 | 0.2.19-rc.1 |
+| bolt | 0.2.18 | 0.2.19-rc.2 |
 | gpgr | 2.2.12 | 2.2.13.9000 |
 
 ## [0.6.4] - 2026-03-31
