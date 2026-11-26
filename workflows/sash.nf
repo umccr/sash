@@ -156,6 +156,9 @@ workflow SASH {
 
     ch_versions = ch_versions.mix(BOLT_SMLV_SOMATIC_ANNOTATE.out.versions)
 
+    // channel: [ meta, annotation_selection ]
+    ch_smlv_annotation_selection_out = WorkflowSash.restoreMeta(BOLT_SMLV_SOMATIC_ANNOTATE.out.annotation_selection, ch_inputs)
+
     BOLT_SMLV_SOMATIC_FILTER(
         BOLT_SMLV_SOMATIC_ANNOTATE.out.vcf,
     )
@@ -281,14 +284,15 @@ workflow SASH {
     // Small variant reporting (PCGR, CPSR, stats)
     //
 
-    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_filters_vcf, dragen_somatic_vcf, dragen_somatic_tbi, purple_dir ]
+    // channel: [ meta_bolt, smlv_somatic_vcf, smlv_somatic_filters_vcf, dragen_somatic_vcf, dragen_somatic_tbi, purple_dir, annotation_selection ]
     ch_smlv_somatic_report_inputs = WorkflowSash.groupByMeta(
         ch_smlv_somatic_out,
         ch_smlv_somatic_filters_out,
         ch_input_vcf_somatic,
         PURPLE_CALLING.out.purple_dir,
+        ch_smlv_annotation_selection_out,
     )
-        .map { meta, vcf, vcf_filters, vcf_dragen, tbi_dragen, purple_dir ->
+        .map { meta, vcf, vcf_filters, vcf_dragen, tbi_dragen, purple_dir, annotation_selection ->
             def purity_tsv = file(purple_dir).resolve("${meta.tumor_id}.purple.purity.tsv")
 
             def meta_bolt = [
@@ -298,7 +302,7 @@ workflow SASH {
                 normal_id: meta.normal_id,
             ]
 
-            return [meta_bolt, vcf, vcf_filters, vcf_dragen, purity_tsv]
+            return [meta_bolt, vcf, vcf_filters, vcf_dragen, purity_tsv, annotation_selection]
         }
 
     BOLT_SMLV_SOMATIC_REPORT(

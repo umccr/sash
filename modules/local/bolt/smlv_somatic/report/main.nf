@@ -5,7 +5,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
     container 'ghcr.io/umccr/bolt:0.2.18-pcgr'
 
     input:
-    tuple val(meta), path(smlv_vcf), path(smlv_filters_vcf), path(smlv_dragen_vcf), path(purple_purity)
+    tuple val(meta), path(smlv_vcf), path(smlv_filters_vcf), path(smlv_dragen_vcf), path(purple_purity), path(annotation_selection)
     path pcgr_data_dir
     path somatic_driver_panel_regions_coding
     path giab_regions
@@ -36,6 +36,7 @@ process BOLT_SMLV_SOMATIC_REPORT {
         --vcf_fp ${smlv_vcf} \\
         --vcf_filters_fp ${smlv_filters_vcf} \\
         --vcf_dragen_fp ${smlv_dragen_vcf} \\
+        --annotation_selection_fp ${annotation_selection} \\
         \\
         --pcgr_conda pcgr \\
         --pcgrr_conda pcgrr \\

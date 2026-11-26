@@ -12,8 +12,9 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
     path pcgr_data_dir
 
     output:
-    tuple val(meta), path("output/${meta.tumor_id}.annotations.vcf.gz"), emit: vcf
-    path 'versions.yml'                                                , emit: versions
+    tuple val(meta), path("output/${meta.tumor_id}.annotations.vcf.gz")       , emit: vcf
+    tuple val(meta), path("output/${meta.tumor_id}.annotation_selection.json"), emit: annotation_selection
+    path 'versions.yml'                                                       , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -45,6 +46,7 @@ process BOLT_SMLV_SOMATIC_ANNOTATE {
     """
     mkdir -p output/
     touch output/${meta.tumor_id}.annotations.vcf.gz
+    touch output/${meta.tumor_id}.annotation_selection.json
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """
 }
